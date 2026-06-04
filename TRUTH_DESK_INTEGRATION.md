@@ -1,16 +1,16 @@
 # Protein Truth Desk — Persistent Memory Integration Protocol
 
-**Version:** 2.0 (Phase 65 catch-up, 2026-06-04)
+**Version:** 3.0 (Phase 70 + Phase 41 revision, 2026-06-04)
 **Drive repo:** https://github.com/Gudmundur76/manus-persistent-drive
 **Project repo:** https://github.com/Gudmundur76/protein-truth-desk
-**Webdev checkpoint:** `91c44bbb` (canonical — contains all full implementations)
+**Webdev checkpoint:** `c13b2a66` (canonical — Phase 70 P0/P1 fixes + Phase 41 revision complete)
 
 ---
 
 ## Why This File Exists
 
 Manus sandbox sessions are ephemeral. Every new session starts with a clean filesystem,
-and the webdev checkpoint (`91c44bbb`) is the only place the full deployed codebase lives.
+and the webdev checkpoint (`c13b2a66`) is the only place the full deployed codebase lives.
 This repository is the **persistent memory layer** that bridges sessions — it stores project
 state, schema snapshots, service implementations, test files, KG summaries, and session
 history so that any new agent session (main task or parallel sub-task) can bootstrap itself
@@ -96,7 +96,7 @@ The sync script will:
 
 ---
 
-## Project State as of Phase 65
+## Project State as of Phase 70
 
 ### Database Schema (26 tables)
 
@@ -121,19 +121,14 @@ The sync script will:
 
 ### Phases Complete
 
-Phases 1–65 are complete. The webdev checkpoint `91c44bbb` contains the full deployed
-application. The GitHub repo (`protein-truth-desk`) contains:
+Phases 1–70 are complete. The webdev checkpoint `c13b2a66` contains the full deployed
+application. All files are full implementations (no stubs remain).
 
-- **Phases 1–38**: Full implementations
-- **Phases 39–60**: Stub files (full implementations only in checkpoint `91c44bbb`)
-- **Phases 61–65**: Full implementations
+### Pending Work (Phase 71+)
 
-### Pending Work (Phase 66+)
-
-1. **Wire API key auth into the v2 REST layer** — add `Authorization: Bearer <key>` middleware to `apiV2Router.ts`
-2. **Trigger confidence recording automatically** — call `recordConfidence` at end of each document pipeline run
-3. **Restore Phase 39–60 full implementations from checkpoint** — replace stubs with real code from `91c44bbb`
-4. **Activate the coordination layer** — set `MANUS_API_KEY` and test orchestrator spawning sub-tasks
+1. **Redis-backed rate limiter** — swap in-memory `validateApiKey` rate limiter for Redis/Upstash so limits hold across Cloud Run instances
+2. **CoordinatorDashboard live polling** — add 30-second `setInterval` refetch so queue depth and active task counts update without page reload
+3. **`COORD_API_KEY` rotation UI** — one-click key rotation in Admin panel
 
 ---
 
@@ -188,12 +183,27 @@ multiple research verticals. These tasks coordinate through the database-backed
 ### Configuration
 
 ```env
-# Manus API key (from https://manus.ai → Settings → API)
+# Manus API key (falls back to ASIONE env var if not set)
 MANUS_API_KEY=your_manus_api_key_here
 
-# Shared secret for /api/coord/* endpoints
+# Shared secret for /api/coord/* endpoints (timing-safe comparison in auth middleware)
 COORD_API_KEY=generate_a_random_32_char_secret
+
+# Public URL of the Truth Desk app (used by orchestrator for self-calls)
+VITE_APP_URL=https://your-truth-desk-domain.manus.space
 ```
+
+### Security invariants (must not be reverted)
+
+| Invariant | File |
+|---|---|
+| Session cookie `SameSite=Lax`, `httpOnly=true` | `server/_core/cookies.ts` |
+| `JWT_SECRET` throws if missing | `server/_core/env.ts` |
+| Admin routes: `requireOwnerOrAdmin` middleware | `server/_core/index.ts` |
+| Coord API auth: `crypto.timingSafeEqual`, never `!==` | `server/coordApi.ts` |
+| Rate limiter on `validateApiKey`: 20 req/min per IP | `server/apiKeyService.ts` |
+| All external `fetch()` calls: `AbortSignal.timeout(10_000)` | multiple files |
+| `ENV` is a static object — mock via `vi.mock("./_core/env")` in tests | `server/_core/env.ts` |
 
 ---
 
@@ -254,4 +264,4 @@ npx tsc --noEmit  # should report 0 errors
 
 ---
 
-*Last updated: Phase 65 catch-up — 2026-06-04*
+*Last updated: Phase 70 + Phase 41 revision — 2026-06-04*
