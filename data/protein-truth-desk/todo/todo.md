@@ -523,3 +523,30 @@
 - [x] Add API Keys nav item to DashboardLayout.tsx sidebar (Key icon)
 - [x] Write Vitest tests for apiKeyService.ts (25 tests passing)
 - [x] TypeScript clean, dev server running
+
+## Phase 66 — Quality and Discipline Sprint
+- [x] Add eslint.config.js (ESM flat config, typescript-eslint v8, react-hooks)
+- [x] Add commitlint.config.js for Conventional Commits enforcement
+- [x] Add .husky/pre-commit (lint-staged) and commit-msg (commitlint) hooks
+- [x] Add .lintstagedrc.json for staged-file quality gates
+- [x] Update vitest.config.ts with coverage thresholds (lines 80%, branches 70%, functions 75%)
+- [x] Add scripts/manus-session.mjs — unified session lifecycle CLI
+- [x] Add scripts/check-stubs.mjs — stub file scanner with --json and --ci modes
+- [x] Add CLAUDE.md — first-read context file for every new agent session
+- [x] Fix claimProvenanceService.ts — full implementation replacing stub (411 tests passing)
+- [x] Add client/src/pages/DevQuality.tsx — developer quality dashboard at /dev/quality
+- [x] Wire DevQuality route in App.tsx and nav item in DashboardLayout.tsx
+- [x] Push Phase 66 to GitHub (protein-truth-desk)
+- [x] Sync manus-persistent-drive with gap analysis, schema snapshot, session scripts
+
+## Phase 67 — Discipline Infrastructure
+- [x] Build scripts/session-integrity.mjs — mandatory pre-code gate (6 checks: drive present, phase log, todo sync, TS clean, tests pass, stubs)
+- [x] Build scripts/stub-tracker.mjs — maps each stub to test file, priority, estimated work; --json and --ci modes
+- [x] Build scripts/drift-detector.mjs — diffs persistent drive snapshot vs current project state
+- [x] Fix all ESLint errors (0 errors, 91 warnings) so pre-commit hook passes without --no-verify
+- [x] Confirmed coordApi.ts (730 lines) and manusOrchestrator.ts (391 lines) are full implementations wired in index.ts
+- [x] Wire MANUS_API_KEY fallback to ASIONE in env.ts (coordination layer now active)
+- [x] Update CLAUDE.md with mandatory session-integrity check as step 0
+- [x] Sync all new tooling to manus-persistent-drive and push both repos
+- [x] 627/627 tests passing, TypeScript 0 errors, ESLint 0 errors
+- [x] Save checkpoint 66faafa5
