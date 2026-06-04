@@ -34,3 +34,21 @@
 - Status: complete
 - Summary: All 27 stub files in protein-truth-desk-full replaced with full implementations from webdev checkpoint. TypeScript: 0 errors. Tests: 411/411 passing. ESLint: 0 errors, 91 warnings.
 - Files replaced: coordApi.ts (730L), adminAnalytics.ts (330L), agentIngestionEndpoint.ts (365L), apiV2Router.ts (479L), batchAuditRouter.ts (325L), claimQualityScorer.ts (438L), claimSimilarityEngine.ts (278L), embedWidgetRoute.ts (227L), orchestratorTickJob.ts (251L), qualityScorerJob.ts (53L), searchEngine.ts (257L), swarmTickJob.ts (260L), verticalNotificationService.ts (430L), webhookDeliveryService.ts (312L), manusOrchestrator.ts (391L), claimProvenanceService.ts (327L), schema.ts (733L), + 12 client pages
+
+## Phase 71–73 — Redis Rate Limiting, Live Coordinator Polling, Coordinator Key Rotation (2026-06-04)
+**Status:** complete
+**Project checkpoint:** `7e47510`
+**Tests:** 412/412 passing in cloned GitHub branch
+**TypeScript:** 0 errors
+**Build:** successful
+
+### Summary
+Completed Redis-backed API-key rate limiting via Upstash REST fallback-aware helper, explicit 30-second CoordinatorDashboard polling, and owner/admin COORD_API_KEY rotation with one-time display in Admin. Restored missing Phase 70 JWT and session-cookie security invariants in the cloned branch before verification. Full details: `context/phase-log/phase-71-73.md`.
+
+## Session: phase_71_73 — 2026-06-04T14:40:19Z
+
+- **Commit**: [33mc9fb6c8[m feat(stubs): replace all 27 stub files with full implementations from webdev checkpoint
+- **Drive commit**: [33ma6e3001[m TRUTH_DESK_INTEGRATION.md v4.0: correct checkpoint b98a0483, quick bootstrap block, full security invariants table, Phase 71-73 task list
+- **Todo**: 412 completed, 0
+0 pending
+- **Sync message**: Phase 71-73 complete: Redis API-key rate limiter, CoordinatorDashboard 30s polling, COORD_API_KEY rotation UI, security invariant restorations

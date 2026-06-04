@@ -327,3 +327,13 @@ npx tsc --noEmit  # should report 0 errors
 
 *Last updated: Phase 70 second-pass security hardening + Phase 41 revision — 2026-06-04*
 *Checkpoint: b98a0483 | Tests: 659 passing (41 files) | TypeScript: 0 errors | ESLint: 0 warnings*
+
+## Phase 71–73 Sync — 2026-06-04
+
+**Project head:** `7e47510f13f5eba3ae09df7db5d1d24025129dfd` on `Gudmundur76/protein-truth-desk` `main`.
+
+**Completed:** Phase 71 added a Redis-capable API key rate limiter using Upstash Redis REST configuration with a local fallback when Redis is not configured. Phase 72 added explicit 30-second polling to `CoordinatorDashboard.tsx`. Phase 73 added owner/admin `COORD_API_KEY` rotation from the Admin panel, backed by persistent coordinator-context metadata and shared timing-safe validation across coordinator REST, agent ingestion, batch audit bearer auth, and orchestrator key handoff paths.
+
+**Verification:** Vitest passed (`412/412` in the cloned GitHub branch), `pnpm run check` was clean, `pnpm run build` succeeded, and the live public site loaded successfully at `https://protein-desk-5r5rzpyg.manus.space/` after push. The cloned branch initially lacked some Phase 70 memory invariants, so this session restored `JWT_SECRET` startup enforcement and session cookie `SameSite=Lax`/`httpOnly=true` before final verification.
+
+**Detailed log:** `context/phase-log/phase-71-73.md`.
