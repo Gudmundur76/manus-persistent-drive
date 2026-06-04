@@ -1,22 +1,59 @@
 # Protein Truth Desk — Persistent Memory Integration Protocol
 
-**Version:** 3.0 (Phase 70 + Phase 41 revision, 2026-06-04)
+**Version:** 4.0 (Phase 70 second-pass security hardening, 2026-06-04)
 **Drive repo:** https://github.com/Gudmundur76/manus-persistent-drive
 **Project repo:** https://github.com/Gudmundur76/protein-truth-desk
-**Webdev checkpoint:** `c13b2a66` (canonical — Phase 70 P0/P1 fixes + Phase 41 revision complete)
+**Live site:** https://protein-desk-5r5rzpyg.manus.space/
+**Webdev checkpoint:** `b98a0483` (canonical — all P0/P1 security fixes genuinely complete)
 
 ---
 
 ## Why This File Exists
 
 Manus sandbox sessions are ephemeral. Every new session starts with a clean filesystem,
-and the webdev checkpoint (`c13b2a66`) is the only place the full deployed codebase lives.
+and the webdev checkpoint (`b98a0483`) is the only place the full deployed codebase lives.
 This repository is the **persistent memory layer** that bridges sessions — it stores project
 state, schema snapshots, service implementations, test files, KG summaries, and session
 history so that any new agent session (main task or parallel sub-task) can bootstrap itself
 to the correct context in under 60 seconds.
 
 **The rule is simple: every session starts with `bootstrap.sh` and ends with `sync.sh`.**
+
+### Quick Bootstrap for a New Chat Session
+
+Paste this as the first message in a new Manus session:
+
+```
+Project: Protein Truth Desk — scientific claim verification platform
+
+Live site: https://protein-desk-5r5rzpyg.manus.space/
+Source repo: https://github.com/Gudmundur76/protein-truth-desk
+Memory repo (phase log + snapshots): https://github.com/Gudmundur76/manus-persistent-drive
+
+Start by cloning both repos, reading manus-persistent-drive/TRUTH_DESK_INTEGRATION.md
+and manus-persistent-drive/context/phase-log/, then reading protein-truth-desk/todo.md.
+
+Current checkpoint: b98a0483 (webdev project protein-truth-desk)
+Phase: 70 complete. All P0/P1 security fixes done. 659 Vitest tests passing.
+
+Next tasks (Phase 71-73):
+1. Redis-backed rate limiter — replace in-memory validateApiKey rate limiter with
+   Upstash Redis so the limit holds across Cloud Run cold starts
+2. CoordinatorDashboard live polling — add 30-second setInterval refetch to
+   CoordinatorDashboard.tsx so queue depth and active task counts update without reload
+3. COORD_API_KEY rotation UI — one-click key rotation button in the Admin panel
+
+Security invariants that must not be reverted:
+- JWT_SECRET throws at startup if missing (server/_core/env.ts)
+- Session cookie: SameSite=Lax, httpOnly=true (server/_core/cookies.ts)
+- All /api/admin/* routes use requireOwnerOrAdmin middleware (server/_core/index.ts +
+  server/backfillWikiRoute.ts accepts it as parameter)
+- All /api/scheduled/* routes check x-heartbeat-secret header
+- coordApi.ts uses crypto.timingSafeEqual for key comparison, never string ===
+- All external fetch() calls include AbortSignal.timeout(10_000)
+- ENV is a static object — mock via vi.mock("./_core/env") in tests, never mutate process.env
+- db.ts LIKE queries use Drizzle like() + or() helpers, never raw sql template interpolation
+```
 
 ---
 
@@ -121,14 +158,35 @@ The sync script will:
 
 ### Phases Complete
 
-Phases 1–70 are complete. The webdev checkpoint `c13b2a66` contains the full deployed
+Phases 1–70 are complete. The webdev checkpoint `b98a0483` contains the full deployed
 application. All files are full implementations (no stubs remain).
 
-### Pending Work (Phase 71+)
+**Phase 70 second-pass security hardening (2026-06-04):**
+- P0-2: `JWT_SECRET` now throws at startup if missing; `vitest.config.ts` provides test-only value
+- P0-4: `db.ts` LIKE query replaced with Drizzle `like()` + `or()` helpers
+- P0-1: `backfillWikiRoute.ts` refactored to accept `requireOwnerOrAdmin` as parameter;
+  all 6 `/api/admin/*` routes now use the shared middleware
 
-1. **Redis-backed rate limiter** — swap in-memory `validateApiKey` rate limiter for Redis/Upstash so limits hold across Cloud Run instances
-2. **CoordinatorDashboard live polling** — add 30-second `setInterval` refetch so queue depth and active task counts update without page reload
-3. **`COORD_API_KEY` rotation UI** — one-click key rotation in Admin panel
+**Phase 41 revision (2026-06-04):**
+- Header name standardised to `x-coord-key` across `coordApi.ts` and `agentIngestionEndpoint.ts`
+- `AbortSignal.timeout(10_000)` added to both fetch calls in `manusOrchestrator.ts`
+- `crypto.timingSafeEqual` replaces string `!==` in `coordApi.ts` auth middleware
+- `ENV.appUrl` added (reads `VITE_APP_URL`, falls back to `localhost:3000`)
+- `/api/coord/ingest` added to `buildVerticalAgentPrompt` workflow instructions
+- `runOrchestratorTick` now caps retries at `MAX_RETRIES = 3`
+- `manusOrchestrator.test.ts` created — 25 unit tests covering all exported functions
+
+### Pending Work (Phase 71–73)
+
+1. **Phase 71 — Redis-backed rate limiter** — swap in-memory `validateApiKey` rate limiter
+   (`server/apiKeyService.ts`) for Upstash Redis so the 20 req/min limit holds across
+   Cloud Run instances (currently resets on every cold start)
+2. **Phase 72 — CoordinatorDashboard live polling** — add 30-second `setInterval` refetch
+   (or tRPC subscription) to `client/src/pages/CoordinatorDashboard.tsx` so queue depth
+   and active task counts update without a page reload
+3. **Phase 73 — `COORD_API_KEY` rotation UI** — one-click "Rotate key" button in the Admin
+   panel that generates a new `COORD_API_KEY`, updates the env secret, and re-registers
+   all active coord tasks with the new key
 
 ---
 
@@ -195,15 +253,18 @@ VITE_APP_URL=https://your-truth-desk-domain.manus.space
 
 ### Security invariants (must not be reverted)
 
-| Invariant | File |
-|---|---|
-| Session cookie `SameSite=Lax`, `httpOnly=true` | `server/_core/cookies.ts` |
-| `JWT_SECRET` throws if missing | `server/_core/env.ts` |
-| Admin routes: `requireOwnerOrAdmin` middleware | `server/_core/index.ts` |
-| Coord API auth: `crypto.timingSafeEqual`, never `!==` | `server/coordApi.ts` |
-| Rate limiter on `validateApiKey`: 20 req/min per IP | `server/apiKeyService.ts` |
-| All external `fetch()` calls: `AbortSignal.timeout(10_000)` | multiple files |
-| `ENV` is a static object — mock via `vi.mock("./_core/env")` in tests | `server/_core/env.ts` |
+| Invariant | File | Phase fixed |
+|---|---|---|
+| Session cookie `SameSite=Lax`, `httpOnly=true` | `server/_core/cookies.ts` | P1-9 (Phase 70) |
+| `JWT_SECRET` throws at startup if missing | `server/_core/env.ts` | P0-2 (Phase 70 second pass) |
+| All 6 `/api/admin/*` routes use `requireOwnerOrAdmin` | `server/_core/index.ts` + `server/backfillWikiRoute.ts` | P0-1 (Phase 70 second pass) |
+| All `/api/scheduled/*` routes check `x-heartbeat-secret` | `server/_core/index.ts` | P0-3 (Phase 70) |
+| Coord API auth: `crypto.timingSafeEqual`, never `!==` | `server/coordApi.ts` | Phase 41 revision |
+| Rate limiter on `validateApiKey`: 20 req/min per IP | `server/apiKeyService.ts` | P1-3 (Phase 70) |
+| All external `fetch()` calls: `AbortSignal.timeout(10_000)` | multiple server files | P1-16 (Phase 70) |
+| `db.ts` LIKE queries use `like()` + `or()` helpers | `server/db.ts` | P0-4 (Phase 70 second pass) |
+| `ENV` is a static object — mock via `vi.mock("./_core/env")` in tests | `server/_core/env.ts` | Phase 70 |
+| `vitest.config.ts` provides `JWT_SECRET` test value | `vitest.config.ts` | Phase 70 second pass |
 
 ---
 
@@ -264,4 +325,5 @@ npx tsc --noEmit  # should report 0 errors
 
 ---
 
-*Last updated: Phase 70 + Phase 41 revision — 2026-06-04*
+*Last updated: Phase 70 second-pass security hardening + Phase 41 revision — 2026-06-04*
+*Checkpoint: b98a0483 | Tests: 659 passing (41 files) | TypeScript: 0 errors | ESLint: 0 warnings*
