@@ -1,0 +1,30 @@
+{
+  "updated_at": "2026-06-04T08:21:33Z",
+  "session_id": "session_phase65_catchup",
+  "source": "schema_inference",
+  "entity_count": "see graph_entities table",
+  "claim_count": "see claims table",
+  "document_count": "see documents table",
+  "tables": [
+    "users",
+    "documents",
+    "claims",
+    "graph_entities",
+    "graph_edges",
+    "audit_reports",
+    "coord_tasks",
+    "coord_queue",
+    "coord_context",
+    "notification_settings",
+    "claim_provenance_steps",
+    "entity_cooccurrences",
+    "confidence_history",
+    "api_keys",
+    "vertical_alerts",
+    "notification_log"
+  ],
+  "webdev_checkpoint": "91c44bbb",
+  "github_repo": "https://github.com/Gudmundur76/protein-truth-desk",
+  "phases_complete": "1-65",
+  "notes": "Full implementations in webdev checkpoint 91c44bbb. Phases 39-60 server files are stubs in GitHub repo."
+}
