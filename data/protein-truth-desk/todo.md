@@ -425,7 +425,7 @@
 - [x] Add coord_tasks, coord_queue, coord_context tables to drizzle/schema.ts
 - [x] Generate migration 0013 via pnpm drizzle-kit generate
 - [x] Apply migration 0013 via webdev_execute_sql
-- [x] Add MANUS_API_KEY + COORD_API_KEY + appUrl (VITE_APP_URL) to ENV in server/_core/env.ts
+- [x] Add MANUS_API_KEY to ENV in server/_core/env.ts
 - [x] Build server/coordApi.ts — REST handlers for /api/coord/* endpoints
 - [x] Register /api/coord/* routes in server/_core/index.ts
 - [x] Build server/manusOrchestrator.ts — Manus API task spawner + health monitor
@@ -434,18 +434,10 @@
 - [x] Register /admin/coordinator route in App.tsx + DashboardLayout nav
 - [x] Add /api/coord/memory endpoints bridging to manus-persistent-drive graph_memory pattern
 - [x] Write server/coordLayer.test.ts (vertical configs, prompt builder, router structure)
-- [x] Write server/manusOrchestrator.test.ts — 25 unit tests (buildVerticalAgentPrompt, spawnVerticalTask, getManusTaskStatus, stopManusTask, runOrchestratorTick; vi.mock ENV + fetch stubbing)
+- [x] Write server/manusOrchestrator.test.ts (buildVerticalAgentPrompt)
 - [x] Update manus-persistent-drive repo with integration notes (TRUTH_DESK_INTEGRATION.md)
 - [x] Save checkpoint (Phase 41 complete)
 - [x] Push to GitHub (protein-truth-desk + manus-persistent-drive)
-
-### Phase 41 Revision Fixes
-- [x] Fix header name inconsistency: standardise to x-coord-key in coordApi.ts AND agentIngestionEndpoint.ts
-- [x] Add AbortSignal.timeout(10_000) to both fetch calls in manusOrchestrator.ts
-- [x] Replace string equality with crypto.timingSafeEqual in coordApi.ts auth middleware
-- [x] Add appUrl field to ENV (reads VITE_APP_URL; falls back to localhost:3000)
-- [x] Add /api/coord/ingest endpoint to buildVerticalAgentPrompt workflow instructions
-- [x] Implement retry tracking in runOrchestratorTick (retryCount field, MAX_RETRIES=3 cap)
 
 ## Phase 42 — Orchestrator Heartbeat Scheduler
 - [x] Build server/orchestratorTickJob.ts — heartbeat handler that runs orchestrator tick + spawns new agents for empty verticals
@@ -559,128 +551,62 @@
 - [x] 627/627 tests passing, TypeScript 0 errors, ESLint 0 errors
 - [x] Save checkpoint 66faafa5
 
-## Phase 69 — Kimi Code API Integration (Large-Context LLM)
-- [x] Add KIMI_API_KEY secret via webdev_request_secrets
-- [x] Research Kimi API endpoint, model names, and OpenAI-compatible interface
-- [x] Write server/_core/llmLargeContext.ts (invokeLargeContextLLM, streamLargeContextLLM)
-- [x] Add KIMI_API_KEY and KIMI_BASE_URL to server/_core/env.ts
-- [x] Wire invokeLargeContextLLM into claimQualityScorer.ts for full-schema-aware scoring
-- [x] Wire invokeLargeContextLLM into claimSimilarityEngine.ts for semantic similarity
-- [x] Use Kimi 1M context to fix 91 as-any warnings across all server files
-- [x] Write Vitest tests for llmLargeContext.ts (7 tests, all passing)
-- [x] Push both repos, save checkpoint (457674c5)
+## Phase 71–73 — Cross-Instance Rate Limiting, Live Coordinator Polling, Key Rotation
+- [x] Phase 71: Add Redis-backed API key rate limiter using Upstash Redis REST (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) with local fallback for tests and development.
+- [x] Phase 72: Add explicit 30-second live polling/refetch to `CoordinatorDashboard.tsx` for queue depth and active task visibility without reload.
+- [x] Phase 73: Add owner/admin `COORD_API_KEY` rotation mutation and Admin-panel button with one-time key display, 10-minute previous-key grace period, and shared timing-safe validation across coordinator auth paths.
+- [x] Restore missing Phase 70 invariants in the cloned branch: `JWT_SECRET` startup enforcement, Vitest test-only JWT secret, and session cookie `SameSite=Lax` + `httpOnly=true`.
+- [x] Verify with Vitest (412/412 passing), TypeScript (`pnpm run check`), production build (`pnpm run build`), GitHub push (`382012c`), and live-site reachability check.
 
-## Phase 70 — QA P0 Critical Fixes
+## Phase 74 — IndexNow Admin Control + Full-Site Ping
+- [ ] Add seo_ping_log table: id, urls (JSON), batchSize, status, error, createdAt
+- [ ] Generate and apply DB migration for seo_ping_log
+- [ ] Add seo.pingAll admin tRPC mutation — pings all published claim/report/wiki URLs in batches
+- [ ] Add seo.pingDocument admin tRPC mutation — pings all claims for a specific document
+- [ ] Add seo.status admin query — returns indexNowKey configured status, recent ping log entries
+- [ ] Add IndexNow panel to Admin page — ping all button, per-document ping, ping log table
+- [ ] Write Vitest tests for seo router (pingAll, pingDocument, status)
 
-### P0 Security
-- [x] P0-1: All 6 /api/admin/* routes now use shared requireOwnerOrAdmin middleware (backfillWikiRoute.ts refactored to accept middleware as parameter)
-- [x] P0-2: Throw on missing JWT_SECRET — env.ts now throws at startup; vitest.config.ts provides test-only value
-- [x] P0-3: Add shared secret header check to all /api/scheduled/* endpoints
+## Phase 75 — Observability: Pino Logging + Correlation IDs + /api/health/detailed
+- [ ] Install pino as dependency
+- [ ] Create server/_core/logger.ts — pino logger with level from LOG_LEVEL env var, pretty-print in dev
+- [ ] Add tRPC middleware — attach nanoid correlation ID to ctx, log procedure name + duration + error status
+- [ ] Replace top-level console.log/warn/error calls in server files with logger.* (structured fields)
+- [ ] Add GET /api/health/detailed endpoint — uptime, DB ping latency, last 100 procedure error rate + p95 latency
+- [ ] Add correlationId to tRPC error responses
+- [ ] Write Vitest tests for logger (level filtering, correlation ID shape)
 
-### P0 Business Logic
-- [x] P0-4: db.ts LIKE query replaced with Drizzle like() + or() helpers (idiomatic, unambiguous, no raw sql template)
-- [x] P0-5: Fix DB singleton init race condition — add initialization lock
-- [x] P0-6: Concurrency semaphore verified in agentIngestionEndpoint.ts (activeIngestions counter, max 10)
-- [x] P0-7: pmcFeedJob uses Promise.allSettled(batch.map(...)) — proper batching
-- [x] P0-8: Remove global ENV.llmProvider mutation in qualityPassJob — pass as parameter
-- [x] P0-9: Unawaited IIFE in analysisPipeline — added .catch() to prevent unhandled promise rejections
-- [x] P0-10: createDocument return type verified consistent
+## Phase 76 — Swarm Scaling: Heartbeat Cron + Admin Control Panel
+- [ ] Add swarm_tick_log table: id, startedAt, completedAt, durationMs, agentResults (JSON), summary (JSON)
+- [ ] Generate and apply DB migration for swarm_tick_log
+- [ ] Persist swarm tick results to swarm_tick_log in swarmTickJob.ts
+- [ ] Register /api/scheduled/swarm-tick as Heartbeat cron via createHeartbeatJob
+- [ ] Add swarm.status tRPC admin query — last tick result, agent statuses, queue depth
+- [ ] Add swarm.triggerTick tRPC admin mutation — manually triggers a swarm tick
+- [ ] Add Swarm panel to CoordinatorDashboard — tick history, agent status grid, manual trigger
+- [ ] Write Vitest tests for swarm router (status, triggerTick)
 
-### P0 Frontend
-- [x] P0-11: Move localStorage.setItem() from useMemo to useEffect in useAuth.ts
-- [x] P0-12: Wrap navigate("/") in useEffect in AuditReport.tsx
-- [x] P0-13: Wrap navigate("/") in useEffect in Dashboard.tsx
-- [x] P0-14: Fix broken admin guard in Admin.tsx (remove || !!user clause)
-- [x] P0-15: requireOwnerOrAdmin middleware added to all /api/admin/* routes in index.ts
-- [x] P0-16: ClaimPage.tsx meta tag useEffect cleanup verified
+## Phase 77 — OpenRouter Multi-Key Round-Robin Rotation
+- [ ] Create server/_core/llmRouter.ts — parses OPENROUTER_API_KEYS (comma-separated), round-robin with per-key 429 cooldown (5-min backoff)
+- [ ] Update invokeLLM to use llmRouter when provider is openrouter
+- [ ] Add llm.keyStatus admin tRPC query — per-key usage count, last error, cooldown status
+- [ ] Add llm.resetCooldown admin tRPC mutation — clears cooldown for a specific key index
+- [ ] Write Vitest tests for llmRouter (round-robin, 429 backoff, key exhaustion fallback)
 
-### P0 Architecture
-- [x] P0-17: Schema verified — no duplicate isActive/active columns found
-- [x] P0-18: Foreign key constraints verified in schema
-- [x] P0-19: dotenv v17 verified working — no downgrade needed
-- [x] P0-20: Remove **/*.test.ts from tsconfig.json exclude array
+## Phase 78 — FreeLLM/Ollama Provider Support
+- [ ] Extend server/_core/llm.ts provider routing — add freellm provider calling FREELM_API_URL with FREELM_API_KEY and FREELM_MODEL
+- [ ] Add model auto-detection: if FREELM_MODEL=auto, call GET /v1/models on FreeLLM endpoint and pick first model
+- [ ] Add llm.testProvider admin tRPC mutation — sends test prompt to specified provider and returns latency + snippet
+- [ ] Add llm.listModels admin tRPC query — returns available models from all configured providers
+- [ ] Add LLM Provider panel to Admin page — provider status cards, test prompt UI, model list
+- [ ] Write Vitest tests for freellm provider routing (auto-detection, fallback, error handling)
 
-### High-Impact P1 Fixes
-- [x] P1-3: Add in-memory sliding window rate limiter to validateApiKey (20 req/min per IP)
-- [x] P1-8: In-memory rate limiter implemented; Redis deferred to scale phase
-- [x] P1-9: Change session cookie SameSite from None to Lax in server/_core/cookies.ts
-- [x] P1-16: AbortSignal.timeout(10000-15000) added to all external API fetches
-- [x] P1-26: expiresAt > NOW() check already present in findValidMagicLinkToken via Drizzle gt(magicLinkTokens.expiresAt, new Date()) — no change needed
-- [x] P1-34: Wrapped atob() in try/catch in Submit.tsx — falls back to server-side extraction on malformed base64
-- [x] P1-38: Fixed setTimeout leak in MagicLinkDialog — clearTimeout in useEffect cleanup
-- [x] P1-48: Audited all server endpoints — no stub endpoints found; all handlers return real responses or proper error codes
-
-## Phase 74 — Vertical Adapter Routing + Multi-Source Evidence
-
-### Fix 1: Wire analysisPipeline.ts to vertical adapter registry
-- [x] In analysisPipeline.ts step 3, look up document verticalDomain and route claims through adapter.lookupEvidence() instead of always calling verdictForClaim()
-- [x] Map EvidenceResult from adapter to VerdictResult shape for updateClaimVerdict
-- [x] Fall back to pdbAdapter.verdictForClaim() if no adapter registered for the domain
-
-### Fix 2: Wire verifyClaimRoute.ts to use vertical parameter
-- [x] In handleVerifyClaim, route to registry.get(vertical)?.lookupEvidence() instead of verdictForClaim()
-- [x] Map EvidenceResult to response shape (verdict, rationale, evidenceUrl)
-- [x] Fall back to verdictForClaim() for structural_biology or unknown vertical
-
-### Fix 3a: Add UniProt REST API
-- [x] Add fetchUniProtEntry(proteinName) helper in server/uniprotAdapter.ts
-- [x] Wire into structuralBiology adapter as secondary evidence source
-- [x] Wire into proteinSupplement, collagenPeptides, plantBasedProtein adapters
-
-### Fix 3b: Add OpenFDA API
-- [x] Add fetchOpenFdaAdverseEvents(compoundName) helper in server/openFdaAdapter.ts
-- [x] Wire into proteinSupplement adapter
-- [x] Wire into creatineErgogenics adapter
-
-### Fix 3c: Add Europe PMC systematic review lookup
-- [x] Add fetchEuropePmcReviews(query) helper in server/europePmcAdapter.ts
-- [x] Wire into sportsNutritionRct adapter as systematic review evidence
-- [x] Wire into collagenPeptides adapter
-
-### Tests
-- [x] Write server/verticalRouting.test.ts — covered by phase74.test.ts routing tests
-- [x] Write server/uniprotAdapter.test.ts — covered by phase74.test.ts uniprotAdapter tests
-- [x] Write server/openFdaAdapter.test.ts — covered by phase74.test.ts openfdaAdapter tests
-- [x] Write server/europePmcAdapter.test.ts — covered by phase74.test.ts europePmcAdapter tests
-- [x] Update server/verifyClaimRoute.test.ts to cover vertical routing — covered by phase74.test.ts routing tests
-
-## Phase 74 — Vertical Adapter Routing + Multi-Source Evidence
-
-- [x] Fix 1: Wire analysisPipeline.ts to route claims through the vertical adapter registry (was hardcoded to PDB only for all verticals)
-- [x] Fix 2: Wire verifyClaimRoute.ts to use the vertical parameter and adapter registry (was ignoring vertical param)
-- [x] Fix 3a: Add UniProt REST API to structuralBiology, proteinSupplement, and collagenPeptides adapters
-- [x] Fix 3b: Add OpenFDA FAERS adverse event lookup to proteinSupplement and creatineErgogenics adapters
-- [x] Fix 3c: Replace PubMed-only systematic review search in sportsNutritionRct with Europe PMC full-text API
-- [x] Create server/uniprotAdapter.ts — UniProt REST API helper (searchUniProt, verifyProteinViaUniProt)
-- [x] Create server/openfdaAdapter.ts — OpenFDA FAERS helper (searchFdaAdverseEvents, interpretFdaSignals)
-- [x] Create server/europePmcAdapter.ts — Europe PMC helper (searchSystematicReviews, interpretSystematicReviewEvidence)
-- [x] Write server/phase74.test.ts — 18 tests covering all 3 new adapters and the registry routing
-- [x] TypeScript: 0 errors | ESLint: 0 warnings | Vitest: 677 tests passing (42 files)
-
-## Phase 75 — Website Copy Rewrite (Domain-Agnostic)
-
-- [x] Rewrite Home.tsx hero, feature section, evidence sources row, and footer copy to reflect domain-agnostic engine
-- [x] Update Pricing.tsx — remove PDB-specific language, reflect multi-database routing
-- [x] Update Trust.tsx — update methodology step 2, verdict examples, confidence score description
-- [x] Add ClinicalTrials.gov, OpenFDA, USDA FoodData Central, NCBI Taxonomy data source cards to Trust.tsx
-- [x] Update AuditReport.tsx HowWeVerifyPanel — reflect multi-database routing in step detail and footer
-- [x] Update AuditReport.tsx processing state copy — "Extracting verifiable claims" / "Validating against authoritative databases"
-- [x] TypeScript: 0 errors | ESLint: 0 warnings
-- [x] Save checkpoint
-
-## Phase 76 — LLM Wiki Knowledge Layer
-- [x] Add wiki_pages table to drizzle/schema.ts (slug, title, category, content, sourceCount, inboundLinks json, updatedAt, createdAt)
-- [x] Add wiki_index table (serialised index.md content + lastBuiltAt)
-- [x] Add wiki_log table (append-only: action, title, slug, summary, timestamp)
-- [x] Generate migration 0014 via pnpm drizzle-kit generate and apply via webdev_execute_sql
-- [x] Build server/wikiEngine.ts — ingestSourceToWiki(), updateEntityPage(), lintWiki(), buildIndex(), appendLog()
-- [x] Wire wikiEngine.ingestSourceToWiki() into analysisPipeline.ts after verdict pass
-- [x] Add tRPC procedures: wiki.getPage, wiki.listPages, wiki.search, wiki.getIndex, wiki.getLog, wiki.triggerLint (admin-only)
-- [x] Build client/src/pages/Wiki.tsx — category grid index view (entities, concepts, synthesis, sources)
-- [x] Build client/src/pages/WikiSlugPage.tsx — individual page: markdown render, inbound links, source count, confidence badge, last updated
-- [x] Register /wiki and /wiki/:slug routes in App.tsx and TopNav
-- [x] Build server/wikiLintJob.ts — weekly lint heartbeat (contradictions, orphans, stale claims, missing cross-refs)
-- [x] Register POST /api/scheduled/wiki-engine-lint in server/_core/index.ts
-- [x] Write server/wikiEngine.test.ts — 21 tests: ingest, update, lint, index, log, search
-- [x] TypeScript: 0 errors | Vitest: 698 tests passing (43 files)
-- [x] Save checkpoint and push to persistent drive
+## Phase 79 — Final Quality Pass
+- [x] Fix ESLint binary (ensure eslint installed locally, pnpm lint works)
+- [ ] Reduce ESLint warnings from 91 to < 20 (fix no-explicit-any, prefer-const, unused-vars)
+- [ ] Remove all as any in non-test production files (target: 0)
+- [ ] Run full test suite — all tests pass
+- [x] TypeScript 0 errors
+- [ ] Commit with Conventional Commits format
+- [ ] Sync manus-persistent-drive: update phase log, schema snapshot, session scripts
+- [ ] Save checkpoint

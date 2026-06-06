@@ -5,14 +5,36 @@ a single line of code.
 
 ---
 
+## Step 0: Session Integrity Check (MANDATORY — run before anything else)
+
+```bash
+# Pull or clone the persistent drive
+if [ ! -d /home/ubuntu/manus-persistent-drive ]; then
+  gh repo clone Gudmundur76/manus-persistent-drive /home/ubuntu/manus-persistent-drive
+else
+  cd /home/ubuntu/manus-persistent-drive && git pull
+fi
+
+# Pull or clone the project repo
+if [ ! -d /home/ubuntu/protein-truth-desk ]; then
+  gh repo clone Gudmundur76/protein-truth-desk /home/ubuntu/protein-truth-desk
+else
+  cd /home/ubuntu/protein-truth-desk && git pull
+fi
+
+# Run the integrity gate — must show 0 FAILURES before proceeding
+cd /home/ubuntu/protein-truth-desk
+node scripts/session-integrity.mjs
+```
+
+**If the integrity check shows FAILURES, fix them before writing code.**
+
+---
+
 ## Step 1: Bootstrap from Persistent Memory
 
 ```bash
-# Pull latest state from the persistent drive
-gh repo clone Gudmundur76/manus-persistent-drive /home/ubuntu/manus-persistent-drive 2>/dev/null \
-  || git -C /home/ubuntu/manus-persistent-drive pull --rebase origin main
-
-# Register this session and print context summary
+cd /home/ubuntu/protein-truth-desk
 node scripts/manus-session.mjs start
 ```
 
@@ -44,8 +66,8 @@ pnpm check
 # All tests must pass before starting work
 pnpm test
 
-# Check stub count
-node scripts/check-stubs.mjs
+# Check stub count (correct script name is stub-tracker.mjs, NOT check-stubs.mjs)
+node scripts/stub-tracker.mjs
 ```
 
 If tests are failing or TypeScript has errors, **fix them before doing anything else.**
@@ -70,10 +92,10 @@ Follow the plan in `todo.md`. Each phase is a section in todo.md. Work top-to-bo
 
 ```bash
 # Log the phase you completed
-node scripts/manus-session.mjs log-phase 67 "Add structured logging" done
+node scripts/manus-session.mjs log-phase 80 "description" done
 
 # Sync state to both repos and end session
-node scripts/manus-session.mjs end "feat(quality): add structured logging with pino"
+node scripts/manus-session.mjs end "feat(scope): description"
 ```
 
 ---
@@ -82,36 +104,32 @@ node scripts/manus-session.mjs end "feat(quality): add structured logging with p
 
 **What it is:** A scientific claim verification platform for protein/nutrition research.
 Ingests PubMed papers, extracts claims, scores them for quality, and provides a public API.
+Routes claims through vertical-specific adapters (PDB, UniProt, OpenFDA, Europe PMC).
 
 **Tech stack:** React 19 + Tailwind 4 + Express 4 + tRPC 11 + Drizzle ORM + MySQL/TiDB
 
 **Key files:**
-- `drizzle/schema.ts` — 26 tables (claims, documents, entities, KG, provenance, API keys, etc.)
-- `server/routers.ts` — all tRPC procedures (~2000 lines, split into feature sections)
+- `drizzle/schema.ts` — 29 tables (claims, documents, entities, KG, provenance, API keys, wiki, seo, swarm, etc.)
+- `server/routers.ts` — all tRPC procedures (split into feature sections)
 - `server/db.ts` — Drizzle DB helpers
-- `todo.md` — full phase log with 389+ items
+- `todo.md` — full phase log with 600+ items
 - `client/src/App.tsx` — all routes
 
-**Current phase:** 66 (Quality & Discipline Sprint)
-
-**Stub files (15 — need real implementations):**
-- `server/magicLink.ts`, `server/monitoringJob.ts`, `server/pubmedIngestJob.ts`
-- `server/discoveryLoopJob.ts`, `server/claimsRoutes.ts`, `server/pdbAdapter.ts`
-- `server/multiLLM.ts`, `server/coordApi.ts`, `server/manusOrchestrator.ts`
-- `server/telegramBot.ts`, `server/reportGenerator.ts`, `server/pdfReportGenerator.ts`
-- `server/verifyClaimRoute.ts`, `server/seedKnowledgeGraph.ts`, `server/similarClaims.ts`
+**Current phase:** 79 (Final Quality Pass complete)
+**Stub files:** 0 (all replaced in Phase 68 — run `node scripts/stub-tracker.mjs` to verify)
 
 ---
 
 ## Quality Thresholds (enforced)
 
-| Metric | Current | Target (Phase 70) |
+| Metric | Current | Target (Phase 82) |
 |---|---|---|
-| Test pass rate | 411/411 (100%) | 100% always |
+| Test pass rate | 438/438 (100%) | 100% always |
 | Coverage (lines) | ~65% | 80% |
-| Stub files | 15 | 0 |
-| `as any` in prod code | 29 | 0 |
-| Functions > 80 lines | 32 | < 10 |
+| Stub files | 0 | 0 always |
+| `as any` in prod code | ~29 | 0 |
+| ESLint warnings | 91 | < 20 |
+| Functions > 80 lines | ~10 | < 5 |
 
 ---
 
@@ -121,5 +139,6 @@ Ingests PubMed papers, extracts claims, scores them for quality, and provides a 
 |---|---|
 | `Gudmundur76/protein-truth-desk` | Full project codebase |
 | `Gudmundur76/manus-persistent-drive` | Session state, phase log, KG snapshots, context |
+| `Gudmundur76/memorydesk` | MemoryDesk — cross-project AI memory layer |
 
-Both must be pushed at the end of every session.
+All three must be pushed at the end of every session.

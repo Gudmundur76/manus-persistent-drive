@@ -104,17 +104,36 @@ summary = {
     "entity_count": "see graph_entities table",
     "claim_count": "see claims table",
     "document_count": "see documents table",
-    "tables": [
-        "users", "documents", "claims", "graph_entities", "graph_edges",
-        "audit_reports", "coord_tasks", "coord_queue", "coord_context",
-        "notification_settings", "claim_provenance_steps",
-        "entity_cooccurrences", "confidence_history", "api_keys",
-        "vertical_alerts", "notification_log"
-    ],
-    "webdev_checkpoint": "91c44bbb",
-    "github_repo": "https://github.com/Gudmundur76/protein-truth-desk",
-    "phases_complete": "1-65",
-    "notes": "Full implementations in webdev checkpoint 91c44bbb. Phases 39-60 server files are stubs in GitHub repo."
+    "tables": {
+        "protein-truth-desk": [
+            "users", "documents", "claims", "auditReports", "monitoringFeed",
+            "auditRequests", "monitoringJobs", "autoIngestedPapers", "magicLinkTokens",
+            "emailUsers", "graphEntities", "graphRelations", "userSubscriptions",
+            "predictionFeatures", "predictionModels", "webhookAlerts", "coordTasks",
+            "coordQueue", "coordContext", "verticalAlerts", "notificationLog",
+            "webhookDeliveryLog", "claimProvenanceEvents", "entityCooccurrences",
+            "confidenceHistory", "apiKeys", "seoPingLog", "swarmTickLog"
+        ],
+        "memorydesk": [
+            "users", "memoryRecords", "agents", "repositories", "workflows",
+            "workflowSteps", "contextPacks", "contextPackItems", "chatMessages",
+            "briefingRuns", "memoryEmbeddings", "deskConnections", "workflowTriggers",
+            "kgNodes", "kgEdges", "agentTasks"
+        ]
+    },
+    "github_commits": {
+        "protein-truth-desk": "7598de6",
+        "memorydesk": "8daa5d7"
+    },
+    "phases_complete": {
+        "protein-truth-desk": "1-79",
+        "memorydesk": "1-24"
+    },
+    "test_counts": {
+        "protein-truth-desk": "438/438 passing",
+        "memorydesk": "60/60 passing"
+    },
+    "notes": "Phase 79 complete for protein-truth-desk. Phase 24 complete for memorydesk. 0 stubs in both projects."
 }
 
 os.makedirs(os.path.dirname("$KG_SUMMARY"), exist_ok=True)

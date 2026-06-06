@@ -66,7 +66,7 @@ pnpm check
 pnpm test
 
 # Check stub count
-node scripts/check-stubs.mjs
+node scripts/stub-tracker.mjs
 ```
 
 If tests are failing or TypeScript has errors, **fix them before doing anything else.**
@@ -91,10 +91,10 @@ Follow the plan in `todo.md`. Each phase is a section in todo.md. Work top-to-bo
 
 ```bash
 # Log the phase you completed
-node scripts/manus-session.mjs log-phase 67 "Add structured logging" done
+node scripts/manus-session.mjs log-phase 80 "description" done
 
 # Sync state to both repos and end session
-node scripts/manus-session.mjs end "feat(quality): add structured logging with pino"
+node scripts/manus-session.mjs end "feat(scope): description"
 ```
 
 ---
@@ -103,31 +103,32 @@ node scripts/manus-session.mjs end "feat(quality): add structured logging with p
 
 **What it is:** A scientific claim verification platform for protein/nutrition research.
 Ingests PubMed papers, extracts claims, scores them for quality, and provides a public API.
+Routes claims through vertical-specific adapters (PDB, UniProt, OpenFDA, Europe PMC).
 
 **Tech stack:** React 19 + Tailwind 4 + Express 4 + tRPC 11 + Drizzle ORM + MySQL/TiDB
 
 **Key files:**
-- `drizzle/schema.ts` — 26 tables (claims, documents, entities, KG, provenance, API keys, etc.)
-- `server/routers.ts` — all tRPC procedures (~2000 lines, split into feature sections)
+- `drizzle/schema.ts` — 29 tables (claims, documents, entities, KG, provenance, API keys, wiki, seo, swarm, etc.)
+- `server/routers.ts` — all tRPC procedures (split into feature sections)
 - `server/db.ts` — Drizzle DB helpers
-- `todo.md` — full phase log with 389+ items
+- `todo.md` — full phase log with 600+ items
 - `client/src/App.tsx` — all routes
 
-**Current phase:** 67 (Discipline Infrastructure)
-
-**Stub files:** Run `node scripts/stub-tracker.mjs` to get current count and list.
+**Current phase:** 79 (Final Quality Pass complete)
+**Stub files:** 0 (all replaced in Phase 68 — run `node scripts/stub-tracker.mjs` to verify)
 
 ---
 
 ## Quality Thresholds (enforced)
 
-| Metric | Current | Target (Phase 70) |
+| Metric | Current | Target (Phase 82) |
 |---|---|---|
-| Test pass rate | 411/411 (100%) | 100% always |
+| Test pass rate | 438/438 (100%) | 100% always |
 | Coverage (lines) | ~65% | 80% |
-| Stub files | 15 | 0 |
-| `as any` in prod code | 29 | 0 |
-| Functions > 80 lines | 32 | < 10 |
+| Stub files | 0 | 0 always |
+| `as any` in prod code | ~29 | 0 |
+| ESLint warnings | 91 | < 20 |
+| Functions > 80 lines | ~10 | < 5 |
 
 ---
 
@@ -137,5 +138,6 @@ Ingests PubMed papers, extracts claims, scores them for quality, and provides a 
 |---|---|
 | `Gudmundur76/protein-truth-desk` | Full project codebase |
 | `Gudmundur76/manus-persistent-drive` | Session state, phase log, KG snapshots, context |
+| `Gudmundur76/memorydesk` | MemoryDesk — cross-project AI memory layer |
 
-Both must be pushed at the end of every session.
+All three must be pushed at the end of every session.

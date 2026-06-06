@@ -731,3 +731,38 @@ export const apiKeys = mysqlTable("api_keys", {
 }));
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertApiKey = typeof apiKeys.$inferInsert;
+
+// ─── SEO Ping Log ─────────────────────────────────────────────────────────────────────────────────
+// Records each IndexNow ping batch for admin visibility.
+export const seoPingLog = mysqlTable("seo_ping_log", {
+  id: int("id").autoincrement().primaryKey(),
+  /** JSON array of URLs submitted in this batch */
+  urls: json("urls").notNull(),
+  batchSize: int("batchSize").notNull(),
+  /** 'ok' | 'error' | 'skipped' */
+  status: varchar("status", { length: 16 }).notNull().default("ok"),
+  error: text("error"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  createdAtIdx: index("spl_created_at_idx").on(t.createdAt),
+}));
+export type SeoPingLog = typeof seoPingLog.$inferSelect;
+export type InsertSeoPingLog = typeof seoPingLog.$inferInsert;
+
+// ─── Swarm Tick Log ─────────────────────────────────────────────────────────────────────────────
+// Records each swarm tick execution for admin visibility.
+export const swarmTickLog = mysqlTable("swarm_tick_log", {
+  id: int("id").autoincrement().primaryKey(),
+  startedAt: timestamp("startedAt").notNull(),
+  completedAt: timestamp("completedAt").notNull(),
+  durationMs: int("durationMs").notNull(),
+  /** JSON array of { agent, status, detail } objects */
+  agentResults: json("agentResults").notNull(),
+  /** JSON { total, ok, error, skip } */
+  summary: json("summary").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  startedAtIdx: index("stl_started_at_idx").on(t.startedAt),
+}));
+export type SwarmTickLog = typeof swarmTickLog.$inferSelect;
+export type InsertSwarmTickLog = typeof swarmTickLog.$inferInsert;
