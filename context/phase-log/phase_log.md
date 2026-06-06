@@ -52,3 +52,34 @@ Completed Redis-backed API-key rate limiting via Upstash REST fallback-aware hel
 - **Todo**: 412 completed, 0
 0 pending
 - **Sync message**: Phase 71-73 complete: Redis API-key rate limiter, CoordinatorDashboard 30s polling, COORD_API_KEY rotation UI, security invariant restorations
+
+## Phase 74 — IndexNow Admin Control (2026-06-06)
+- seoRouter.ts: admin tRPC procedures (status, pingAll, pingDocument, listLogs)
+- seo_ping_log table: migration 0013 applied
+- Registered in routers.ts
+
+## Phase 75 — Observability (2026-06-06)
+- server/_core/logger.ts: pino structured logger with createRequestLogger, withCorrelationId, createProcedureLogger
+- context.ts: correlationId field added to TrpcContext (from pino-http req.id)
+- /api/health/detailed endpoint: DB ping + uptime + memory + provider info
+- pino-http request logger mounted in index.ts (ignores /api/health, /api/trpc/auth.me)
+
+## Phase 76 — Swarm Admin Router (2026-06-06)
+- swarmRouter.ts: admin tRPC procedures (status, runTick, listLogs, registerCron, pauseCron)
+- swarm_tick_log table: migration 0013 applied
+- Registered in routers.ts
+
+## Phase 77 — OpenRouter Multi-Key Rotation (2026-06-06)
+- multiLLM.ts: round-robin key rotation from OPENROUTER_API_KEYS (comma-separated pool)
+- getOpenRouterKeyPoolSize() exported — returns pool size
+- Falls back to single OPENROUTER_API_KEY if pool not configured
+
+## Phase 78 — FreeLLM/Ollama Provider (2026-06-06)
+- multiLLM.ts: FREELM_MODEL env var now used (was hardcoded "auto")
+- getActiveLLMProvider() reads LLM_PROVIDER env var directly
+- FREE_MODEL_ROTATION array exported for model cycling
+
+## Phase 79 — Final Quality Pass (2026-06-06)
+- phase74-79.test.ts: 26 new tests covering all 6 phases
+- Total: 438 tests passing, TypeScript 0 errors
+- Committed: 7598de6 — pushed to main
