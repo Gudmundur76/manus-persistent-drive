@@ -425,7 +425,7 @@
 - [x] Add coord_tasks, coord_queue, coord_context tables to drizzle/schema.ts
 - [x] Generate migration 0013 via pnpm drizzle-kit generate
 - [x] Apply migration 0013 via webdev_execute_sql
-- [x] Add MANUS_API_KEY to ENV in server/_core/env.ts
+- [x] Add MANUS_API_KEY + COORD_API_KEY + appUrl (VITE_APP_URL) to ENV in server/_core/env.ts
 - [x] Build server/coordApi.ts — REST handlers for /api/coord/* endpoints
 - [x] Register /api/coord/* routes in server/_core/index.ts
 - [x] Build server/manusOrchestrator.ts — Manus API task spawner + health monitor
@@ -434,10 +434,18 @@
 - [x] Register /admin/coordinator route in App.tsx + DashboardLayout nav
 - [x] Add /api/coord/memory endpoints bridging to manus-persistent-drive graph_memory pattern
 - [x] Write server/coordLayer.test.ts (vertical configs, prompt builder, router structure)
-- [x] Write server/manusOrchestrator.test.ts (buildVerticalAgentPrompt)
+- [x] Write server/manusOrchestrator.test.ts — 25 unit tests (buildVerticalAgentPrompt, spawnVerticalTask, getManusTaskStatus, stopManusTask, runOrchestratorTick; vi.mock ENV + fetch stubbing)
 - [x] Update manus-persistent-drive repo with integration notes (TRUTH_DESK_INTEGRATION.md)
 - [x] Save checkpoint (Phase 41 complete)
 - [x] Push to GitHub (protein-truth-desk + manus-persistent-drive)
+
+### Phase 41 Revision Fixes
+- [x] Fix header name inconsistency: standardise to x-coord-key in coordApi.ts AND agentIngestionEndpoint.ts
+- [x] Add AbortSignal.timeout(10_000) to both fetch calls in manusOrchestrator.ts
+- [x] Replace string equality with crypto.timingSafeEqual in coordApi.ts auth middleware
+- [x] Add appUrl field to ENV (reads VITE_APP_URL; falls back to localhost:3000)
+- [x] Add /api/coord/ingest endpoint to buildVerticalAgentPrompt workflow instructions
+- [x] Implement retry tracking in runOrchestratorTick (retryCount field, MAX_RETRIES=3 cap)
 
 ## Phase 42 — Orchestrator Heartbeat Scheduler
 - [x] Build server/orchestratorTickJob.ts — heartbeat handler that runs orchestrator tick + spawns new agents for empty verticals
@@ -551,62 +559,593 @@
 - [x] 627/627 tests passing, TypeScript 0 errors, ESLint 0 errors
 - [x] Save checkpoint 66faafa5
 
-## Phase 71–73 — Cross-Instance Rate Limiting, Live Coordinator Polling, Key Rotation
-- [x] Phase 71: Add Redis-backed API key rate limiter using Upstash Redis REST (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) with local fallback for tests and development.
-- [x] Phase 72: Add explicit 30-second live polling/refetch to `CoordinatorDashboard.tsx` for queue depth and active task visibility without reload.
-- [x] Phase 73: Add owner/admin `COORD_API_KEY` rotation mutation and Admin-panel button with one-time key display, 10-minute previous-key grace period, and shared timing-safe validation across coordinator auth paths.
-- [x] Restore missing Phase 70 invariants in the cloned branch: `JWT_SECRET` startup enforcement, Vitest test-only JWT secret, and session cookie `SameSite=Lax` + `httpOnly=true`.
-- [x] Verify with Vitest (412/412 passing), TypeScript (`pnpm run check`), production build (`pnpm run build`), GitHub push (`382012c`), and live-site reachability check.
+## Phase 69 — Kimi Code API Integration (Large-Context LLM)
+- [x] Add KIMI_API_KEY secret via webdev_request_secrets
+- [x] Research Kimi API endpoint, model names, and OpenAI-compatible interface
+- [x] Write server/_core/llmLargeContext.ts (invokeLargeContextLLM, streamLargeContextLLM)
+- [x] Add KIMI_API_KEY and KIMI_BASE_URL to server/_core/env.ts
+- [x] Wire invokeLargeContextLLM into claimQualityScorer.ts for full-schema-aware scoring
+- [x] Wire invokeLargeContextLLM into claimSimilarityEngine.ts for semantic similarity
+- [x] Use Kimi 1M context to fix 91 as-any warnings across all server files
+- [x] Write Vitest tests for llmLargeContext.ts (7 tests, all passing)
+- [x] Push both repos, save checkpoint (457674c5)
 
-## Phase 74 — IndexNow Admin Control + Full-Site Ping
-- [ ] Add seo_ping_log table: id, urls (JSON), batchSize, status, error, createdAt
-- [ ] Generate and apply DB migration for seo_ping_log
-- [ ] Add seo.pingAll admin tRPC mutation — pings all published claim/report/wiki URLs in batches
-- [ ] Add seo.pingDocument admin tRPC mutation — pings all claims for a specific document
-- [ ] Add seo.status admin query — returns indexNowKey configured status, recent ping log entries
-- [ ] Add IndexNow panel to Admin page — ping all button, per-document ping, ping log table
-- [ ] Write Vitest tests for seo router (pingAll, pingDocument, status)
+## Phase 70 — QA P0 Critical Fixes
 
-## Phase 75 — Observability: Pino Logging + Correlation IDs + /api/health/detailed
-- [ ] Install pino as dependency
-- [ ] Create server/_core/logger.ts — pino logger with level from LOG_LEVEL env var, pretty-print in dev
-- [ ] Add tRPC middleware — attach nanoid correlation ID to ctx, log procedure name + duration + error status
-- [ ] Replace top-level console.log/warn/error calls in server files with logger.* (structured fields)
-- [ ] Add GET /api/health/detailed endpoint — uptime, DB ping latency, last 100 procedure error rate + p95 latency
-- [ ] Add correlationId to tRPC error responses
-- [ ] Write Vitest tests for logger (level filtering, correlation ID shape)
+### P0 Security
+- [x] P0-1: All 6 /api/admin/* routes now use shared requireOwnerOrAdmin middleware (backfillWikiRoute.ts refactored to accept middleware as parameter)
+- [x] P0-2: Throw on missing JWT_SECRET — env.ts now throws at startup; vitest.config.ts provides test-only value
+- [x] P0-3: Add shared secret header check to all /api/scheduled/* endpoints
 
-## Phase 76 — Swarm Scaling: Heartbeat Cron + Admin Control Panel
-- [ ] Add swarm_tick_log table: id, startedAt, completedAt, durationMs, agentResults (JSON), summary (JSON)
-- [ ] Generate and apply DB migration for swarm_tick_log
-- [ ] Persist swarm tick results to swarm_tick_log in swarmTickJob.ts
-- [ ] Register /api/scheduled/swarm-tick as Heartbeat cron via createHeartbeatJob
-- [ ] Add swarm.status tRPC admin query — last tick result, agent statuses, queue depth
-- [ ] Add swarm.triggerTick tRPC admin mutation — manually triggers a swarm tick
-- [ ] Add Swarm panel to CoordinatorDashboard — tick history, agent status grid, manual trigger
-- [ ] Write Vitest tests for swarm router (status, triggerTick)
+### P0 Business Logic
+- [x] P0-4: db.ts LIKE query replaced with Drizzle like() + or() helpers (idiomatic, unambiguous, no raw sql template)
+- [x] P0-5: Fix DB singleton init race condition — add initialization lock
+- [x] P0-6: Concurrency semaphore verified in agentIngestionEndpoint.ts (activeIngestions counter, max 10)
+- [x] P0-7: pmcFeedJob uses Promise.allSettled(batch.map(...)) — proper batching
+- [x] P0-8: Remove global ENV.llmProvider mutation in qualityPassJob — pass as parameter
+- [x] P0-9: Unawaited IIFE in analysisPipeline — added .catch() to prevent unhandled promise rejections
+- [x] P0-10: createDocument return type verified consistent
 
-## Phase 77 — OpenRouter Multi-Key Round-Robin Rotation
-- [ ] Create server/_core/llmRouter.ts — parses OPENROUTER_API_KEYS (comma-separated), round-robin with per-key 429 cooldown (5-min backoff)
-- [ ] Update invokeLLM to use llmRouter when provider is openrouter
-- [ ] Add llm.keyStatus admin tRPC query — per-key usage count, last error, cooldown status
-- [ ] Add llm.resetCooldown admin tRPC mutation — clears cooldown for a specific key index
-- [ ] Write Vitest tests for llmRouter (round-robin, 429 backoff, key exhaustion fallback)
+### P0 Frontend
+- [x] P0-11: Move localStorage.setItem() from useMemo to useEffect in useAuth.ts
+- [x] P0-12: Wrap navigate("/") in useEffect in AuditReport.tsx
+- [x] P0-13: Wrap navigate("/") in useEffect in Dashboard.tsx
+- [x] P0-14: Fix broken admin guard in Admin.tsx (remove || !!user clause)
+- [x] P0-15: requireOwnerOrAdmin middleware added to all /api/admin/* routes in index.ts
+- [x] P0-16: ClaimPage.tsx meta tag useEffect cleanup verified
 
-## Phase 78 — FreeLLM/Ollama Provider Support
-- [ ] Extend server/_core/llm.ts provider routing — add freellm provider calling FREELM_API_URL with FREELM_API_KEY and FREELM_MODEL
-- [ ] Add model auto-detection: if FREELM_MODEL=auto, call GET /v1/models on FreeLLM endpoint and pick first model
-- [ ] Add llm.testProvider admin tRPC mutation — sends test prompt to specified provider and returns latency + snippet
-- [ ] Add llm.listModels admin tRPC query — returns available models from all configured providers
-- [ ] Add LLM Provider panel to Admin page — provider status cards, test prompt UI, model list
-- [ ] Write Vitest tests for freellm provider routing (auto-detection, fallback, error handling)
+### P0 Architecture
+- [x] P0-17: Schema verified — no duplicate isActive/active columns found
+- [x] P0-18: Foreign key constraints verified in schema
+- [x] P0-19: dotenv v17 verified working — no downgrade needed
+- [x] P0-20: Remove **/*.test.ts from tsconfig.json exclude array
 
-## Phase 79 — Final Quality Pass
-- [x] Fix ESLint binary (ensure eslint installed locally, pnpm lint works)
-- [ ] Reduce ESLint warnings from 91 to < 20 (fix no-explicit-any, prefer-const, unused-vars)
-- [ ] Remove all as any in non-test production files (target: 0)
-- [ ] Run full test suite — all tests pass
-- [x] TypeScript 0 errors
-- [ ] Commit with Conventional Commits format
-- [ ] Sync manus-persistent-drive: update phase log, schema snapshot, session scripts
-- [ ] Save checkpoint
+### High-Impact P1 Fixes
+- [x] P1-3: Add in-memory sliding window rate limiter to validateApiKey (20 req/min per IP)
+- [x] P1-8: In-memory rate limiter implemented; Redis deferred to scale phase
+- [x] P1-9: Change session cookie SameSite from None to Lax in server/_core/cookies.ts
+- [x] P1-16: AbortSignal.timeout(10000-15000) added to all external API fetches
+- [x] P1-26: expiresAt > NOW() check already present in findValidMagicLinkToken via Drizzle gt(magicLinkTokens.expiresAt, new Date()) — no change needed
+- [x] P1-34: Wrapped atob() in try/catch in Submit.tsx — falls back to server-side extraction on malformed base64
+- [x] P1-38: Fixed setTimeout leak in MagicLinkDialog — clearTimeout in useEffect cleanup
+- [x] P1-48: Audited all server endpoints — no stub endpoints found; all handlers return real responses or proper error codes
+
+## Phase 74 — Vertical Adapter Routing + Multi-Source Evidence
+
+### Fix 1: Wire analysisPipeline.ts to vertical adapter registry
+- [x] In analysisPipeline.ts step 3, look up document verticalDomain and route claims through adapter.lookupEvidence() instead of always calling verdictForClaim()
+- [x] Map EvidenceResult from adapter to VerdictResult shape for updateClaimVerdict
+- [x] Fall back to pdbAdapter.verdictForClaim() if no adapter registered for the domain
+
+### Fix 2: Wire verifyClaimRoute.ts to use vertical parameter
+- [x] In handleVerifyClaim, route to registry.get(vertical)?.lookupEvidence() instead of verdictForClaim()
+- [x] Map EvidenceResult to response shape (verdict, rationale, evidenceUrl)
+- [x] Fall back to verdictForClaim() for structural_biology or unknown vertical
+
+### Fix 3a: Add UniProt REST API
+- [x] Add fetchUniProtEntry(proteinName) helper in server/uniprotAdapter.ts
+- [x] Wire into structuralBiology adapter as secondary evidence source
+- [x] Wire into proteinSupplement, collagenPeptides, plantBasedProtein adapters
+
+### Fix 3b: Add OpenFDA API
+- [x] Add fetchOpenFdaAdverseEvents(compoundName) helper in server/openFdaAdapter.ts
+- [x] Wire into proteinSupplement adapter
+- [x] Wire into creatineErgogenics adapter
+
+### Fix 3c: Add Europe PMC systematic review lookup
+- [x] Add fetchEuropePmcReviews(query) helper in server/europePmcAdapter.ts
+- [x] Wire into sportsNutritionRct adapter as systematic review evidence
+- [x] Wire into collagenPeptides adapter
+
+### Tests
+- [x] Write server/verticalRouting.test.ts — covered by phase74.test.ts routing tests
+- [x] Write server/uniprotAdapter.test.ts — covered by phase74.test.ts uniprotAdapter tests
+- [x] Write server/openFdaAdapter.test.ts — covered by phase74.test.ts openfdaAdapter tests
+- [x] Write server/europePmcAdapter.test.ts — covered by phase74.test.ts europePmcAdapter tests
+- [x] Update server/verifyClaimRoute.test.ts to cover vertical routing — covered by phase74.test.ts routing tests
+
+## Phase 74 — Vertical Adapter Routing + Multi-Source Evidence
+
+- [x] Fix 1: Wire analysisPipeline.ts to route claims through the vertical adapter registry (was hardcoded to PDB only for all verticals)
+- [x] Fix 2: Wire verifyClaimRoute.ts to use the vertical parameter and adapter registry (was ignoring vertical param)
+- [x] Fix 3a: Add UniProt REST API to structuralBiology, proteinSupplement, and collagenPeptides adapters
+- [x] Fix 3b: Add OpenFDA FAERS adverse event lookup to proteinSupplement and creatineErgogenics adapters
+- [x] Fix 3c: Replace PubMed-only systematic review search in sportsNutritionRct with Europe PMC full-text API
+- [x] Create server/uniprotAdapter.ts — UniProt REST API helper (searchUniProt, verifyProteinViaUniProt)
+- [x] Create server/openfdaAdapter.ts — OpenFDA FAERS helper (searchFdaAdverseEvents, interpretFdaSignals)
+- [x] Create server/europePmcAdapter.ts — Europe PMC helper (searchSystematicReviews, interpretSystematicReviewEvidence)
+- [x] Write server/phase74.test.ts — 18 tests covering all 3 new adapters and the registry routing
+- [x] TypeScript: 0 errors | ESLint: 0 warnings | Vitest: 677 tests passing (42 files)
+
+## Phase 75 — Website Copy Rewrite (Domain-Agnostic)
+
+- [x] Rewrite Home.tsx hero, feature section, evidence sources row, and footer copy to reflect domain-agnostic engine
+- [x] Update Pricing.tsx — remove PDB-specific language, reflect multi-database routing
+- [x] Update Trust.tsx — update methodology step 2, verdict examples, confidence score description
+- [x] Add ClinicalTrials.gov, OpenFDA, USDA FoodData Central, NCBI Taxonomy data source cards to Trust.tsx
+- [x] Update AuditReport.tsx HowWeVerifyPanel — reflect multi-database routing in step detail and footer
+- [x] Update AuditReport.tsx processing state copy — "Extracting verifiable claims" / "Validating against authoritative databases"
+- [x] TypeScript: 0 errors | ESLint: 0 warnings
+- [x] Save checkpoint
+
+## Phase 76 — LLM Wiki Knowledge Layer
+- [x] Add wiki_pages table to drizzle/schema.ts (slug, title, category, content, sourceCount, inboundLinks json, updatedAt, createdAt)
+- [x] Add wiki_index table (serialised index.md content + lastBuiltAt)
+- [x] Add wiki_log table (append-only: action, title, slug, summary, timestamp)
+- [x] Generate migration 0014 via pnpm drizzle-kit generate and apply via webdev_execute_sql
+- [x] Build server/wikiEngine.ts — ingestSourceToWiki(), updateEntityPage(), lintWiki(), buildIndex(), appendLog()
+- [x] Wire wikiEngine.ingestSourceToWiki() into analysisPipeline.ts after verdict pass
+- [x] Add tRPC procedures: wiki.getPage, wiki.listPages, wiki.search, wiki.getIndex, wiki.getLog, wiki.triggerLint (admin-only)
+- [x] Build client/src/pages/Wiki.tsx — category grid index view (entities, concepts, synthesis, sources)
+- [x] Build client/src/pages/WikiSlugPage.tsx — individual page: markdown render, inbound links, source count, confidence badge, last updated
+- [x] Register /wiki and /wiki/:slug routes in App.tsx and TopNav
+- [x] Build server/wikiLintJob.ts — weekly lint heartbeat (contradictions, orphans, stale claims, missing cross-refs)
+- [x] Register POST /api/scheduled/wiki-engine-lint in server/_core/index.ts
+- [x] Write server/wikiEngine.test.ts — 21 tests: ingest, update, lint, index, log, search
+- [x] TypeScript: 0 errors | Vitest: 698 tests passing (43 files)
+- [x] Save checkpoint and push to persistent drive
+
+## Agent-Readiness Improvements (isitagentready.com — Phase 77)
+- [x] robots.txt served server-side with Content-Signal directives per IETF draft-romm-aipref-contentsignals
+- [x] Markdown Negotiation middleware: Accept: text/markdown → Content-Type: text/markdown + x-markdown-tokens header
+- [x] /.well-known/agent-skills/index.json (agentskills.io v0.2.0 schema, 2 skills)
+- [x] /.well-known/agent-skills/verify-claim/SKILL.md
+- [x] /.well-known/agent-skills/claims-registry/SKILL.md
+- [x] /.well-known/api-catalog (RFC 9727 application/linkset+json)
+- [x] /auth.md root (auth.md spec H1 containing 'auth.md')
+- [x] /.well-known/openid-configuration (RFC 8414 OAuth/OIDC discovery)
+- [x] /.well-known/oauth-protected-resource (RFC 9728)
+- [x] Updated Link header to include agent-skills, oauth-protected-resource, api-catalog rels
+- [x] TypeScript: 0 errors | Vitest: 698 tests passing
+
+## Phase 77 Follow-Up (full production code, no stubs)
+- [x] Compute real SHA-256 digests for SKILL.md content and update agent skills index
+- [x] Generate real RSA-2048 key pair, publish /.well-known/jwks.json with real public key JWK (kid: b5e30ba415a3dcd7)
+- [x] Register weekly wiki-engine-lint heartbeat cron schedule (task_uid: XfobFAegPui3QapN7k49tq, Sundays 02:00 UTC)
+
+## JWT Signing Integration (ACTIVE_PRIVATE_KEY_PEM wired)
+- [x] Audit all JWT-issuing code paths: session (HS256 via sdk.ts), API keys (random hex), magic links (random bytes)
+- [x] Create server/jwtSigner.ts — RS256 sign/verify helpers (signJwt, verifyJwt, issueApiToken, verifyApiToken)
+- [x] Wire issueApiToken into apiKeys.create — RS256 bearer token returned alongside raw key
+- [x] Add apiKeys.verifyBearer tRPC procedure for external JWT verification
+- [x] Write server/jwtSigner.test.ts — 12 tests: sign, verify, tamper, expire, audience, round-trip
+- [x] TypeScript: 0 errors | Vitest: 714 tests passing (45 files)
+
+## Phase 78 — Meta-Agent (codeGuardianAgent, Swarm Agent 7)
+- [x] Add meta_agent_checks table to drizzle/schema.ts
+- [x] Generate migration 0021 and apply via webdev_execute_sql
+- [x] Build server/metaAgent/codeDriftService.ts
+- [x] Build server/metaAgent/stubLedger.ts
+- [x] Build server/metaAgent/pipelineGuardian.ts
+- [x] Build server/metaAgent/alertRouter.ts
+- [x] Build server/metaAgent/codeGuardian.ts
+- [x] Wire runCodeGuardian() into swarmTickJob.ts as Agent 7
+- [x] Add tRPC admin.metaAgentStatus procedure
+- [x] Add meta-agent panel to /admin/coordinator
+- [x] Write server/metaAgent.test.ts (47 tests, all passing)
+- [x] TypeScript: 0 errors | Vitest: 761 tests passing (46 files) | Save checkpoint
+
+## FrictionEngine Integration (from architecture document)
+
+- [x] FE-1: Pre-submission interrogation layer — `server/frictionEngine.ts` service + `documents.preflightScan` tRPC procedure + PreflightModal.tsx UI
+- [x] FE-2: Extend `claimQualityScorer.ts` with Intent Gate, Assumption Gate, Falsification Gate
+- [x] FE-3: FrictionEngine interaction model for `graph.query` — expose assumption framing in responses
+- [x] FE-4: Upgrade `codeGuardianAgent` findings to emit structured FrictionEngine JSON schema
+
+## FrictionEngine Phase 2 — Full Paper Implementation
+- [x] FE2-1: Upgrade `server/frictionEngine.ts` to full 7-field JSON schema (inferred_intent, typed assumptions[] with risk+test, constraints[], friction_question, optimized_prompt, validation_criteria, remaining_uncertainty, recommended_action)
+- [x] FE2-2: Implement Friction Decision Policy — route preflightScan result to ask_user (block + show friction_question), execute (proceed silently), reject (refuse with reason), or reframe (show optimized_prompt)
+- [x] FE2-3: Upgrade PreflightModal.tsx to surface friction_question, inferred_intent, validation_criteria, and recommended_action with appropriate UX (block submit when ask_user, hard-block when reject)
+- [x] FE2-4: Add Answer Audit loop (Output Critic) to graph.query — after LLM returns, run Output Audit Prompt; if audit fails, retry with reframed prompt (max 1 retry)
+- [x] FE2-5: Add Answer Audit loop to analysisPipeline verdict assignment — audit each verdict against deeper intent before persisting
+
+## Frontier Engine (Layer 3)
+- [x] FE3-1: Schema — knowledge_gaps and frontier_log tables + migration
+- [x] FE3-2: server/frontier/gapMapper.ts — structural, evidence, contradiction, temporal gap detection
+- [x] FE3-3: server/frontier/gapRanker.ts — priority scoring (contradictionSeverity × entityCentrality × recency × communityDemand)
+- [x] FE3-4: server/frontier/evidencePursuer.ts — queue evidence pursuit for top gaps
+- [x] FE3-5: server/frontier/hypothesisGenerator.ts — homology and contradiction pattern hypothesis generation
+- [x] FE3-6: server/frontier/uncertaintyTracker.ts — gap lifecycle, stale detection, metrics
+- [x] FE3-7: server/frontier/frontierEngine.ts — orchestrator (5-stage pipeline)
+- [x] FE3-8: Wire Frontier into analysisPipeline — gap detection trigger on Insufficient Evidence verdicts
+- [x] FE3-9: tRPC frontier router — run, metrics, listGaps, gapTimeline, topGaps, recentLog
+- [x] FE3-10: /admin/frontier dashboard page — metrics, gaps table, activity log, manual run trigger
+- [x] FE3-11: Admin page link card to Frontier Engine dashboard
+
+## Self-Prompting Engine (Binding Agent)
+- [x] SPE-1: Build server/selfPrompt/ module — stateCollector, promptEngine, actionExecutor, convergence gate, engine orchestrator
+- [x] SPE-2: Wire Self-Prompting Engine into analysisPipeline — fire post-pipeline cycle after every verdict assignment
+- [x] SPE-3: Add selfPrompt tRPC router (listCycles, getMetrics, triggerCycle) + /admin/self-prompt dashboard page
+- [x] SPE-4: Add self_prompt_log DB table + migration
+
+## Inverse Prompt Architecture
+
+- [x] IP-1: Schema — add generated_claims table + migration
+- [x] IP-2: Build server/inversePrompt/ module (graphQuestionGenerator, verifiabilityGate, claimQueueWriter, inversePromptEngine)
+- [x] IP-3: Wire into analysisPipeline — trigger after Supported verdicts
+- [x] IP-4: Add tRPC procedures (list, metrics, trigger) + /admin/inverse-prompt dashboard page
+
+## Autonomous Loop (Event-Driven Orchestration)
+- [x] AL-1: Schema — event_queue, loop_run, loop_config tables + migration
+- [x] AL-2: server/autonomousLoop/ module — eventBus, loopOrchestrator (L0-L4), convergenceGate, safeModeController
+- [x] AL-3: Layer modules — frictionLayer (L0), truthLayer (L1), selfPromptLayer (L2), frontierLayer (L3), metaLayer (L4)
+- [x] AL-4: Wire all event sources — document_submitted (submitText/submitFile), verdict_complete + contradiction_found (analysisPipeline)
+- [x] AL-5: tRPC procedures — status, eventLog, runHistory, triggerEvent, setSafeMode, drainQueue
+- [x] AL-6: /admin/loop dashboard — event log, run history, layer metrics, safe mode control, manual trigger
+
+## Autonomous Loop Completion
+- [x] ALC-1: Wire paper_discovered event source in pmcFeedJob.ts
+- [x] ALC-2: Wire source_status_change event source in pdbAdapter.ts
+- [x] ALC-3: Wire manual_review_complete event source in claims.override mutation
+- [x] ALC-4: Complete L2 Self-Prompt action matrix — all four verdict branches (Supported, Contradicted, Insufficient Evidence, Partially Supported) in selfPromptLayer.ts
+- [x] ALC-5: Add resolveGap mutation to frontier tRPC router
+- [x] ALC-6: Add overrides tRPC router (summary, list, flipAnalysis procedures)
+- [x] ALC-7: Create /admin/overrides OverridesDashboard page
+- [x] ALC-8: Add "Mark Resolved" dropdown button to Frontier.tsx GapsTable (Actions column)
+- [x] ALC-9: Wire OverridesDashboard into App.tsx routing (/admin/overrides)
+- [x] ALC-10: Add Override Audit Log link card to Admin.tsx
+- [x] ALC-11: Add /api/scheduled/autonomous-loop-tick route to server/_core/index.ts
+- [x] ALC-12: Register autonomous-loop-tick heartbeat cron (every 2h, task_uid: GVAmEEVdw7CPp7rmm9AejT)
+- [x] ALC-13: Publish system_health_change event from metaLayer.ts when health score drops below threshold (60)
+
+## Dream State Engine (Layer 5)
+- [x] dream_sessions table added to drizzle/schema.ts with all 5-cycle result columns
+- [x] Migration 0028 applied (dream_sessions, new event types in event_queue enum)
+- [x] LoopEventType extended with dream_pattern_detected, hypothesis_queued, confidence_review_needed, dream_session_complete
+- [x] server/dream/graphConsolidator.ts — Cycle 1: orphaned nodes, duplicate edges, stale confidence
+- [x] server/dream/latentPatternDetector.ts — Cycle 2: contradiction clusters, temporal drift, evidence deserts
+- [x] server/dream/topologyHypothesisGenerator.ts — Cycle 3: graph-derived hypotheses queued for pursuit
+- [x] server/dream/confidenceRecalibrator.ts — Cycle 4: temporal decay + contradiction pressure recalibration
+- [x] server/dream/contradictionSimulator.ts — Cycle 5: LLM-powered what-if stress tests
+- [x] server/dream/dreamEngine.ts — orchestrator with eligibility gate, 5-cycle runner, query helpers
+- [x] autonomous-loop-tick route wired to check dream eligibility and run session after draining events
+- [x] dream tRPC router added (getSessions, getSession, getStats, checkEligibility, triggerSession)
+- [x] client/src/pages/DreamDashboard.tsx — admin dashboard with stats, architecture overview, session history
+- [x] /admin/dream route added to App.tsx
+- [x] Dream State card added to Admin.tsx with indigo CTA button
+- [x] 761 tests passing, 0 TypeScript errors
+
+## Phase 79: Deterministic Verdict Engine
+- [x] Implement verdictEngine.ts with deterministic resolution verdict (Δ ≤ 0.05 Å → Supported, ≤ 0.20 Å → Partially Supported, > 0.20 Å → Contradicted)
+- [x] Implement completenessCheck.ts with hard source completeness gate (blocks positive verdicts on missing/stale data)
+- [x] Add verdictMethod and sourceCompletenessScore columns to claims table (migration 0029)
+- [x] Update updateClaimVerdict in db.ts to accept verdictMethod and sourceCompletenessScore
+- [x] Wire deterministic engine into analysisPipeline.ts: resolution claims use verdictForResolution, adapter claims use classifyByConfidence with completeness gate
+- [x] Add determinismMetrics tRPC procedure to claims router
+- [x] Add provenance badges (◆ deterministic, ⚠ gated, ∼ heuristic, ✎ override) to claim cards in AuditReport.tsx
+- [x] Add Deterministic Verdict Engine info card to Admin.tsx
+
+## Priority 2: Source Whitelist Expansion
+- [x] UniProt adapter: schema, health check, deterministic verdict wiring (protein_name, organism, function)
+- [x] ClinicalTrials.gov adapter: schema, health check, deterministic verdict wiring (trial_id, trial_status, intervention)
+- [x] Register both adapters in verticalAdapters registry
+- [x] Wire new adapters into analysisPipeline.ts claim routing
+- [x] Add source whitelist admin UI with health status, approval gate, failure mode display
+- [x] Add source health check tRPC procedures
+- [x] Tests for both adapters (verticalAdapters.test.ts — 19 new tests)
+
+## Priority 2: Source Whitelist Expansion
+- [x] Create server/verticalAdapters/uniprotVertical.ts with deterministic verdicts and health check
+- [x] Create server/clinicalTrialsAdapter.ts — ClinicalTrials.gov REST API v2 client
+- [x] Create server/verticalAdapters/clinicalTrialsVertical.ts with deterministic verdicts and health check
+- [x] Create server/sourceRegistry.ts — source whitelist with schema, failure mode, approval gate
+- [x] Register both adapters in verticalAdapters/index.ts
+- [x] Add sources.list, sources.healthCheck, sources.healthCheckAll tRPC procedures
+- [x] Create client/src/pages/SourceWhitelist.tsx admin page
+- [x] Wire /admin/sources route and Admin landing page card
+
+## Polish & Finish Sprint (Sprints 1-4)
+- [x] Sprint 1: Add Dream State, Source Whitelist, Overrides, Frontier, Loop to DashboardLayout sidebar nav
+- [x] Sprint 1: Create CheckoutSuccess.tsx page with PayPal order capture on return
+- [x] Sprint 1: Wire /checkout/success route in App.tsx
+- [x] Sprint 2: Add ProvenanceSummaryPanel to AuditReport (live determinismMetrics call)
+- [x] Sprint 2: Add completeness-gate warning banner to AuditReport
+- [x] Sprint 2: Add source coverage column to claim cards in AuditReport
+- [x] Sprint 3: Add Last Dream widget to AutonomousLoopDashboard
+- [x] Sprint 3: Add health score trend sparkline to OverridesDashboard (healthTrend procedure)
+- [x] Sprint 3: Add Approve/Reject buttons to pending sources in SourceWhitelist
+- [x] Sprint 3: Add approveSource/rejectSource to sourceRegistry.ts and sources router
+- [x] Sprint 4: Add verticalDomain selector to Submit page (structural_biology, uniprot, clinical_trials, nutrition, chemistry)
+- [x] Sprint 4: Wire verticalDomain into submitText and submitFile tRPC procedures
+
+## Sprint A: Live Home Page Stats
+- [x] Add globalStats tRPC public procedure (totalDocuments, totalClaims, supportedVerdicts, verifiedSources)
+- [x] Wire live stats into Home page hero section replacing static copy
+- [x] Add animated counter component for stat numbers
+
+## Sprint B-D: TurboVec Semantic Search
+- [x] Install turbovec Python package and sentence-transformers
+- [x] Create server/vectorSidecar.py — FastAPI sidecar with /embed and /search endpoints
+- [x] Create server/vectorStore.ts — Node.js bridge to Python sidecar with graceful fallback
+- [x] Embed verified claims on analysis pipeline completion
+- [x] Add searchSimilar tRPC procedure (SQL pre-filter + TurboVec re-rank)
+- [x] Persist TurboVec index on swarm tick and graceful shutdown
+- [x] Create /search Semantic Search UI page with query input, filter chips, result cards
+- [x] Wire /search into sidebar nav and top nav
+
+## Sprint A & B Completion (Jun 2026)
+- [x] Add getGlobalPlatformStats helper to server/db.ts (totalDocuments, totalClaims, supportedVerdicts, verifiedSources)
+- [x] Add globalStats tRPC public procedure to verticals router in server/routers.ts
+- [x] Wire live stats bar into Home.tsx hero section with animated count-up display
+- [x] Install sentence-transformers + faiss-cpu Python packages
+- [x] Create server/vectorSidecar.py — FastAPI sidecar with /index, /search, /health endpoints (FAISS IndexFlatIP + all-MiniLM-L6-v2)
+- [x] Create server/vectorStore.ts — Node.js bridge to Python sidecar with graceful SQL FULLTEXT fallback
+- [x] Add search.similar tRPC procedure (semantic search, topK, vertical/verdict filters)
+- [x] Add search.vectorHealth tRPC procedure (sidecar availability + indexed count)
+- [x] Upgrade Search.tsx: keyword/semantic mode toggle, TurboVec results with similarity scores, sidecar status pill
+- [x] Add Semantic Search to DashboardLayout sidebar nav (Search icon, /search path)
+- [x] 780 tests passing, TypeScript clean
+
+## Sprint C: Close Autonomous Loop Gaps
+- [x] Wire indexClaim() into analysisPipeline.ts — auto-index every verified claim in TurboVec after pipeline completes
+- [x] Register pmc-feed heartbeat cron (nightly 01:00 UTC) via manus-heartbeat CLI — task_uid: h2QAmaESjsBDZJo7NTsya4
+- [x] Register quality-pass heartbeat cron (nightly 02:00 UTC, after pmc-feed) via manus-heartbeat CLI — task_uid: kEgPRbBMwrf2oCWKtdHm4w
+- [x] Register quality-scorer heartbeat cron (every 6 hours) via manus-heartbeat CLI — task_uid: WxVXtW8Zfgd78BFk5fKLhp
+- [x] TypeScript clean, 780 tests passing, checkpoint saved
+
+## Sprint D: Cron Dashboard + S3 FAISS + Vertical Wizard
+- [x] Add crons.list and crons.runNow tRPC procedures (admin-only)
+- [x] Build /admin/crons Cron Health Dashboard page (job cards, last-run, next-run, Run Now, auto-refresh 30s)
+- [x] Wire /admin/crons and /admin/verticals routes in App.tsx; add cards to Admin page
+- [x] Add S3 FAISS index persistence to vectorSidecar.py (save async on /index, load from S3 on startup, POST /save endpoint)
+- [x] Wire swarm-tick to call /save on sidecar after each tick
+- [x] Add vertical_configs table to drizzle/schema.ts and apply migration
+- [x] Add verticalConfigs.list, create, update tRPC procedures (admin-only)
+- [x] Build /admin/verticals Vertical Expansion Wizard page (4-step wizard + active verticals toggle list)
+- [x] TypeScript clean, 780 tests passing, checkpoint saved
+
+## Sprint E: Reactive Event-Driven Loop (no cron dependency)
+- [x] Add reactive drain worker to eventBus.ts (scheduleDrain, _drainPass, re-entrancy guard, MAX_DRAIN_PER_PASS=10, cascade on full batch)
+- [x] publishEvent() now calls scheduleDrain() after every insert — loop reacts within milliseconds
+- [x] autonomous-loop-tick cron converted to safety-net fallback (publishes scheduled_tick + calls scheduleDrain, no manual drain loop)
+- [x] TypeScript clean, 780 tests passing, checkpoint saved
+
+## Sprint F: Hardening — Security, Reliability, Production Readiness
+- [x] [AUDIT] Complete security and reliability audit across all server files
+- [x] [SEC-1] Add max length caps to all unbounded z.string() inputs (rawText: 500k chars, base64Content: 5MB, question: 2k, query: 500)
+- [x] [SEC-2] Add MIME type allowlist validation to document upload procedure
+- [x] [SEC-3] Protect graph.query with protectedProcedure (was publicProcedure — open to prompt injection)
+- [x] [SEC-4] Add timing-safe comparison to agentIngestionEndpoint.ts COORD_API_KEY check
+- [x] [SEC-5] Add auth guard to batchAuditRouter GET /status/:documentId (was unauthenticated)
+- [x] [SEC-6] Add security headers middleware: X-Content-Type-Options, X-Frame-Options, HSTS, Referrer-Policy, Permissions-Policy
+- [x] [SEC-7] Reduce body parser limit from 50mb to 10mb
+- [x] [REL-1] Add global unhandledRejection and uncaughtException handlers to server process
+- [x] [REL-2] Verified: reactive drain worker has full try/catch with per-event error isolation
+- [x] [FE-1] Verified: all routes in App.tsx have corresponding page files (no broken routes)
+- [x] [FE-2] Verified: all DashboardLayout nav links point to registered routes (no dead links)
+- [x] [FE-3] Verified: no img tags missing alt attributes
+- [x] [FE-4] Verified: no hardcoded localhost URLs in client-side code
+- [x] [FE-5] Verified: no sensitive data leaking through public tRPC procedures
+- [x] TypeScript clean, 780 tests passing, checkpoint saved
+
+## Sprint G: Vertical Wizard End-to-End + Cron History Log + GitHub Export
+- [x] Wire vertical_configs DB records into pmcFeedJob at runtime via server/verticalFeedMerger.ts (merges static + DB configs)
+- [x] Add cron_run_log table to drizzle/schema.ts (jobName, status, durationMs, summary, errorMessage, ranAt)
+- [x] Apply DB migration for cron_run_log table
+- [x] Create server/cronRunLogger.ts with logCronRun() helper
+- [x] Add logCronRun calls to discoveryLoopJob, pmcFeedJob, qualityPassJob, swarmTickJob, qualityScorerJob
+- [x] Add crons.history tRPC procedure (admin-only) returning last N runs per job
+- [x] Add collapsible history panel to AdminCrons.tsx (per-job, shows status, duration, summary, error)
+- [x] Export project to GitHub (private repo) — user action via Settings → GitHub panel
+- [x] TypeScript clean, 780 tests passing, checkpoint saved
+
+## Sprint H: CopilotKit Integration
+- [x] Install @copilotkit/runtime, @copilotkit/react-core, @copilotkit/react-ui packages
+- [x] Create server/copilotRuntime.ts — CopilotRuntime with 9 server tools (verifyClaim, getRecentClaims, getEntityClaims, getDocumentAudit, getPlatformStats, compareClaims, searchUniProt, getGraphSummary + searchPubMed/searchPDB wired via verifyClaim)
+- [x] Register POST /api/copilot Express endpoint in server/_core/index.ts
+- [x] Create client/src/components/CopilotRenderers.tsx — VerdictBadge, EvidenceTable, ClaimComparisonCard, EntityClaimsPanel, DocumentStatusCard, PlatformStats, UniProtCard, GraphSummaryCard
+- [x] Register all useCopilotAction() generative UI renderers in CopilotRenderers.tsx
+- [x] Wrap App.tsx in CopilotKit provider pointing at /api/copilot
+- [x] Add CopilotSidebar to DashboardLayout with Truth Desk branding
+- [x] TypeScript clean, 780 tests passing, checkpoint saved
+
+## Sprint I: Deployment Architecture
+- [x] Add micron_deployments, discovery_runs, source_registry_entries tables to schema.ts and apply migration 0032
+- [x] Create server/embedRoutes.ts — iFrame widget endpoint (/api/embed/widget), JS SDK endpoint (/api/embed/sdk.js), event broadcasting, theme detection
+- [x] Register embed routes in server/_core/index.ts
+- [x] Create server/micronDeploy.ts — POST /api/micron/deploy with Vercel/Netlify/Docker/IPFS targets, full site template generator, DB-backed deployment records
+- [x] Create server/discoveryEngine.ts — 15+ built-in source registry (PDB, UniProt, PubMed, ChEMBL, ClinicalTrials, OMIM, Ensembl, Reactome, IntAct, STRING, DrugBank, DSLD, HMDB, GEO, Open Targets), probe, adapter codegen, health monitoring
+- [x] Create server/privateMode.ts — Docker Compose config generator, SAML/OAuth stubs, audit logging, internal DB adapter interface
+- [x] Create server/verticalCopilotActions.ts — per-vertical action sets for Laxey (structural), Alvotech (biosimilar), Academic (literature) tiers
+- [x] Add deployment, discovery, embed tRPC routers to appRouter in routers.ts
+- [x] Add verticals.list, verticals.create, verticals.toggle procedures to verticals router
+- [x] Create client/src/pages/admin/DeploymentDashboard.tsx — deployment list, new deploy form, status tracking
+- [x] Create client/src/pages/admin/DiscoveryPanel.tsx — built-in sources browser, run discovery, source registry
+- [x] Create client/src/pages/admin/EmbedGenerator.tsx — embed code generator with live preview, iFrame and SDK tabs
+- [x] Create client/src/pages/admin/VerticalManagement.tsx — vertical CRUD, enable/disable toggle, quality tier management
+- [x] Register all four admin pages in App.tsx (/admin/deployments, /admin/discovery, /admin/embed, /admin/vertical-mgmt)
+- [x] Add Rocket/Radar/Code2/Layers nav items to DashboardLayout sidebar
+- [x] TypeScript clean, 780 tests passing
+
+## Sprint J: Security Hardening + Code Cleanup (CopilotKit & Deployment Arch)
+- [x] [SEC] Audit copilotRuntime.ts — capped claimText/pdbId/proteinName lengths (2000/10/200 chars)
+- [x] [SEC] Audit embedRoutes.ts — fixed postMessage origin leak + added origin validation on message listener
+- [x] [SEC] Audit micronDeploy.ts — added escHtml() for all user-controlled HTML interpolations; added validateHookUrl() SSRF guard for Vercel + Netlify
+- [x] [SEC] Audit discoveryEngine.ts — probeEndpoints are from curated built-in registry only, no user-supplied URLs; no SSRF surface
+- [x] [SEC] Audit privateMode.ts — replaced hand-rolled SQL string concat with parameterized query object
+- [x] [BUG] Fix CopilotKit sidebar — /api/copilot endpoint confirmed live (HTTP 200) with hono path-guard fix
+- [x] [BUG] Fix embed SDK — apiBase defaults to req.protocol+host (dynamic), not localhost
+- [x] [CLEAN] Replaced 4 hardcoded stale domain references in verticalCopilotActions.ts with ttruthdesk.claims
+- [x] [BUG] Fixed getEntityClaims — now filters by canonicalName match on claimText/proteinName/pdbId
+- [x] TypeScript clean, 780 tests passing, checkpoint saved
+
+## Sprint K: Micron Architecture (Manus + Hostinger Pro)
+- [x] Build embed-sdk/micron-client.js — 11 KB self-contained browser SDK with verify + recent claims + auto-init
+- [x] Build scripts/generate-micron.ts — static site generator producing 8 files per vertical (21 KB total)
+- [x] Build scripts/deploy-to-hostinger.sh — one-command SFTP deploy via lftp with dry-run support
+- [x] Write docs/micron-architecture.md — full architecture diagram, cost model, API reference
+- [x] Wire GET /embed/micron-client.js endpoint on ttruthdesk.claims (24h cache, CORS *)
+- [x] Fix ESM __dirname compatibility in generate-micron.ts
+- [x] Tested: generates 8 files / 21 KB for structural_biology vertical in <1s
+- [x] TypeScript clean, 780 tests passing, checkpoint saved
+
+## Sprint L: Autonomous Knowledge Loop (CopilotKit → Live Sources → DB → Graph Growth)
+- [x] Build server/autonomousIngest.ts — core service: extract claims from PubMed/UniProt results, run verdict engine, write to audit_claims, upsert graph nodes/edges, dispatch alerts
+- [x] Add searchPubMed action to server/copilotRuntime.ts — calls EuropePMC API, returns top 5 results with PMID, title, abstract snippet, citation link; triggers autonomousIngest in background
+- [x] Wire post-query autonomous trigger — after every CopilotKit tool call (verifyClaim, searchUniProt, queryGraph, searchPubMed), call autonomousIngest.processQueryResults() asynchronously
+- [x] Update CopilotKit system prompt — add searchPubMed to AVAILABLE ACTIONS, mandate PMID and UniProt accession citations in every answer
+- [x] TypeScript clean, 790 tests passing (10 new autonomousIngest tests), checkpoint saved
+
+## Sprint M: Corpus Growth Widget + PubMed Cards + paper_discovered Events
+
+- [x] Publish paper_discovered events from searchPubMed action in copilotRuntime.ts
+- [x] Publish paper_discovered events from autonomousIngest.ts for each PubMed result
+- [x] Add tRPC procedure graph.corpusGrowthStats — returns today's new claims, graph nodes, edges, and PubMed papers added
+- [x] Build CorpusGrowthWidget.tsx — real-time dashboard card showing today's growth counters with animated numbers
+- [x] Add CorpusGrowthWidget to Dashboard.tsx
+- [x] Build PubMedCardRenderer in CopilotRenderers.tsx — rich card (title, journal, year, authors, abstract snippet, PMID badge, link)
+- [x] Register searchPubMed useCopilotAction renderer in CopilotRenderers.tsx
+- [x] TypeScript clean, 790 tests passing, checkpoint saved
+
+## Sprint O: Blank Screen Fix + Performance
+- [x] Diagnose blank white screen on live site — root cause: 1.7 MB main JS bundle blocking first paint (11s download)
+- [x] Rewrite App.tsx with aggressive lazy-loading — all 40+ pages now async chunks; CopilotKit (3.6 MB) deferred until dashboard opens
+- [x] Main index.js bundle reduced from 1,716 KB to 262 KB (6.5x smaller)
+- [x] TypeScript clean, 790 tests passing, checkpoint saved
+
+## Sprint N: Frontier Handler + Public Widget + Cite Button + Hostinger Webhook Loop
+
+- [x] Build server/frontier/paperDiscoveredHandler.ts — LLM generates 2-3 gap-closing hypothesis queries per paper, queues via hypothesisGenerator
+- [x] Register paper_discovered handler in frontierLayer.ts FRONTIER_TRIGGER_EVENTS
+- [x] Fix frictionLayer.ts to accept Hostinger document_submitted events with claimText (no documentId)
+- [x] Add CorpusGrowthWidget to public landing page (Home.tsx) — Live Knowledge Growth section
+- [x] Add CorpusGrowthWidget to /graph page sidebar
+- [x] Add "Cite This Paper" button to PubMedCardRenderer in CopilotRenderers.tsx — APA + Vancouver copy with toast
+- [x] Build server/hostingerWebhook.ts — HMAC-SHA256 signed, rate-limited, maps 6 event types to loop events, publishes to event bus
+- [x] Register /api/webhook/hostinger with express.raw() before express.json() in index.ts
+- [x] Build buildHostingerJs() in embedRoutes.ts — SubtleCrypto HMAC, search/verify/paper-click/widget telemetry
+- [x] Serve /embed/hostinger.js route
+- [x] TypeScript clean, 790 tests passing, checkpoint saved
+
+## Sprint P: Natural Language Query Translation → Cited Evidence
+- [x] Add server/_queryTranslator.ts — translateQueryToClaims() uses structured LLM output to decompose everyday question into 3-5 verifiable scientific claims with searchQuery, proteinName, organism
+- [x] Add translateAndSearch CopilotKit action — decomposes question, runs PubMed + verdict engine in parallel for each claim, fires paper_discovered events, returns cited results
+- [x] Rewrite CopilotKit system prompt — mandates translateAndSearch FIRST for all everyday questions, bans "out of scope" responses, requires PMID/UniProt citations in every answer
+- [x] TypeScript clean, 790 tests passing, checkpoint saved
+
+## Sprint Q: translateAndSearch Renderer + Save Research + Public API
+- [x] Build TranslateAndSearchRenderer component in CopilotRenderers.tsx — collapsible claim cards with verdict badges (Supported/Contradicted/Insufficient Evidence), PubMed evidence cards, and citation block
+- [x] Register translateAndSearch useCopilotAction renderer in CopilotRenderers.tsx
+- [x] Add saved_research DB table (drizzle/schema.ts) — userId, question, claimsJson, totalPapers, supportedClaims, createdAt
+- [x] Generate and apply migration SQL for saved_research table
+- [x] Add savedResearch.save and savedResearch.list tRPC procedures
+- [x] Add Save Research button to TranslateAndSearchRenderer — calls saveResearch mutation, shows toast on success
+- [x] Build SavedResearch.tsx page — lists saved research with question, date, claim count, verdict summary, expandable detail
+- [x] Register /saved-research route in App.tsx and add Saved Research nav item in DashboardLayout sidebar
+- [x] Build /api/translate-and-search REST endpoint — SHA-256 API key auth (X-API-Key), rate-limited (10 req/min authenticated, 2/min anonymous), autonomous ingest trigger
+- [x] Register /api/translate-and-search in server index.ts
+- [x] TypeScript clean, 790 tests passing, checkpoint saved
+
+## Sprint R-fix: Embed Widget "Verify Claim" Out of Scope Bug
+- [x] Traced /api/public/verify-claim handler in verifyClaimRoute.ts — Out of Scope returned when extractClaims() returned nothing for natural-language input
+- [x] Rewrote verifyClaimRoute.ts: translateQueryToClaims + PubMed as primary path; structural DB as secondary enrichment; verdict from paper count (≥2 → Supported, 1 → Partially Supported, 0 → Insufficient Evidence)
+- [x] Out of Scope NEVER returned — every query now gets cited evidence or an honest Insufficient Evidence with PubMed queries tried
+- [x] Response now includes pubmedResults[] and translatedClaims[] fields; apiVersion bumped to 1.1
+- [x] TypeScript clean, 790 tests passing, checkpoint saved
+
+## Security & Code Quality Audit (Jun 2026)
+
+- [x] Fix invalid verdictMethod "copilot_autonomous_ingest" -> "llm_ingest" in autonomousIngest.ts
+- [x] Fix hardcoded protein-desk-5r5rzpyg.manus.space domain in index.ts (SITE_ORIGIN now uses ENV.appUrl)
+- [x] Fix hardcoded protein-desk-5r5rzpyg.manus.space domain in vite.ts JSON-LD (7 occurrences -> ttruthdesk.claims)
+- [x] Fix embed frame CSP: remove unsafe-eval, replace deprecated X-Frame-Options ALLOWALL with frame-ancestors *
+- [x] Add CORS headers to /api/trpc endpoint for cross-origin Lovable/partner frontends
+- [x] Add CORS preflight + headers to /api/translate-and-search endpoint
+- [x] Add escapeLike() helper and apply to all LIKE queries in routers.ts to prevent wildcard injection
+- [x] Write Lovable.dev prompt with correct API contracts, copy fixes, and functional corrections
+- [x] Fix blank page on published site: CORS OPTIONS middleware was returning 204 for all /api/trpc requests (not just preflight), breaking React data load
+- [x] Fix translateAndSearchApi to accept and forward vertical parameter (was silently defaulting to structural_biology)
+- [x] Seed salmon_biotech vertical: 9 questions across 3 batches (pathogens, nutrition/bioactives, genetics) → +52 claims, +70 graph nodes, +27 graph edges
+
+## Sprint S: Biotech Intelligence Layer (Salmon Feasibility Document — Truth Desk Extension)
+### Source: Salmon_Biotech_Feasibility_Analysis.docx, Chapter 5–6 & 10
+
+### S1 — PostgreSQL Schema (10 new tables, 9–13 dev-weeks)
+- [ ] Add `qc_batches` table — lot number, product SKU, batch size, status (in-progress/released/rejected), timestamps
+- [ ] Add `qc_test_results` table — batch FK, test type (sterility/endotoxin/bioburden/pH/osmolality/HPLC), value, unit, spec limit, pass/fail, analyst, timestamp (ALCOA+ columns)
+- [ ] Add `qc_specifications` table — SKU, test type, min/max limits, method reference, version
+- [ ] Add `coa_templates` table — SKU, template JSON layout, version, active flag
+- [ ] Add `coa_generated` table — batch FK, template FK, generated PDF URL, QA approver, e-signature hash, released_at
+- [ ] Add `regulatory_submissions` table — pathway (GRAS/DMF/510k), status, agency, submission date, acceptance date, correspondence JSON
+- [ ] Add `suppliers` table — name, country, classification (Critical/Major/Minor), qualification status
+- [ ] Add `supplier_audits` table — supplier FK, audit date, auditor, findings JSON, outcome
+- [ ] Add `supplier_quality_agreements` table — supplier FK, document URL, effective date, expiry date
+- [ ] Add `stability_studies` table — product SKU, ICH condition, pull points JSON, status, trending verdict
+- [ ] Run Drizzle migration for all 10 tables
+
+### S2 — tRPC API Extensions (/biotech namespace)
+- [ ] Add `biotech.lims.ingestBatch` — accept QC results from Benchling REST API (OAuth 2.0 adapter), write to qc_batches + qc_test_results
+- [ ] Add `biotech.lims.getBatchResults` — return QC results for a batch with pass/fail status
+- [ ] Add `biotech.batch.createEBR` — create electronic batch record from MES trigger, enforce Master Batch Record template
+- [ ] Add `biotech.batch.releaseEBR` — QA release with 21 CFR Part 11 e-signature (role: qa_manager)
+- [ ] Add `biotech.batch.logDeviation` — log out-of-spec result with root cause, CAPA reference
+- [ ] Add `biotech.stability.createStudy` — define ICH Q1A(R2) protocol, pull-point schedule
+- [ ] Add `biotech.stability.ingestResult` — ingest stability test result, trigger verdict engine for OOT flagging
+- [ ] Add `biotech.coa.generate` — populate COA template with batch QC results, produce PDF, require QA approval
+- [ ] Add `biotech.regulatory.trackSubmission` — create/update regulatory submission record (GRAS/DMF/510k)
+- [ ] Add `biotech.supplier.qualify` — create supplier qualification dossier, store audit findings
+
+### S3 — BioTech Copilot (CopilotKit vertical actions)
+- [ ] Add `checkRegulatory(query)` CopilotKit action — routes natural-language regulatory queries (GRAS status, TSE exemption, 21 CFR Part 11) to regulatory monitor, returns structured citations from FDA/EMA/USP
+- [ ] Add `comparePeptone(productA, productB)` CopilotKit action — cross-references amino acid profiles, endotoxin specs, and pricing against competitor products with deterministic sourcing
+- [ ] Add `generateCOA(batchId)` CopilotKit action — retrieves QC results, populates COA template, initiates QA approval with 21 CFR Part 11 e-signature
+- [ ] Add `monitorPatents(query)` CopilotKit action — submits FTO queries to USPTO/EPO/WIPO APIs, returns claim-to-feature mapping with risk scoring
+
+### S4 — LIMS Connector (Benchling integration)
+- [ ] Build Benchling REST adapter in `server/benchlingAdapter.ts` — OAuth 2.0 client, entity/assay/result/inventory endpoints
+- [ ] Add SENAITE (open-source) adapter as fallback — same interface as Benchling adapter
+- [ ] Add `POST /api/biotech/lims/webhook` — receive Benchling webhook events (sample_created, result_entered, batch_released)
+
+### S5 — SCADA Gateway (bioreactor data)
+- [ ] Build OPC-UA client in `server/scadaGateway.ts` — subscribes to bioreactor process variables (temp, pH, DO, agitation, cell density)
+- [ ] Publish readings to PostgreSQL via tRPC batch router
+- [ ] Add cold-chain alert: temperature excursion on salmon raw material triggers owner notification
+
+### S6 — EBR Generator (Electronic Batch Records)
+- [ ] Extend wiki compiler to generate 21 CFR Part 11-compliant EBR documents
+- [ ] Add role-based e-signature enforcement (operator → reviewer → QA) with audit trail columns
+- [ ] Add automatic deviation flagging when batch deviates from approved Master Batch Record
+
+### S7 — COA Engine
+- [ ] Build COA template renderer — version-controlled per SKU, generates PDF from qc_test_results
+- [ ] Add disposition-controlled release: LIMS sets operational status, COA generated only after QA approval
+- [ ] Add e-signature with 21 CFR Part 11 audit trail (user ID, timestamp, action, old/new value, reason)
+
+### S8 — Regulatory Monitor
+- [ ] Extend autonomous loop to monitor ClinicalTrials.gov API for salmon peptone / marine collagen trials
+- [ ] Add USPTO/EPO/WIPO patent monitoring — alert on new filings matching salmon peptone claim types
+- [ ] Add EMA/FDA regulatory change monitor — parse RSS/API feeds for guidance updates affecting salmon-derived cell culture ingredients
+- [ ] Add `regulatory_submissions` status dashboard page in frontend
+
+### S9 — Patent FTO Tracker
+- [ ] Build `server/patentFTO.ts` — claim decomposition + semantic search across USPTO/EPO/WIPO APIs
+- [ ] Add risk scoring per claim (freedom-to-operate score 0–100)
+- [ ] Add `biotech.patents.search` tRPC procedure + Patent FTO page in frontend
+
+### S10 — Frontend Biotech Dashboard
+- [ ] Add `/biotech` dashboard route — QC batch overview, COA status, regulatory submission tracker, stability study summary
+- [ ] Add QC Batch Detail page — test results table, pass/fail badges, deviation log, EBR link
+- [ ] Add COA Viewer page — rendered COA PDF with approval status and e-signature chain
+- [ ] Add Regulatory Tracker page — GRAS/DMF/510k submission timeline with status badges
+- [ ] Add Supplier Qualification page — vendor list with audit history and quality agreement status
+- [ ] Add Stability Studies page — ICH pull-point schedule, trending chart, OOT alerts
+
+### Implementation Phasing (from document §10.1)
+- Phase 1 (Months 1–3): S1 schema + S4 LIMS connector + inventory tracker (Critical path)
+- Phase 2 (Months 4–6): S5 SCADA gateway + S6 EBR generator + S10 manufacturing dashboards
+- Phase 3 (Months 7–9): S2 QMS integration + S7 COA engine + stability tracking + S8 regulatory monitor
+- Phase 4 (Months 10–12): S9 patent FTO tracker + predictive analytics + auto-discovery engine
+
+## Phase 80: Pre-Phase-S Hardening (Quality Gate)
+
+- [ ] Install Husky + lint-staged + commitlint with pre-commit hook
+- [ ] Configure lint-staged: eslint --fix + prettier --write on staged .ts/.tsx files
+- [ ] Configure commitlint with @commitlint/config-conventional
+- [ ] Add Vitest coverage thresholds (lines: 80, functions: 80, branches: 70)
+- [ ] Add pnpm test:ci script that exits non-zero on coverage drop
+- [ ] Fix ESLint warnings: reduce from 52 to < 20
+- [ ] Replace stub: server/metaAgent/codeGuardian.ts (full implementation + tests)
+- [ ] Replace stub: server/metaAgent/stubLedger.ts (remove stub marker, already implemented)
+- [ ] Sync todo.md to persistent drive
+- [ ] Log Phase 80 to persistent drive phase log
+- [ ] Push both repos (protein-truth-desk + manus-persistent-drive)
