@@ -1,0 +1,2 @@
+origin	https://github.com/Gudmundur76/manus-persistent-drive.git (fetch)
+origin	https://github.com/Gudmundur76/manus-persistent-drive.git (push)

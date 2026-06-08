@@ -1,0 +1,7 @@
+[33mcommit e610cfdfa598a7a6523401d5ac946290ef3cf028[m
+Author:     Manus <dev-agent@manus.ai>
+AuthorDate: Sun Jun 7 02:38:54 2026 +0000
+Commit:     Manus <dev-agent@manus.ai>
+CommitDate: Sun Jun 7 02:38:54 2026 +0000
+
+    Checkpoint: Polish & Finish complete: sidebar nav (Dream/Sources/Overrides/Frontier/Loop), CheckoutSuccess page, AuditReport Provenance Summary + completeness-gate banner + source coverage, Last Dream widget on Loop dashboard, health score sparkline on Overrides dashboard, Approve/Reject on Source Whitelist, verticalDomain selector on Submit page, adapter tests for UniProt and ClinicalTrials (19 new tests). 780 tests passing, 0 TypeScript errors, 0 open todo items.
