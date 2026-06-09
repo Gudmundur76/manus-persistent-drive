@@ -109,3 +109,37 @@ CI failure in `protein-truth-desk`: Drive Staleness job failing + Meta-Agent con
 - 0 TypeScript errors
 - Both CIs pushed and running
 
+
+---
+
+## Session 5 — 2026-06-09 ESLint Quality Gate Fix
+
+### Commit: `01b1e32` — ttruthdesk-platform
+
+**Problem:** CI Quality Gate failed with 46 ESLint errors across 9 test files. All errors were the same rule: `@typescript-eslint/no-unsafe-function-type`. The bare `Function` type is banned by the ESLint config — it accepts any callable, which defeats type safety.
+
+**Root cause:** When writing test mocks for Express route handlers, Drizzle query builders, and adapter interfaces, the bare `Function` type was used as a shorthand. ESLint's `@typescript-eslint/no-unsafe-function-type` rule rejects this.
+
+**Fix applied:** Mechanical replacement across 9 files:
+- `Function` → `(...args: unknown[]) => unknown` (single params, object type literals)
+- `Function[]` → `((...args: unknown[]) => unknown)[]` (arrays)
+- `lookupEvidence: Function` → `lookupEvidence: (...args: unknown[]) => unknown`
+- `result.found` access after `lookupEvidence()` → cast result to `{ found: boolean; confidenceScore: number }`
+
+**Files fixed:**
+1. `server/claimsRoutes.test.ts`
+2. `server/coordApi.test.ts`
+3. `server/coordApi/routers.test.ts`
+4. `server/copilotRuntime.test.ts`
+5. `server/dream/dreamModules.test.ts`
+6. `server/inversePrompt/claimQueueWriter.test.ts`
+7. `server/selfPrompt/stateCollector.test.ts`
+8. `server/translateAndSearchApi.test.ts`
+9. `server/verticalAdapters/remainingAdapters.test.ts`
+
+**Invariant for future sessions:** Never use bare `Function` type in test files. Always use `(...args: unknown[]) => unknown` or a specific typed signature. The ESLint rule is strict — warnings are allowed (37 warnings remain, all `no-unused-vars`) but errors block the gate.
+
+**Suite after fix:** 134 test files | 1908 tests | 0 failures | 0 TS errors | 0 ESLint errors
+
+**37 remaining warnings (all `@typescript-eslint/no-unused-vars`):** These are in source files (not test files) and are warnings not errors — they do not block CI. They represent dead imports in `selfPrompt/`, `metaAgent/`, `frontier/`, `dream/`, and `routers.ts`. These should be cleaned up in the next stub-resolution phase.
+
