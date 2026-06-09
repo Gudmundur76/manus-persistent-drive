@@ -143,3 +143,31 @@ CI failure in `protein-truth-desk`: Drive Staleness job failing + Meta-Agent con
 
 **37 remaining warnings (all `@typescript-eslint/no-unused-vars`):** These are in source files (not test files) and are warnings not errors — they do not block CI. They represent dead imports in `selfPrompt/`, `metaAgent/`, `frontier/`, `dream/`, and `routers.ts`. These should be cleaned up in the next stub-resolution phase.
 
+
+---
+
+## Session 6 — 2026-06-09 Coverage Dependency Fix
+
+**Commit:** f367906 on ttruthdesk-platform
+
+### Root Cause
+Quality Gate failed: `MISSING DEPENDENCY Cannot find dependency '@vitest/coverage-v8'`
+
+The CI workflow runs `pnpm test:coverage --run` (vitest with coverage) but `@vitest/coverage-v8` was never added to `devDependencies`. Vitest requires the coverage provider to be explicitly installed — it does not bundle it.
+
+### Fix
+1. Added `@vitest/coverage-v8: ^2.1.9` to `devDependencies` in `package.json`
+2. Added `coverage` block to `vitest.config.ts`:
+   - provider: v8
+   - reporters: text, lcov, json-summary
+   - reportsDirectory: ./coverage
+   - includes: server/**/*.ts
+   - excludes: test files and server/_core/**
+
+### Invariant (permanent rule)
+**ALWAYS include `@vitest/coverage-v8` in `devDependencies` when `vitest.config.ts` has a `coverage` block.** Vitest will silently pass `pnpm test --run` but fail immediately on `pnpm test:coverage --run` if the provider is missing.
+
+### Files changed
+- package.json (+1 dep)
+- pnpm-lock.yaml (lockfile update)
+- vitest.config.ts (+11 lines coverage config)
