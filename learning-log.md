@@ -63,3 +63,49 @@ Previously these write helpers returned silently when DB was unavailable; now al
 4. **Frontend component tests** — React Testing Library for DocumentSubmit, ClaimList, VerticalDashboard
 5. **Coordinator queue load test** — 10+ concurrent enqueue tasks
 6. **codeGuardian live run** — record baseline health score against actual codebase
+
+---
+
+## Session 4 — 2026-06-09 CI Hardening
+
+### Trigger
+CI failure in `protein-truth-desk`: Drive Staleness job failing + Meta-Agent contradiction warning.
+
+### Root Cause Analysis
+
+1. **Drive Staleness job misplacement** — The `protein-truth-desk` CI had been incorrectly given the Drive Staleness, Stub Tracker, and Meta-Agent Health jobs. These belong exclusively in `ttruthdesk-platform` CI because that is where the meta-agent source code lives. `protein-truth-desk` is a separate Manus webdev project with no claim/document pipeline.
+
+2. **Meta-Agent contradiction warning** — The warning "contradiction detected on claim #10 in document #5" fired in `protein-truth-desk` CI. This is a ghost artefact from the wrong project — `protein-truth-desk` has no claim pipeline. The warning was caused by the misplaced CI job, not a real contradiction.
+
+3. **TypeScript gate newly enforced** — The new `ttruthdesk-platform` CI added `pnpm check` (tsc --noEmit) for the first time. This surfaced 63 pre-existing type errors across 17 test files that vitest had been silently ignoring.
+
+### Fixes Applied
+
+**protein-truth-desk CI** — Removed Drive Staleness, Stub Tracker, and Meta-Agent Health jobs. Left only Quality Gate (lint + test) and Drift Detection.
+
+**ttruthdesk-platform CI** — Added proper Meta-Agent Health job (codeGuardian score, stub escalations), Drive Staleness (authenticated via GITHUB_TOKEN API), and Stub Tracker.
+
+**63 TypeScript errors fixed across 17 test files:**
+- Type union mismatches (LLMMessage content, SelfPromptEventType, GateVerdict)
+- Missing required fields (isHypothesis, durationMs, description, expectedValue)
+- Arity errors (closeGap 3 args, markEventProcessed 2 args, detectEvidenceGapForDocument 2 args)
+- Circular type annotation (tx: typeof tx → tx: unknown)
+- Duplicate object literal property (loopConfig appeared twice in schema mock)
+- Map iteration without downlevelIteration (Array.from() fix)
+- Socket type mismatch (as unknown as net.Socket)
+- Non-exported type import (InvariantResult from wrong module)
+
+### Invariants Confirmed
+- `fetchWikiPage` returns `string` (never null) — empty string when page not found
+- `getVertical` returns `VerticalAdapter | undefined` (never null)
+- `insertWebhookAlert` returns `null` (not undefined) on success
+- `detectEvidenceGapForDocument` requires 2 required args + 1 optional
+- `closeGap` requires 3 args: gapId, closingEvidenceId, resolution string
+- `PrioritizedAction` requires `expectedValue: number` field
+- `SelfPromptEvent` requires `description: string` field
+
+### Final State
+- 134 test files · 1908 tests · 0 failures
+- 0 TypeScript errors
+- Both CIs pushed and running
+
