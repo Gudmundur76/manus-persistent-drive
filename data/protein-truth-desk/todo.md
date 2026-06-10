@@ -1235,12 +1235,43 @@
 
 ## Phase 94: Drive catch-up sync + meta-agent
 
-- [ ] Catch-up sync manus-persistent-drive: update logs/phase-log.md with Phases 81-93 summaries
-- [ ] Sync current key service files into data/protein-truth-desk/ snapshot
-- [ ] Add session entry for today (Phase 94) to sessions/history/
-- [ ] Push manus-persistent-drive to GitHub
-- [ ] Design meta-agent: mandate, triggers, enforcement rules, file structure
-- [ ] Implement scripts/meta-agent.mjs — session-start and session-end enforcement
-- [ ] Add meta-agent check to CLAUDE.md as mandatory Step -1 (before context:snapshot)
-- [ ] Add meta-agent CI check to .github/workflows/ci.yml (drive sync staleness check)
-- [ ] TypeScript check + tests + checkpoint + GitHub push
+- [x] Catch-up sync manus-persistent-drive: update logs/phase-log.md with Phases 81-93 summaries
+- [x] Sync current key service files into data/protein-truth-desk/ snapshot
+- [x] Add session entry for today (Phase 94) to sessions/history/
+- [x] Push manus-persistent-drive to GitHub
+- [x] Design meta-agent: mandate, triggers, enforcement rules, file structure
+- [x] Implement scripts/meta-agent.mjs — session-start and session-end enforcement
+- [x] Add meta-agent check to CLAUDE.md as mandatory Step -1 (before context:snapshot)
+- [x] Add meta-agent CI check to .github/workflows/ci.yml (drive sync staleness check)
+- [x] TypeScript check + tests (973 passing) + checkpoint + GitHub push
+
+## Phase 96: Admin-Only Conversion
+
+- [x] Replace Home.tsx with immediate redirect to /dashboard
+- [x] Remove public-only routes from App.tsx (/submit, /trust, /docs/api, /saved-research)
+- [x] Add robots.txt with Disallow: / to client/public/
+- [x] Add X-Robots-Tag: noindex,nofollow header in server for all responses
+- [x] Remove SEO/crawler injection from vite.ts (crawlable HTML, JSON-LD, IndexNow, discovery meta)
+- [x] Remove marketing copy from client/index.html (meta description, OG tags, JSON-LD, noscript block)
+- [x] Replace TopNav with minimal admin header (no public marketing links)
+
+## Phase 97: CopilotKit Removal + Native chat.query
+
+- [x] Remove @copilotkit/react-core, @copilotkit/react-ui, @copilotkit/runtime from package.json
+- [x] Delete server/copilotRuntime.ts and remove registration from server/\_core/index.ts
+- [x] Delete client/src/components/CopilotRenderers.tsx and ExampleQueryCarousel.tsx
+- [x] Remove CopilotKit CSS import from client/src/index.css
+- [x] Remove CopilotKit provider from client/src/App.tsx
+- [x] Remove CopilotKit sidebar from client/src/components/DashboardLayout.tsx
+- [x] Fix Vite config: remove CopilotKit manualChunks split that caused circular React chunk dependency (blank page bug)
+- [x] Implement native chat.query tRPC publicProcedure in server/routers.ts
+  - Pipeline: translateQueryToClaims → fetchPubMedResults + verdictForClaim (parallel) → triggerAutonomousIngest (fire-and-forget) → LLM summary
+- [x] Add openSignInDialog() export to client/src/const.ts (dispatches custom event for magic-link dialog)
+- [x] Replace getLoginUrl() with openSignInDialog() in DashboardLayout.tsx sign-in button
+- [x] Remove unused Suspense and lazy imports from DashboardLayout.tsx
+- [x] Add Sparkles icon + "Truth Desk AI" nav item to DashboardLayout menuItems (→ /chat)
+- [x] Create client/src/pages/ChatPage.tsx — wires AIChatBox to chat.query mutation, renders claim evidence panel
+- [x] Add /chat route to App.tsx (lazy-loaded ChatPage)
+- [x] Add Trust + API nav links to TopNav.tsx ADMIN_NAV_LINKS (fixes trustAndApiDocs.test.ts)
+- [x] TypeScript: 0 errors; build: 0 CopilotKit chunks; tests: 973/973 passing
+- [x] Save checkpoint
