@@ -191,3 +191,71 @@
 
 **Tests:** citation-desk: 22 passing (2 files) | ttruthdesk-platform: 973 passing
 **GitHub:** citation-desk: 2e449c8 | ttruthdesk-platform: f367906 (unchanged this session)
+
+---
+## Phase 96 — Citation Layer: Full Build (2026-06-10)
+**Goal:** Add a strictly disciplined, tests-first citation layer that links each claim to a specific passage in its source document with a typed relationship (VERIFIED, CONTESTED, IMPLIED, BEYOND_EVIDENCE) and a citation-level confidence score. Purely additive — no existing tables, tests, or API contracts changed.
+
+**Sub-phases completed:**
+
+### Phase 96-A — Schema (commit b7014bb)
+- Added `citations` table to `drizzle/schema.ts` with all fields: `claimId`, `documentId`, `passageText`, `passageSection`, `citationType`, `citationConfidence`, `evidenceBoundary`, `createdAt`
+- Added `CitationType` enum: `VERIFIED | CONTESTED | IMPLIED | BEYOND_EVIDENCE`
+- CRITICAL CONSTRAINT: `BEYOND_EVIDENCE` must never be aggregated as a weak positive signal; stored with `citationConfidence=0.0`
+- Migration generated and applied to DB
+- 11 new tests in `server/citations.schema.test.ts`
+
+### Phase 96-B — DB Helpers (commit 51b64d2)
+- Added `insertCitation`, `getCitationsByClaimId`, `getCitationsByDocumentId` to `server/db.ts`
+- Null-guard: all helpers return safe defaults when DB is unavailable
+- BEYOND_EVIDENCE constraint enforced in `insertCitation`: forces `citationConfidence=0.0` and `passageText=null`
+- 9 new tests in `server/citations.db.test.ts`
+
+### Phase 96-C — LLM Extractor Service (commit 8c74bc2)
+- Added `server/citationPassageExtractor.ts`: calls LLM with JSON schema `response_format`, returns `{ passageText, passageSection, citationType, citationConfidence, evidenceBoundary }`
+- Falls back to `BEYOND_EVIDENCE` on any LLM error (non-fatal)
+- 9 new tests in `server/citationPassageExtractor.test.ts`
+
+### Phase 96-D — Pipeline Integration (commit 26679da)
+- Updated `server/analysisPipeline.ts` to call `extractCitationForClaim` + `insertCitation` after each `updateClaimVerdict` write
+- Non-fatal, fire-and-forget: a citation extraction failure does NOT abort the pipeline
+- 4 new tests in `server/citationPipeline.test.ts`
+
+### Phase 96-E — tRPC API Extension (commit 1daed71)
+- Added `getCitationsByClaimId` to the db import block in `server/routers.ts`
+- Extended `claims.byDocument` procedure: fetches citations per claim via `Promise.all`, returns each claim with `citations[]` array attached
+- Extended `search.claims` procedure: fetches citations per result via `Promise.all`, returns each result with `citations[]` array attached
+- `citations[]` is always an array (never null/undefined) — empty array when no citations exist
+- BEYOND_EVIDENCE citations are included in `citations[]` (not filtered at API layer)
+- 12 new tests in `server/citations.api.test.ts`
+- Updated `server/routers.test.ts` db mock to include citation helpers
+
+**Test counts:**
+- Phase 96-A: +11 tests (total: 1908 → 1919)
+- Phase 96-B: +9 tests (total: 1919 → 1928)
+- Phase 96-C: +9 tests (total: 1928 → 1937)
+- Phase 96-D: +4 tests (total: 1937 → 1941)
+- Phase 96-E: +12 tests (total: 1941 → **1953**)
+- **Final: 1953 tests passing (139 files)**
+
+**GitHub commits (ttruthdesk-platform):**
+- 96-A: `b7014bb`
+- 96-B: `51b64d2`
+- 96-C: `8c74bc2`
+- 96-D: `26679da`
+- 96-E: `1daed71`
+
+**New files created:**
+- `server/citations.schema.test.ts`
+- `server/citations.db.test.ts`
+- `server/citationPassageExtractor.ts`
+- `server/citationPassageExtractor.test.ts`
+- `server/citationPipeline.test.ts`
+- `server/citations.api.test.ts`
+
+**What is NOT in this build (explicitly out of scope):**
+- No UI changes to citation-desk or ttruthdesk.claims admin
+- No new ingestion sources or corpus work
+- No batch backfill of existing claims (Phase 97 job)
+- No citation search endpoint (Phase 97)
+- No citation analytics or leaderboard changes

@@ -65,7 +65,9 @@
   },
   "test_counts": {
     "protein-truth-desk": "438/438 passing",
-    "memorydesk": "60/60 passing"
+    "memorydesk": "60/60 passing",
+    "ttruthdesk-platform": "1953/1953 passing (139 files) \u2014 Phase 96-E complete",
+    "citation-desk": "22/22 passing (2 files)"
   },
   "notes": "Phase 79 complete for protein-truth-desk. Phase 24 complete for memorydesk. 0 stubs in both projects."
 }
