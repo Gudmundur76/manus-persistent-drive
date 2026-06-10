@@ -283,3 +283,41 @@ Two post-Phase-96-E commits to fix CI Quality Gate failures:
 - ESLint: 0 errors (41 pre-existing warnings)
 - Tests: 1953/1953 passing (139 files)
 - HEAD: `61f099a`
+
+---
+
+## Auth Migration — commit `5910511` (2026-06-10)
+
+**Problem:** `api.manus.im` is unreachable from Cloud Run containers (no outbound internet egress configured on the Manus deployment). Every authenticated tRPC request was failing with `ENOTFOUND api.manus.im` in production.
+
+**Root cause analysis:**
+- `sdk.authenticateRequest()` calls `getUserInfoWithJwt()` → `axios.post('https://api.manus.im/...')` for first-time user sync
+- Cloud Run has no VPC egress connector → DNS resolution fails even though `api.manus.im` resolves to public IPs (confirmed: `52.21.202.72`, `3.225.187.208`, etc.)
+- This is a Manus platform infrastructure issue, not a code bug
+
+**Solution: Magic-link-only auth path**
+- Magic link auth (`email_` prefix) reads from local DB only — zero calls to `api.manus.im`
+- `openSignInDialog()` dispatches `td:open-sign-in` custom DOM event
+- `TopNav` listens for the event and opens `MagicLinkDialog`
+- `getLoginUrl()` kept as deprecated shim (calls `openSignInDialog`, returns `"#"`)
+
+**8 call sites migrated:**
+- `client/src/_core/hooks/useAuth.ts` — `redirectOnUnauthenticated` now calls `openSignInDialog()`
+- `client/src/main.tsx` — global tRPC error handler calls `openSignInDialog()` on UNAUTHORIZED
+- `client/src/components/DashboardLayout.tsx` — "Sign in" button calls `openSignInDialog()`
+- `client/src/pages/Home.tsx` — hero CTA button calls `openSignInDialog()`
+- `client/src/pages/Pricing.tsx` — checkout gate calls `openSignInDialog()`
+- `client/src/pages/MonitoringFeed.tsx` — sign-in CTA calls `openSignInDialog()`
+- `client/src/pages/Registry.tsx` — empty-state CTA calls `openSignInDialog()`
+- `client/src/pages/Submit.tsx` — sign-in gate calls `openSignInDialog()`
+
+**Preserved:**
+- `/api/oauth/callback` still registered — existing Manus OAuth sessions continue to work
+- `server/magicLink.ts` routes unchanged — `POST /api/auth/magic-link/request` and `GET /api/auth/magic-link/verify`
+- Infrastructure issue reported to Manus team at help.manus.im for Cloud Run VPC egress fix
+
+**Final state:**
+- TypeScript: 0 errors
+- ESLint: 0 errors
+- Tests: 1953/1953 passing (139 files)
+- HEAD: `5910511`

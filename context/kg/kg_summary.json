@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-06T21:00:00Z",
+  "updated_at": "2026-06-10T22:08:26.381336+00:00",
   "session_id": "drive_gap_remediation",
   "source": "schema_inference",
   "entity_count": "see graph_entities table (protein-truth-desk) + kg_nodes table (memorydesk)",
@@ -57,7 +57,8 @@
   },
   "github_commits": {
     "protein-truth-desk": "7598de6",
-    "memorydesk": "8daa5d7"
+    "memorydesk": "8daa5d7",
+    "ttruthdesk-platform": "5910511"
   },
   "phases_complete": {
     "protein-truth-desk": "1-79",
@@ -69,5 +70,5 @@
     "ttruthdesk-platform": "1953/1953 passing (139 files) \u2014 Phase 96-E complete",
     "citation-desk": "22/22 passing (2 files)"
   },
-  "notes": "Phase 79 complete for protein-truth-desk. Phase 24 complete for memorydesk. 0 stubs in both projects."
+  "notes": "Phase 79 complete for protein-truth-desk. Phase 24 complete for memorydesk. 0 stubs in both projects.\n\n## Auth Migration (2026-06-10) \u2014 commit 5910511\n- Replaced Manus OAuth redirect (api.manus.im, unavailable in Cloud Run) with magic-link dialog\n- openSignInDialog() dispatches 'td:open-sign-in' custom event; TopNav listens and opens MagicLinkDialog\n- 8 call sites migrated: useAuth, main.tsx, DashboardLayout, Home, Pricing, MonitoringFeed, Registry, Submit\n- Magic link auth (email_ prefix) makes zero calls to api.manus.im \u2014 fully Cloud Run compatible\n- getLoginUrl() kept as deprecated shim (calls openSignInDialog, returns '#')\n- /api/oauth/callback still registered for existing session compatibility\n- TypeScript: 0 errors | Tests: 1953/1953 passing\n\n## Infrastructure Note\n- api.manus.im is publicly routable (confirmed IPs: 52.21.202.72, 3.225.187.208, etc.)\n- Cloud Run has no outbound internet egress by default \u2014 this is a Manus platform config issue\n- Workaround: magic-link auth path never calls api.manus.im, so auth works in production\n- Reported to Manus team via help.manus.im for VPC egress fix"
 }
