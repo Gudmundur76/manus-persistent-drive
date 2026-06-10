@@ -141,4 +141,53 @@
 
 ## Phase 94 — Drive Catch-Up Sync + Meta-Agent (2026-06-09)
 **Goal:** Sync drive with Phases 81-93; build meta-agent to prevent future sync failures.
-**In progress...**
+
+**Completed:**
+- Synced drive with Phases 81–93 catch-up entries
+- CI pipeline added to ttruthdesk-platform (.github/workflows/ci.yml)
+- @vitest/coverage-v8 added; coverage thresholds: lines 27%, functions 42%
+- Tests: 973 passing (60 files) | TypeScript: 0 errors | CI: green
+- GitHub: f367906
+
+**Note:** Meta-agent design documented in docs/meta-agent-design.md but not yet implemented as a running script. Enforcement is manual via CLAUDE.md Step 0.
+
+---
+
+## Phase 95 — citation-desk Frontend + Corpus Expansion (2026-06-10)
+**Goal:** Build citation.is public frontend; expand salmon_biotech corpus; bring citation-desk into discipline.
+
+**Completed (this session):**
+- Built citation-desk frontend: Vite 8 + React 19 + TypeScript + Tailwind CSS v4
+- 6 pages: Home, Search, Verticals, VerticalDetail, Leaderboard, Audit
+- Live data from ttruthdesk.claims/api/trpc via TanStack Query v5
+- CopilotKit sidebar with custom ManusLLMAgent (non-streaming, raw OpenAI client)
+  - Root cause: Manus LLM proxy does not support SSE streaming; AI SDK streamText returns empty
+  - Fix: raw OpenAI non-streaming + manual ag-ui SSE event chain
+- Pushed to Gudmundur76/citation-desk (commit 74f0c20)
+
+**Corpus work (applied to running DB, NOT yet in ttruthdesk-platform):**
+- Ingested 3 PubMed papers on fish-derived peptones (docs 270003–270006, 31 new claims)
+- Ingested EU Regulation 722/2012 as reference doc (doc 270007, 0 claims — regulatory text)
+- Manually overrode claim #300002 verdict: Insufficient Evidence → Supported (95%)
+  - Evidence: EU Reg 722/2012 Art 1(2) — fish not listed in TSE scope
+  - verdictMethod: override, reviewedBy: user 1
+- Ran audit pipeline on document 270001 (pippinlitli salmon biotech submission)
+  - 6 claims extracted; 1 Supported (TSE), 5 Insufficient Evidence
+
+**Discipline gate — citation-desk (COMPLETED):**
+- [x] citation-desk: add vitest + CI workflow + pre-commit hooks
+- [x] citation-desk: write tests for ManusLLMAgent (SSE event chain) and API client
+  - 8 tests: SSE event chain (RUN_STARTED → TEXT_MESSAGE_START → TEXT_MESSAGE_CONTENT → TEXT_MESSAGE_END → RUN_FINISHED)
+  - 14 tests: API client (globalStats, searchClaims, verticalStats, leaderboardTopEntities, submitAuditRequest, URL encoding)
+  - 22 tests total, all green
+  - Husky pre-commit hook: pnpm exec vitest run
+  - commitlint: @commitlint/config-conventional
+  - GitHub Actions CI: install → tsc --noEmit → vitest run → vitest run --coverage
+  - Pushed to Gudmundur76/citation-desk (commit 2e449c8)
+
+**Pending (carry to Phase 96):**
+- [ ] ttruthdesk-platform: write tests for corpus ingestion helpers and manual verdict override
+- [ ] ttruthdesk-platform: commit corpus changes through the gate
+
+**Tests:** citation-desk: 22 passing (2 files) | ttruthdesk-platform: 973 passing
+**GitHub:** citation-desk: 2e449c8 | ttruthdesk-platform: f367906 (unchanged this session)
