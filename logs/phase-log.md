@@ -259,3 +259,27 @@
 - No batch backfill of existing claims (Phase 97 job)
 - No citation search endpoint (Phase 97)
 - No citation analytics or leaderboard changes
+
+## Phase 96 — CI Fix Commits (2026-06-10)
+
+Two post-Phase-96-E commits to fix CI Quality Gate failures:
+
+### Fix 1 — `bb7a73c`: TypeScript errors in citationPipeline.test.ts
+- `makeClaim()` factory missing 4 fields added in Phase 95 schema: `reviewedBy`, `reviewedAt`, `reviewNotes`, `overriddenVerdict`
+- `resolution: "1.8"` → `resolution: 1.8` (number, not string — `ExtractedClaim.resolution` is `number | null`)
+- `evidenceRaw: "{}"` → `evidenceRaw: null` (`VerdictResult.evidenceRaw` is `PdbEntry | null`)
+
+### Fix 2 — `61f099a`: Flaky timeout in analysisPipeline.test.ts
+- Root cause: `analysisPipeline.ts` uses 3 dynamic `import(...)` calls at runtime that were not mocked
+- `./autonomousLoop/eventBus` → `publishEvent`
+- `./frontier/frontierEngine` → `detectEvidenceGapForDocument`
+- `./citationPassageExtractor` → `extractCitationForClaim` (Phase 96)
+- Without mocks, real module resolution kept the Node.js event loop alive past the 5s per-test timeout during parallel runs
+- Fix: added `vi.mock()` for all 3 dynamic imports + `insertCitation`/`getCitationsByClaimId`/`getCitationsByDocumentId` to the `./db` mock
+- Result: analysisPipeline.test.ts now completes in 32ms (was ~29s)
+
+**Final state after CI fixes:**
+- TypeScript: 0 errors
+- ESLint: 0 errors (41 pre-existing warnings)
+- Tests: 1953/1953 passing (139 files)
+- HEAD: `61f099a`
