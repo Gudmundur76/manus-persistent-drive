@@ -6,6 +6,10 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { siaHarnessRouter } from "./siaHarnessRouter";
+import {
+  getCitationChainByDocument,
+  getCitationChainStats,
+} from "./citationChainAnalyzer";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import {
@@ -4793,6 +4797,17 @@ Respond in this exact structure:
         };
       }),
   }),
+  // ─── Citation Chain Analysis ─────────────────────────────────────────────────
+  citationChain: router({
+    getByDocument: publicProcedure
+      .input(z.object({ documentId: z.number() }))
+      .query(async ({ input }) => {
+        const edges = await getCitationChainByDocument(input.documentId);
+        const stats = await getCitationChainStats(input.documentId);
+        return { edges, stats };
+      }),
+  }),
+
   // ─── SIA Harness Improvement Loop ────────────────────────────────────────────
   sia: siaHarnessRouter,
 });

@@ -1651,3 +1651,54 @@ export const siaImprovementProposals = mysqlTable("sia_improvement_proposals", {
 
 export type SiaImprovementProposal = typeof siaImprovementProposals.$inferSelect;
 export type InsertSiaImprovementProposal = typeof siaImprovementProposals.$inferInsert;
+
+// ─── Citation Chain Analysis ───────────────────────────────────────────────────
+export const citationEdges = mysqlTable("citation_edges", {
+  id: int("id").autoincrement().primaryKey(),
+  // The source document (the paper being cited)
+  sourceDocId: int("sourceDocId"),
+  sourcePmid: varchar("sourcePmid", { length: 32 }),
+  sourceTitle: text("sourceTitle"),
+  // The citing document (the paper that cites the source)
+  targetDocId: int("targetDocId"),
+  targetPmid: varchar("targetPmid", { length: 32 }),
+  targetTitle: text("targetTitle"),
+  targetDoi: varchar("targetDoi", { length: 256 }),
+  // Chain position
+  hopNumber: int("hopNumber").default(1).notNull(),
+  // Distortion analysis
+  distortionScore: float("distortionScore"), // 0.0 = faithful, 1.0 = severe distortion
+  distortionType: mysqlEnum("distortionType", [
+    "faithful",
+    "amplification",
+    "selective_omission",
+    "scope_drift",
+    "causal_overclaim",
+    "fabrication",
+    "unknown",
+  ]).default("unknown"),
+  distortionRationale: text("distortionRationale"),
+  // The original claim text being traced
+  originalClaimId: int("originalClaimId"),
+  originalClaimText: text("originalClaimText"),
+  // The citing paper's version of the claim (if extractable)
+  citingClaimText: text("citingClaimText"),
+  // Metadata
+  detectedAt: timestamp("detectedAt").defaultNow().notNull(),
+  analysisStatus: mysqlEnum("analysisStatus", [
+    "pending",
+    "complete",
+    "failed",
+    "skipped",
+  ]).default("pending").notNull(),
+}, (t) => ({
+  sourceDocIdx: index("ce_source_doc_idx").on(t.sourceDocId),
+  targetDocIdx: index("ce_target_doc_idx").on(t.targetDocId),
+  sourcePmidIdx: index("ce_source_pmid_idx").on(t.sourcePmid),
+  targetPmidIdx: index("ce_target_pmid_idx").on(t.targetPmid),
+  hopIdx: index("ce_hop_idx").on(t.hopNumber),
+  distortionTypeIdx: index("ce_distortion_type_idx").on(t.distortionType),
+}));
+
+export type CitationEdge = typeof citationEdges.$inferSelect;
+export type InsertCitationEdge = typeof citationEdges.$inferInsert;

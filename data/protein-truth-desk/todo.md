@@ -1311,4 +1311,19 @@
 - [x] Surface misrepresentation type badge in AuditReport claim cards (colour-coded by category)
 - [x] Update SIA evaluate.py to score misrepresentation recall as a third metric
 - [x] Write misrepresentationClassifier.test.ts — 10 unit tests (all passing, 992 total)
-- [ ] Save checkpoint and sync to memory repo
+- [x] Save checkpoint and sync to memory repo
+
+## Phase 102: Citation Chain Analysis
+
+- [x] Add `citation_edges` table to drizzle/schema.ts (sourceDocId, targetDocId, sourcePmid, targetPmid, hopNumber, distortionScore, distortionType, detectedAt)
+- [x] Generate migration 0038 with pnpm drizzle-kit generate
+- [x] Apply migration via webdev_execute_sql
+- [x] Write citationChainAnalyzer.ts — discovers citing papers via PubMed elink API, scores distortion at each hop using LLM comparison
+- [x] Add DB helpers: insertCitationEdge, getCitationChainByDocument, getCitationChainStats
+- [x] Wire citationChainAnalyzer into analysisPipeline.ts as background task after misrepresentation classification
+- [x] Add tRPC procedure `citationChain.getByDocument` (publicProcedure, input: documentId) returning chain edges and stats
+- [x] Build CitationChainPanel.tsx component — visual hop-by-hop chain with distortion score bars and type badges
+- [x] Surface CitationChainPanel in AuditReport.tsx below the claims section
+- [x] Update SIA evaluate.py to include chain distortion detection as a fourth metric (weight 0.15)
+- [x] Write citationChainAnalyzer.test.ts — 13 unit tests (stats logic, distortion scoring, non-fatal error paths)
+- [x] Save checkpoint and sync to memory repo
