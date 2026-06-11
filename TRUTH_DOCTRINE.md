@@ -328,11 +328,69 @@ pnpm drive:sync                   # Sync to manus-persistent-drive
 
 ---
 
+## Part 8 — SIA Integration: Self-Improving Citation Integrity
+
+### 8.1 The Alignment Decision
+
+On June 11, 2026, the platform adopted selective integration of the SIA (Self-Improving AI) framework from [github.com/hexo-ai/sia](https://github.com/hexo-ai/sia), published in Hebbar et al. 2026 (arXiv:2605.27276). The governing principle for this adoption is the same as for all other decisions: **does this make the platform a better citation integrity engine?** Everything in SIA that serves that question is adopted. Everything that does not is left out.
+
+### 8.2 What Is Adopted
+
+SIA's **harness improvement loop** — the H in SIA-W+H — is adopted. This is the mechanism by which the code that runs a task-specific agent is updated across successive generations based on performance feedback. Applied to the platform, this means the citation analysis pipeline (the claim extraction, evidence retrieval, verdict assignment, and passage alignment logic) can be improved autonomously across generations by measuring its output against a held-out ground truth of verified claim-verdict pairs.
+
+The **three-agent architecture** is adopted as a conceptual framework for understanding the platform's own autonomous loop:
+
+| SIA Agent Role | Platform Equivalent | Location |
+|---|---|---|
+| Meta-Agent | Loop Orchestrator | `server/autonomousLoop/loopOrchestrator.ts` |
+| Target Agent | Analysis Pipeline + Verdict Engine | `server/analysisPipeline.ts`, `server/verdictEngine.ts` |
+| Feedback Agent | Self-Prompt Layer | `server/autonomousLoop/layers/selfPromptLayer.ts` |
+
+The **task format** (task.md + public data + private evaluation data + evaluate.py) is adopted as the structure for defining citation integrity as a formally benchmarkable task. This enables the platform to run SIA's self-improvement loop against its own verdict engine and produce measurable improvement trajectories.
+
+### 8.3 What Is Not Adopted
+
+The **weight update mechanism** (the W in SIA-W+H) is not adopted. Modifying model weights is a research-lab concern, not a production citation platform concern. The platform uses hosted LLM APIs and does not control model weights.
+
+SIA's **benchmark tasks** (LawBench, MLE-Bench, GPU kernels, scRNA-seq denoising) are not adopted as platform objectives. They are reference points for understanding SIA's capability, not targets for the platform.
+
+Positioning as a **benchmark destination for other AI companies** is a downstream commercial opportunity, not a vision driver. It may emerge naturally as the citation integrity task becomes well-defined, but it does not drive build decisions.
+
+### 8.4 The Citation Integrity Task
+
+The platform's citation integrity assessment is a natural SIA task because it has a measurable evaluation function. The task is defined as follows:
+
+**Task:** Given a scientific claim and a set of candidate evidence sources, determine the citation state of the claim (verified, contested, implied, or beyond\_evidence) and identify the specific source passage that supports or contradicts the claim.
+
+**Evaluation function:** Score the Target Agent's output against a held-out set of human-verified claim-verdict pairs from the platform's existing database. Metrics: citation state accuracy, passage alignment precision, misrepresentation pattern recall.
+
+**Ground truth:** The platform's existing corpus of verified claims, verdicts, and source passages — the same data that powers the live verdict engine.
+
+**Reference Target Agent:** The platform's existing `analysisPipeline.ts` + `verdictEngine.ts` combination, packaged as a standalone Python or Node script that accepts a claim and returns a structured verdict.
+
+### 8.5 Implementation Sequence
+
+The SIA integration is sequenced after the citation state architecture is in place, because the evaluation function requires the four graded states as a formal output type:
+
+1. **Phase 99** — Citation state schema (prerequisite for a measurable evaluation function)
+2. **Phase 100** — Passage-level extraction (prerequisite for passage alignment scoring)
+3. **Phase 111** — Define the citation integrity SIA task directory in the platform repo
+4. **Phase 112** — Package the verdict engine as a reference Target Agent
+5. **Phase 113** — Run five generations of the SIA harness improvement loop against the held-out ground truth
+6. **Phase 114** — Evaluate whether the improved harness produces better citation state accuracy than the baseline
+
+### 8.6 The Governing Filter
+
+Every future SIA-related decision is evaluated against the same question as all other decisions: **does this make the platform a better citation integrity engine?** The self-improvement loop is adopted because it can improve verdict quality. If at any point the SIA integration is consuming build capacity without measurably improving citation integrity, it is paused.
+
+---
+
 ## Document History
 
 | Version | Date | Summary |
 |---|---|---|
 | 1.0 | June 2026 (Phase 98) | Initial development reference — claim verification framing |
 | 2.0 | June 2026 | Citation-first restatement — supersedes v1.0 entirely |
+| 2.1 | June 11, 2026 | SIA alignment decision added — Part 8 appended; phases 111–114 defined |
 
 *This document is the authoritative platform blueprint. All development decisions, phase planning, and product positioning should be evaluated against the principles and architecture defined here. When in doubt, return to Section 1.1: a citation is an assertion, not a pointer. The platform's job is to evaluate that assertion.*
