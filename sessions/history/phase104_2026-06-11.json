@@ -1,0 +1,40 @@
+{
+  "phase": 104,
+  "date": "2026-06-11",
+  "project": "citation-desk (citation.is)",
+  "checkpoint": "9e1e0afd",
+  "title": "Eliminate api.manus.im DNS calls — Magic-link auth migration",
+  "status": "complete",
+  "problem": "SocketException: Failed host lookup 'api.manus.im' — Cloud Run has no VPC egress to Manus OAuth backend. Every tRPC request triggered a DNS lookup because sdk.ts called getUserInfoWithJwt() on every request with a valid JWT session cookie.",
+  "root_cause": "sdk.ts authenticateRequest() called getUserInfoWithJwt() which made HTTP POST to api.manus.im on every request. oauth.ts registered /api/oauth/callback which also called api.manus.im. Neither endpoint is reachable from Cloud Run.",
+  "solution": {
+    "sdk_ts": "Rewrote to remove all api.manus.im calls. authenticateRequest() now only verifies JWT locally and looks up user in local DB. No network calls to external OAuth servers.",
+    "oauth_ts": "Rewrote to remove the Manus OAuth callback route entirely. Kept only the logout route and session cookie helpers.",
+    "magic_link_backend": "Created server/magicLink.ts with POST /api/auth/magic-link/request (rate-limited, sends link via notifyOwner) and GET /api/auth/magic-link/verify (validates SHA-256 token hash, upserts user, sets JWT session cookie). Registered in server/_core/index.ts.",
+    "db_helpers": "Added createMagicLinkToken, findValidMagicLinkToken, markMagicLinkUsed, countRecentMagicLinks to server/db.ts.",
+    "schema": "magic_link_tokens table already existed from Phase 100 — migration was already applied.",
+    "frontend": "Created MagicLinkDialog.tsx component. Rewrote const.ts to export openSignInDialog() (dispatches td:open-sign-in event). Migrated main.tsx, useAuth.ts, DashboardLayout.tsx, Home.tsx from getLoginUrl() to openSignInDialog(). Mounted MagicLinkDialog in App.tsx."
+  },
+  "files_changed": [
+    "server/_core/sdk.ts",
+    "server/_core/oauth.ts",
+    "server/magicLink.ts (new)",
+    "server/_core/index.ts",
+    "server/db.ts",
+    "client/src/const.ts",
+    "client/src/main.tsx",
+    "client/src/_core/hooks/useAuth.ts",
+    "client/src/components/DashboardLayout.tsx",
+    "client/src/pages/Home.tsx",
+    "client/src/components/citation/MagicLinkDialog.tsx (new)",
+    "client/src/App.tsx"
+  ],
+  "test_results": "16 tests pass, 0 TypeScript errors",
+  "known_limitation": "Magic links are sent via notifyOwner (Manus owner notification) not directly to user email. Need transactional email provider (SendGrid/Resend) for production. Wire in server/magicLink.ts sendMagicLinkEmail() function.",
+  "pending_next": [
+    "Wire transactional email provider for magic-link delivery",
+    "Make Registry filters URL-persistent (verdict/vertical/page in query params)",
+    "Add copy citation link button on /claims/:id",
+    "Add recently verified section to homepage"
+  ]
+}

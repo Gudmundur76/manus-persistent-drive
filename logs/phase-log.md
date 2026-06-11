@@ -427,3 +427,19 @@ Email delivery in production uses Manus owner notification (not user inbox). Tra
 **Impact:** Anonymous visitors and users already in the DB are unaffected. Only affects first-time login users whose session cookie exists but DB record is missing.
 **Tests:** 16 pass, 0 TypeScript errors
 **Memory note:** Cloud Run cannot reach api.manus.im. Any future OAuth sync calls must be guarded with this same network error pattern.
+
+## Phase 104 — 2026-06-11 — Eliminate api.manus.im DNS Calls (citation.is)
+
+**Checkpoint:** 9e1e0afd  
+**Problem:** SocketException: Failed host lookup 'api.manus.im' on every tRPC request  
+**Root cause:** sdk.ts called getUserInfoWithJwt() (HTTP POST to api.manus.im) on every request with a valid JWT. Cloud Run has no VPC egress to Manus OAuth backend.
+
+**Solution:**
+- Rewrote sdk.ts — removed all api.manus.im calls, JWT-only local auth
+- Rewrote oauth.ts — removed Manus OAuth callback, kept logout + session helpers
+- Created server/magicLink.ts — POST /api/auth/magic-link/request + GET /api/auth/magic-link/verify
+- Added magic-link DB helpers to server/db.ts
+- Created MagicLinkDialog.tsx frontend component
+- Migrated all OAuth call sites to openSignInDialog() (td:open-sign-in CustomEvent)
+
+**Result:** 16 tests pass, 0 TypeScript errors. No api.manus.im calls anywhere in codebase.
