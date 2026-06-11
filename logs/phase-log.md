@@ -407,3 +407,15 @@ Email delivery in production uses Manus owner notification (not user inbox). Tra
 - 16 tests pass, 0 TypeScript errors
 - Production deployed successfully
 - User instruction: write to memory repo after EACH phase
+
+## Phase 102 — ClaimDetail Crash Fix (2026-06-11)
+**Checkpoint:** 5d1896e0
+**Root cause:** `domainLabel(claim.vertical_domain)` crashed with `TypeError: Cannot read properties of undefined (reading 'replace')` because the `/api/public/claims/:id` detail endpoint does NOT return `vertical_domain` (only the list endpoint does).
+**Fixes applied:**
+- `utils.ts domainLabel()`: signature changed to `string | null | undefined`, added `if (!domain) return 'Unknown'` guard
+- `ClaimDetail.tsx`: wrapped domain MetaCard in `{claim.vertical_domain && (...)}` conditional
+- `ClaimDetail.tsx`: guarded `claim_type.replace()` with `claim.claim_type ? ... : 'Unknown'`
+- Removed manual `manualChunks` from vite.config.ts (caused async chunk load failure for BrowserRouter)
+- CopilotKit fully removed (Phase 101): 3 packages uninstalled, server runtime deleted, vite proxy removed
+**Tests:** 16 pass, 0 TypeScript errors
+**Memory note:** API field discrepancy — list endpoint has `vertical_domain`, detail endpoint does NOT. Always guard optional fields from detail endpoint.
