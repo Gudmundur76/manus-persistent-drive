@@ -775,3 +775,26 @@ Addressed the three highest-priority findings from the external critical review 
 
 ### Tests
 35/35 passing, 0 TypeScript errors.
+
+## Phase 120 — Canonical Repo Sync: Phase 96 Citation Extraction (2026-06-11)
+
+**Repo:** ttruthdesk-platform (canonical GitHub)
+**Commit:** e69a6a6
+
+### Problem identified
+The canonical `ttruthdesk-platform` repo and the sandbox clone (`ttruthdesk-platform-full`) had completely divergent commit histories. The sandbox clone contained Phase 96 citation passage extraction work (citations table, db helpers, router attachments) that was never pushed to the canonical GitHub repo. The citation.is frontend was calling `citations.forClaim` which did not exist in the canonical backend.
+
+### Resolution
+Applied Phase 96 changes manually to canonical repo (no cherry-pick due to schema conflicts):
+- `drizzle/schema.ts`: added `CITATION_TYPES`, `CitationType`, `citations` table (citationType, passageText, citationConfidence, evidenceBoundary, claimId, documentId)
+- `server/db.ts`: added `insertCitation`, `getCitationsByClaimId`, `getCitationsByDocumentId` helpers; added `citations`, `Citation`, `InsertCitation` to schema import
+- `server/routers.ts`: added `getCitationsByClaimId` to import; attached `citations[]` to `claims.byDocument` and `search.claims` responses
+
+### Result
+- TypeScript: 0 errors
+- Tests: 1119/1119 passing (68 test files)
+- Pushed to main as `e69a6a6`
+- citation.is frontend `citations[]` array now valid against canonical backend
+
+### Next
+Phase C1 — ClaimDetail: similar claims panel + OG meta tags
