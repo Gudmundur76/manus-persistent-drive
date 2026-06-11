@@ -386,3 +386,24 @@ Detail fields: claim_id, document_id, document_title, vertical_domain, claim_tex
 
 ### Known Limitation
 Email delivery in production uses Manus owner notification (not user inbox). Transactional email (SendGrid/Resend) deferred.
+
+## Phase 101 — CopilotKit Removal + Blank Page Root Cause Fix (2026-06-11)
+**Checkpoints:** b808e6de (CopilotKit removed), 22aaab55 (blank page fixed)
+
+### Work Completed
+- Removed @copilotkit/react-core, @copilotkit/react-ui, @copilotkit/runtime
+- Deleted CitationCopilot.tsx, server/copilotkit.ts, server/citationCopilot.test.ts
+- Rewrote App.tsx — clean BrowserRouter-only structure
+- Removed registerCopilotKit from server/_core/index.ts
+- Removed CopilotKit chunk rule and /api/copilotkit proxy from vite.config.ts
+
+### BLANK PAGE ROOT CAUSE (CRITICAL)
+**Symptom:** Blank page on citation.is, React never mounts, no console errors
+**Cause:** vite.config.ts manualChunks split react-router-dom into async 'router' chunk. BrowserRouter loaded asynchronously → React crashed silently before mount.
+**Fix:** Removed ALL manualChunks from vite.config.ts. Vite's default splitting is safe.
+**Lesson:** NEVER use manualChunks for react, react-dom, react-router-dom, @tanstack/react-query. These must be synchronously available at mount time.
+
+### Status
+- 16 tests pass, 0 TypeScript errors
+- Production deployed successfully
+- User instruction: write to memory repo after EACH phase
