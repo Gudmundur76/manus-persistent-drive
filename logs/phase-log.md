@@ -702,3 +702,53 @@ Added `beforeEach` block to the `multiLLM free model pool` describe block that i
 
 **Tests:** 1953/1953 passing (139 files)
 **TypeScript:** 0 errors
+
+## Phase 118 — citation.is Frontend: 6 New Features (Backend Phase 96-107 Integration)
+**Date:** 2026-06-11
+**Checkpoint:** citation-desk 39da2b32
+
+### What was built
+
+Six new frontend features wired to the ttruthdesk-platform Phase 96-107 backend capabilities. No new proxy routes needed — all procedures route through the existing `/api/external/trpc/:procedure` wildcard.
+
+**Priority 1 — CitationsPanel (ClaimDetail)**
+- New: `client/src/components/citation/CitationsPanel.tsx`
+- Shows passage-level citations: type badge (VERIFIED/CONTESTED/IMPLIED/BEYOND_EVIDENCE), exact passage text, confidence score, evidence boundary
+- Injected into ClaimDetail after claim text, before rationale
+- API: `citations.forClaim` (Phase 96 citation layer)
+
+**Priority 2 — ConfidenceSparkline (ClaimDetail)**
+- New: `client/src/components/citation/ConfidenceSparkline.tsx`
+- Inline SVG polyline showing confidence score history; colour-coded endpoint
+- Injected into verdict hero row via `ConfidenceTrendInline` helper
+- API: `confidenceTrend.forClaim`
+
+**Priority 3 — Contradictions Page (/contradictions)**
+- New: `client/src/pages/Contradictions.tsx`
+- Live feed of entity pairs with opposing claims; severity badges (High/Medium/Low) by edge weight
+- Route added to App.tsx; nav link added to Nav.tsx
+- API: `graph.contradictions` (Phase 107 Contradiction Detection Engine)
+
+**Priority 4 — EvidenceTimeline (ClaimDetail)**
+- New: `client/src/components/citation/EvidenceTimeline.tsx`
+- Cross-document verdict history; only renders when 2+ unique documents
+- API: `timeline.forClaim`
+
+**Priority 5 — ProvenanceAuditTrail (ClaimDetail)**
+- New: `client/src/components/citation/ProvenanceAuditTrail.tsx`
+- Collapsible audit trail: EXTRACTED → SCORED → RE_EVALUATED → HUMAN_OVERRIDE events
+- Lazy-loads on expand
+- API: `provenance.getChain`
+
+**Priority 6 — Leaderboard Enhancements**
+- Rewrote `client/src/pages/Leaderboard.tsx`
+- Entity type filter tabs: All / Proteins / Methods / Organisms / Authors / Concepts / Documents
+- TrendingSection: top 5 movers (30-day delta >= 2)
+- Velocity bar: 30d/total ratio
+- API: `leaderboard.topEntities` (extended with `entityType` filter)
+
+### New types added to lib/api.ts
+`CitationType`, `CitationRecord`, `ConfidenceTrendPoint`, `ConfidenceTrend`, `ContradictionEntry`, `TimelineEvent`, `ClaimTimeline`, `ProvenanceEvent`, `ProvenanceChain`
+
+### Test results
+35/35 tests pass (SKIP_CONTRACT_TESTS=true), 0 TypeScript errors
