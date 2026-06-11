@@ -578,3 +578,18 @@ Warm-up cron + Protocol Discovery fixes + Agent Auth well-known files.
 
 **Tests**: 27/27 pass, 0 TypeScript errors.
 **Checkpoint**: 271e5026
+
+## Phase 113 — Citability Deep Dive (2026-06-11)
+Checkpoint: 7854c66e
+
+Inspired by grow.contact citability patterns. Six improvements:
+
+1. /llms-full.txt — server-side endpoint fetching all claims from live API, rendered as structured markdown corpus. 5-min cache, stale-while-revalidate fallback.
+2. /rss.xml — RSS 2.0 feed of 50 most recently verified claims (sorted by created_at desc), 10-min cache.
+3. FAQPage JSON-LD — 8 answer-first Q&As in index.html (what is citation.is, how verification works, verdicts, agent access, databases, licensing, verticals, integration).
+4. Attributed statistics — "3,900+ claims verified against UniProt, PubChem, NCBI Taxonomy, and PubMed as of June 2026. Source: citation.is internal registry." in static shell.
+5. HTML microdata — itemscope itemtype=DataCatalog, itemprop=name/description/url/license/headline on static shell main element.
+6. Per-page llms.txt — /developers/llms.txt, /registry/llms.txt, /verticals/llms.txt.
+7. Updated llms.txt — sub-contexts section, llms-full.txt, rss.xml, sitemap.xml references.
+
+27/27 tests pass, 0 TypeScript errors.
