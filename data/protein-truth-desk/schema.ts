@@ -123,6 +123,16 @@ export const claims = mysqlTable("claims", {
   passageConfidence: float("passageConfidence"),    // 0.0–1.0 alignment confidence between claim and passage
   passageStartChar: int("passageStartChar"),        // character offset start within the source text
   passageEndChar: int("passageEndChar"),            // character offset end within the source text
+  // Phase 101: Misrepresentation classification — sub-type within Contradicted / Partially Supported verdicts
+  misrepresentationType: mysqlEnum("misrepresentationType", [
+    "amplification",      // claim overstates the magnitude, scope, or certainty of the source finding
+    "selective_omission", // claim omits key qualifications, limitations, or contradicting data from the source
+    "scope_drift",        // claim generalises a finding beyond the population, context, or conditions studied
+    "causal_overclaim",   // claim asserts causation where the source only shows correlation or association
+    "fabrication",        // claim attributes content to the source that does not appear in it at all
+    "none",               // verdict is Contradicted/Partially Supported but no specific misrepresentation pattern detected
+    "unknown",            // classification not yet run
+  ]),
   // Review
   reviewedBy: int("reviewedBy"),
   reviewedAt: timestamp("reviewedAt"),

@@ -387,6 +387,8 @@ export async function updateClaimVerdict(
     passageConfidence?: number | null;
     passageStartChar?: number | null;
     passageEndChar?: number | null;
+    // Phase 101: misrepresentation classification
+    misrepresentationType?: string | null;
   }
 ) {
   const db = await getDb();
@@ -419,6 +421,7 @@ export async function updateClaimVerdict(
   if (passageConfidence !== undefined) setData.passageConfidence = passageConfidence;
   if (passageStartChar !== undefined) setData.passageStartChar = passageStartChar;
   if (passageEndChar !== undefined) setData.passageEndChar = passageEndChar;
+  if (update.misrepresentationType !== undefined) setData.misrepresentationType = update.misrepresentationType;
   if (Object.keys(setData).length > 0) {
     await db
       .update(claims)

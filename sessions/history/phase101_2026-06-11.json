@@ -1,48 +1,6 @@
 {
-  "phase": 101,
-  "date": "2026-06-11",
-  "title": "CopilotKit Removal + Blank Page Root Cause Fix",
-  "checkpoints": {
-    "b808e6de": "Phase 101 — CopilotKit fully removed",
-    "22aaab55": "Phase 101b — manualChunks removed, blank page fixed"
-  },
   "status": "complete",
-  "work_completed": [
-    "Removed @copilotkit/react-core, @copilotkit/react-ui, @copilotkit/runtime packages",
-    "Deleted CitationCopilot.tsx, server/copilotkit.ts, server/citationCopilot.test.ts",
-    "Rewrote App.tsx — clean BrowserRouter-only structure, no CopilotKit providers",
-    "Removed registerCopilotKit from server/_core/index.ts",
-    "Removed CopilotKit chunk rule and /api/copilotkit proxy from vite.config.ts",
-    "BLANK PAGE ROOT CAUSE IDENTIFIED: manualChunks in vite.config.ts split react-router-dom into a separate async 'router' chunk. BrowserRouter was loaded asynchronously, causing React to crash silently before mounting.",
-    "FIX: Removed all manualChunks from vite.config.ts — Vite now bundles everything naturally without async chunk splitting.",
-    "Production bundle: single index chunk + vendor, no async race conditions",
-    "16 tests pass, 0 TypeScript errors"
-  ],
-  "root_cause_analysis": {
-    "symptom": "Blank page on citation.is — React never mounts, no console errors",
-    "cause": "vite.config.ts manualChunks split react-router-dom into 'router' chunk. When App.tsx imported BrowserRouter (qe), it came from an async ES module chunk. In production Cloud Run, this chunk load could fail or race with the createRoot call, causing React to crash silently.",
-    "fix": "Removed all manualChunks — Vite's default code splitting is safe. The manual split was premature optimization that broke the app.",
-    "lesson": "NEVER use manualChunks for core React dependencies (react, react-dom, react-router-dom, @tanstack/react-query). These must be synchronously available at mount time."
-  },
-  "files_changed": [
-    "vite.config.ts — removed manualChunks block entirely",
-    "client/src/App.tsx — removed CopilotKit, clean BrowserRouter",
-    "server/_core/index.ts — removed registerCopilotKit",
-    "client/src/components/citation/CitationCopilot.tsx — DELETED",
-    "server/copilotkit.ts — DELETED",
-    "server/citationCopilot.test.ts — DELETED"
-  ],
-  "pending_next": [
-    "Apply magic-link auth (Phase 100 work) on top of this checkpoint",
-    "Add 'Recently verified' section to homepage (pull 5 most recent claims from registry API)",
-    "Make Registry filters URL-persistent (encode verdict/vertical/page into query params)",
-    "Write Phase 101 to memory repo after each phase (user instruction)"
-  ],
-  "important_notes": [
-    "Production deployment succeeded — citation.is is live with new bundle",
-    "The SocketException api.manus.im error is a transient Cloud Run cold-start DNS issue, not a code bug",
-    "ttruthdesk.claims public REST API: GET /api/public/claims, GET /api/public/claims/:id — CORS open, 3863 claims",
-    "Proxy route: /api/external/public/* → ttruthdesk.claims/api/public/*",
-    "User instruction: write to memory repo after EACH phase"
-  ]
+  "completedAt": "2026-06-11T13:21:28.594Z",
+  "checkpointRef": "b82351a",
+  "lastPhase": "101"
 }

@@ -1298,4 +1298,17 @@
 - [x] Wire extractPassageForClaim into analysisPipeline.ts as background task after each verdict
 - [x] Surface source passage in AuditReport claim cards (collapsible indigo quote block with confidence badge)
 - [x] Write passageExtractor.test.ts — 9 unit tests (all passing, 982 total)
+- [x] Save checkpoint and sync to memory repo
+
+## Phase 101: Misrepresentation Classification (Citation-First)
+
+- [x] Add `misrepresentationType` enum column to `claims` table in drizzle/schema.ts (amplification | selective_omission | scope_drift | causal_overclaim | fabrication | none | unknown)
+- [x] Generate migration 0037 with pnpm drizzle-kit generate
+- [x] Apply migration via webdev_execute_sql
+- [x] Write misrepresentationClassifier.ts — LLM-powered classifier (fires only for Contradicted / Partially Supported verdicts)
+- [x] Extend updateClaimVerdict in db.ts to accept misrepresentationType field
+- [x] Wire classifyMisrepresentation into analysisPipeline.ts as background task after passage extraction
+- [x] Surface misrepresentation type badge in AuditReport claim cards (colour-coded by category)
+- [x] Update SIA evaluate.py to score misrepresentation recall as a third metric
+- [x] Write misrepresentationClassifier.test.ts — 10 unit tests (all passing, 992 total)
 - [ ] Save checkpoint and sync to memory repo
