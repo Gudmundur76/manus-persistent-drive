@@ -651,3 +651,30 @@ All 3 CI jobs pass:
 - Drive Staleness: ✅ success
 
 Run ID: 27349948162
+
+## Phase 107 — Contradiction Detection Engine (2026-06-11)
+
+### What was built
+- `contradiction_alerts` table: Drizzle schema + migration applied (columns: claimAId, claimBId, claimAVerdict, claimBVerdict, claimALabel, claimBLabel, claimAScore, claimBScore, edgeWeight, severity HIGH/MEDIUM/LOW, status OPEN/REVIEWED/RESOLVED/DISMISSED, resolutionNotes, detectedAt)
+- `server/contradictionDetector.ts`: classifySeverity (pure function, symmetric, null-safe), isContradiction (positive vs negative label detection), runContradictionScan (batch graph traversal, idempotent upsert — skips resolved/dismissed), getOpenContradictionAlerts, getContradictionAlertCounts, updateContradictionAlertStatus
+- `contradictions` tRPC router: counts, list, updateStatus, runScan procedures (admin-protected)
+- `client/src/pages/admin/ContradictionAlerts.tsx`: full admin UI with severity badges, status filters, inline status update, "Run Scan Now" button
+- `POST /api/scheduled/contradiction-scan` endpoint registered in index.ts
+- Weekly heartbeat cron registered: task_uid=a6oNML4AmNbtxP3eT5HYbi, every Monday midnight
+- `heartbeatRegistrar.ts` updated with contradiction-scan entry (11 total registered jobs)
+- `analysisPipeline.ts` Stage 8: semantic_similar graph edges created for every validated claim
+- Admin.tsx: Contradiction Alerts card added; App.tsx: /admin/contradictions route
+- `contradictionDetector.test.ts`: 31 new tests
+
+### Test results
+1100/1100 tests passing | TypeScript: 0 errors | Checkpoint: b82351a4
+
+### Autonomous loop status
+- re-evaluate-composite-truth: every 6h (task_uid: XYxgKr9QgnAZBhAvuCbnQR)
+- contradiction-scan: every Monday midnight (task_uid: a6oNML4AmNbtxP3eT5HYbi)
+- Both feed each other: Stage 8 creates edges → re-evaluate updates labels → contradiction-scan detects new conflicts
+
+### Next suggested phases
+- Phase 108: Claim Confidence Timeline UI (sparkline of compositeTruthScore over re-evaluation runs)
+- Phase 109: Graph Visualisation Page (D3 force-directed, nodes coloured by label, edges weighted)
+- Phase 110: Contradiction Resolution Workflow (email/notification to submitter when their claim is flagged)
