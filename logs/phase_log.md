@@ -15,3 +15,13 @@ The autonomous loop is now fully self-compounding:
 - PMC feed ingests papers → pipeline runs 8 stages → Stage 8 writes semantic_similar edges
 - re-evaluate-composite-truth fires every 6h → discovers stale claims via new edges → re-scores → writes updated labels
 - AdminCrons dashboard shows all 10 jobs with run history and Run Now buttons
+
+## Phase 108 — Claim Confidence Timeline (2026-06-11)
+- Added `claim_score_history` table (Drizzle schema + migration applied)
+- Added `getClaimScoreHistory` and `insertClaimScoreSnapshot` DB helpers to db.ts
+- Wired snapshot writes into `reEvaluationEngine.ts` → `reScoreClaim` now persists every score change
+- Added `claims.getScoreHistory` tRPC procedure (merged into existing claims router to avoid 43-router TypeScript type limit)
+- Built `SparklineChart.tsx` — pure SVG, zero deps, colour-coded by composite truth label, hover tooltip
+- Added `CompositeTruthTimeline` component to `ClaimPage.tsx` — shows score history below the existing confidence trend sparkline
+- 19 new tests (score history, snapshot insertion, sparkline data logic, label colour mapping)
+- **Total: 1119/1119 tests passing. TypeScript: 0 errors. Checkpoint: b82351a4**
