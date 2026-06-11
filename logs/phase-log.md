@@ -678,3 +678,27 @@ Run ID: 27349948162
 - Phase 108: Claim Confidence Timeline UI (sparkline of compositeTruthScore over re-evaluation runs)
 - Phase 109: Graph Visualisation Page (D3 force-directed, nodes coloured by label, edges weighted)
 - Phase 110: Contradiction Resolution Workflow (email/notification to submitter when their claim is flagged)
+## Phase 117 — Fix Failing Swarm Tests (ttruthdesk-platform)
+**Date**: 2026-06-11
+**Commit**: c8676b1 (ttruthdesk-platform)
+
+### Problem
+Two tests in `server/swarm.test.ts` were failing in CI and local dev without credentials:
+- `getKeyPoolSize returns at least 1`
+- `getNextOpenRouterKey returns a non-empty string`
+
+**Root cause:** `multiLLM._keyPool` is built at module load time from `OPENROUTER_API_KEY` / `OPENROUTER_API_KEYS` env vars. In CI (and local dev without credentials) neither var is set, so `_keyPool` is empty and both pool-size assertions fail.
+
+### Fix
+Added `beforeEach` block to the `multiLLM free model pool` describe block that injects `sk-or-test-placeholder` when no real key is present. The placeholder is never used for real API calls — it only satisfies the structural pool-size check so the tests can run.
+
+**Note:** This is the same pattern used in Phase 90 when the swarm tests were first introduced, but the `beforeEach` was inadvertently dropped in a subsequent refactor.
+
+### CI Result (run 27365379809)
+- Quality Gate: ✅ success
+- Meta-Agent Health: ✅ success
+- Drift Detection: ✅ success
+- Drive Staleness: ✅ success
+
+**Tests:** 1953/1953 passing (139 files)
+**TypeScript:** 0 errors
