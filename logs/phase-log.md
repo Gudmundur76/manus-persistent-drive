@@ -817,3 +817,21 @@ Phase C1 — ClaimDetail: similar claims panel + OG meta tags
 - TypeScript: 0 errors
 - Tests: 35/35 passing
 - Checkpoint: b3d16a85
+
+## Phase C2 — Search Page Enhancements (2026-06-11)
+
+**Repo:** citation-desk (Manus webdev)
+**Checkpoint:** 8f9ff789
+
+### What was built
+- Citation type filter buttons (VERIFIED/CONTESTED/IMPLIED/BEYOND_EVIDENCE) in search filter panel
+- Confidence range slider (0–90%, step 10) in search filter panel
+- Citation type badge on ClaimCard — shows top citation type from citations[] array
+- Entity co-occurrence sidebar — trending entities from cooccurrence.top procedure (desktop only)
+- Client-side citation type + confidence filtering on results (backend doesn't support these yet)
+- Active filter chips with individual clear buttons
+- CooccurrenceNode + CooccurrenceEdge types added to api.ts
+- cooccurrenceForEntity method added to api.ts
+
+### Tests
+35/35 pass, 0 TypeScript errors
