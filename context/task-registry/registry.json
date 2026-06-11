@@ -79,5 +79,12 @@
     "startedAt": "2026-06-11T16:40:52Z",
     "completedAt": "2026-06-11T16:40:52Z",
     "commitMsg": "session sync"
+  },
+  {
+    "sessionId": "session_unknown",
+    "status": "complete",
+    "startedAt": "2026-06-11T16:55:32Z",
+    "completedAt": "2026-06-11T16:55:32Z",
+    "commitMsg": "session sync"
   }
 ]
