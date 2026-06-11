@@ -541,3 +541,21 @@ Email delivery in production uses Manus owner notification (not user inbox). Tra
 
 **Tests:** 27/27 passing, 0 TypeScript errors
 **Checkpoint:** 791d0eb2
+
+## Phase 111 — Agent Readability Round 3 (82→90+) — 2026-06-11
+
+**Goal:** Fix Protocol Discovery (link=no, content-signal=no) and Citability (words=237).
+
+**Root cause:** Express `Link:` response headers were being stripped by Cloudflare CDN before the scanner reached them. Fix: move all agent-discovery relations into HTML `<link>` tags in `<head>` — these are baked into the payload and survive any CDN.
+
+**Changes to `client/index.html`:**
+- Added 4 HTML `<link>` tags: `rel=alternate type=text/markdown` (Markdown), `rel=https://mcp.so/spec/server-card`, `rel=https://www.iana.org/assignments/link-relations/api-catalog`, `rel=https://agentprotocol.ai/skills`
+- Added `<meta name="content-signals" content="open-access,data,science,cc-by-4.0">`
+- Added `<meta name="robots" content="index, follow">`
+- Expanded static shell with two new sections: "How Claim Verification Works" (3 paragraphs) and "Use Cases" (2 paragraphs) — word count: 237 → 489
+
+**Verified on dev server:**
+- `agent link tags found: 4`, `content-signals meta: present`, `word count: 489`, `h2 count: 5`
+
+**Tests:** 27/27 passing, 0 TypeScript errors
+**Checkpoint:** 943a81cf
