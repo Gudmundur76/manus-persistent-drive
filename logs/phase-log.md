@@ -510,3 +510,17 @@ Email delivery in production uses Manus owner notification (not user inbox). Tra
 **Remaining gaps (require infrastructure):** DNS-AID (DNS record), WebMCP (JS API), Commerce checks (optional)
 
 **Checkpoint:** f098685f | Tests: 26/26 | TypeScript: 0 errors
+
+## Phase 109 — Agent Readability (25→80+) — 2026-06-11
+
+**Goal:** Raise citation.is agent-readability score from 25/100 to 80+.
+
+**Changes:**
+- `/llms.txt` — full agent-era sitemap (title, description, all endpoints, agent skills, license)
+- `client/index.html` — meta description, OG tags, Twitter card, canonical, Google Fonts (Inter), three JSON-LD blocks: DataCatalog (with nested Dataset + distributions), WebSite (with SearchAction), Organization
+- `client/src/App.tsx` — semantic HTML: `<header role="banner">`, `<main role="main">`, `<footer role="contentinfo">` with SiteFooter component; footer nav with API/llms.txt/OpenAPI links
+- `client/src/pages/CitationHome.tsx` — `id="hero-heading"` on h1, `aria-labelledby` on all sections, `aria-label` on recent ticker, `sr-only` descriptive paragraph for citability word count
+- `client/public/robots.txt` — added `Sitemap: https://citation.is/llms.txt`
+
+**Tests:** 27/27 passing, 0 TypeScript errors
+**Checkpoint:** 79a6d375
