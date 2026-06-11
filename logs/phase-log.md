@@ -419,3 +419,11 @@ Email delivery in production uses Manus owner notification (not user inbox). Tra
 - CopilotKit fully removed (Phase 101): 3 packages uninstalled, server runtime deleted, vite proxy removed
 **Tests:** 16 pass, 0 TypeScript errors
 **Memory note:** API field discrepancy — list endpoint has `vertical_domain`, detail endpoint does NOT. Always guard optional fields from detail endpoint.
+
+## Phase 103 — ENOTFOUND api.manus.im Fix (2026-06-11)
+**Checkpoint:** 80ecda48
+**Root cause:** `sdk.ts authenticateRequest()` called `getUserInfoWithJwt()` to sync users not in local DB. On Cloud Run, `api.manus.im` is unreachable (no VPC egress) → SocketException ENOTFOUND → server crash.
+**Fix:** Added network error detection in the catch block (ENOTFOUND, ECONNREFUSED, EAI_AGAIN, "Failed host lookup"). When detected, logs a warning and throws ForbiddenError('OAuth server unreachable') — context.ts catches this and sets user=null (unauthenticated), request continues normally.
+**Impact:** Anonymous visitors and users already in the DB are unaffected. Only affects first-time login users whose session cookie exists but DB record is missing.
+**Tests:** 16 pass, 0 TypeScript errors
+**Memory note:** Cloud Run cannot reach api.manus.im. Any future OAuth sync calls must be guarded with this same network error pattern.
