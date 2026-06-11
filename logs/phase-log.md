@@ -798,3 +798,22 @@ Applied Phase 96 changes manually to canonical repo (no cherry-pick due to schem
 
 ### Next
 Phase C1 — ClaimDetail: similar claims panel + OG meta tags
+
+## Phase C1 — ClaimDetail: SimilarClaims + OG Meta Tags (2026-06-11)
+
+**Repo:** citation-desk (Manus webdev)
+**Checkpoint:** b3d16a85
+
+### What was built
+1. `SimilarClaim` type added to `api.ts`
+2. `similarityFindSimilarToId(claimId, opts)` method added to api — calls `similarity.findSimilarToId` (canonical backend, confirmed public procedure)
+3. Fixed `similarityFindSimilar` to use `queryText` parameter (was incorrectly using `query`)
+4. `SimilarClaims` component — fetches up to 5 similar claims by ID, falls back to text-based similarity if ID lookup fails. Shows verdict pill, similarity bar (%), document title, truncated claim text. Links to each similar claim's detail page.
+5. Integrated `SimilarClaims` into `ClaimDetail` below the actions row
+6. Removed the old "Find similar claims → /search?q=..." button (replaced by inline panel)
+7. `JsonLdHead` now also injects `og:title`, `og:description`, `og:url`, `og:type`, `og:site_name`, `twitter:card`, `twitter:title`, `twitter:description` meta tags per claim. All tags are cleaned up on unmount.
+
+### Result
+- TypeScript: 0 errors
+- Tests: 35/35 passing
+- Checkpoint: b3d16a85
