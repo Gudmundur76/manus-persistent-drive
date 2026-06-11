@@ -559,3 +559,22 @@ Email delivery in production uses Manus owner notification (not user inbox). Tra
 
 **Tests:** 27/27 passing, 0 TypeScript errors
 **Checkpoint:** 943a81cf
+
+## Phase 112 — 2026-06-11
+Warm-up cron + Protocol Discovery fixes + Agent Auth well-known files.
+
+**Warm-up cron**: Heartbeat job created (task_uid=DUf7As35VvLZHpBnWtv2YH), fires every 5 minutes at /api/scheduled/warmup. Handler pings the upstream ttruthdesk.claims API to keep both connections warm. Prevents Cloud Run cold starts that were causing 1900ms+ TTFB on the agent-readability scanner.
+
+**Protocol Discovery fixes**:
+- Content-Signal directive added to robots.txt using the Cloudflare/contentsignals.org spec format: `Content-Signal: search=yes, ai-train=yes, ai-input=yes`
+- HTML meta tag updated to `name="content-signal"` (singular, matching the spec) with `content="search=yes, ai-train=yes, ai-input=yes"`
+- Link rel values corrected: `mcp-server-card` (was `describedby`), `agent-skills` (was `describedby`), `agent-card` (new)
+- A2A agent-card.json created at /.well-known/agent-card.json
+
+**Agent Auth files**:
+- /.well-known/oauth-authorization-server — OPR discovery document (open access, no OAuth required)
+- /.well-known/openapi.json — OAS discovery pointer to /openapi.json
+- /.well-known/agent-card.json — A2A Agent Card with two skills (search-claims, verify-claim)
+
+**Tests**: 27/27 pass, 0 TypeScript errors.
+**Checkpoint**: 271e5026
