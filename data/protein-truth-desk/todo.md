@@ -1275,3 +1275,13 @@
 - [x] Add Trust + API nav links to TopNav.tsx ADMIN_NAV_LINKS (fixes trustAndApiDocs.test.ts)
 - [x] TypeScript: 0 errors; build: 0 CopilotKit chunks; tests: 973/973 passing
 - [x] Save checkpoint
+
+## Phase 98: Fix Sign-In Button (Global MagicLinkDialog)
+
+- [x] Mount MagicLinkDialog globally in App.tsx with useState open flag
+- [x] Add useEffect in App.tsx to listen for open-sign-in-dialog custom event
+- [x] Remove local MagicLinkDialog mount from TopNav (avoid double mount)
+- [x] TopNav sign-in button now calls openSignInDialog() event dispatch
+- [x] Tested: clicking Sign in on unauthenticated dashboard gate opens email dialog
+- [x] 973/973 tests passing
+- [x] Save checkpoint

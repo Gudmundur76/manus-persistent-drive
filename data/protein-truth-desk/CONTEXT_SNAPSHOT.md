@@ -1,6 +1,6 @@
 # CONTEXT_SNAPSHOT.md — Full Project State
 
-> **Generated:** 2026-06-10T23:42:11.791Z
+> **Generated:** 2026-06-11T00:03:56.308Z
 > **Branch:** main
 > **Last commit:** b82351a feat: Phase 97 CopilotKit removal and native chat.query tRPC procedure
 > **READ THIS FIRST** at the start of every session.
@@ -295,8 +295,8 @@ clean
 
 **Tests:**
 ```
-Start at  23:42:13
-   Duration  9.16s (transform 2.32s, setup 0ms, collect 8.69s, tests 19.10s, environment 14ms, prepare 4.54s)
+Start at  00:03:57
+   Duration  9.03s (transform 2.54s, setup 0ms, collect 9.59s, tests 18.43s, environment 14ms, prepare 4.89s)
 ```
 
 **Lint:**
