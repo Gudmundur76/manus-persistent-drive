@@ -321,3 +321,46 @@ Two post-Phase-96-E commits to fix CI Quality Gate failures:
 - ESLint: 0 errors
 - Tests: 1953/1953 passing (139 files)
 - HEAD: `5910511`
+
+---
+
+## Phase 99 — citation.is Registry & Claim Detail Pages (2026-06-11)
+
+**Project:** citation-desk (citation.is) — Manus WebDev project
+**Checkpoint:** `2ea46eef`
+**Tests:** 26/26 passing | 0 TypeScript errors
+
+### Work Completed
+
+**New pages built:**
+- `/registry` (`client/src/pages/RegistryPage.tsx`) — searchable, filterable, paginated registry of all 3,863 verified claims. Filters: verdict, research domain, claim type. Free-text search. Smart ellipsis pagination (20 claims/page). Each row links to `/claims/:id`.
+- `/claims/:id` (`client/src/pages/ClaimDetail.tsx`) — full claim detail with verdict hero (icon + badge + confidence %), rationale block, primary evidence URL, metadata grid (document, domain, claim type, extracted value, PDB ID, dates), external links to Truth Desk audit and claim page, `ClaimReview` + `FAQPage` JSON-LD injected into `<head>` for SEO, graceful 404 handling.
+
+**Infrastructure changes:**
+- `server/externalProxy.ts` — extended with `/api/external/public/*` passthrough to `https://ttruthdesk.claims/api/public/*`
+- `client/src/lib/api.ts` — added `PublicClaim`, `PublicClaimDetail`, `PublicClaimsPage`, `RegistryQuery` types + `registryClaims()` and `claimById()` functions
+- `client/src/App.tsx` — registered `/registry` and `/claims/:id` routes
+- `client/src/components/citation/Nav.tsx` — added Registry nav link with Database icon
+- `server/registry.proxy.test.ts` (NEW) — 6 Vitest tests: list, detail, 404, network error, verdict filter, query filter
+
+### API Discovery: ttruthdesk.claims Public REST API
+```
+Base: https://ttruthdesk.claims/api/public
+CORS: open (*)
+GET /claims?page=N&page_size=N&q=...&verdict=...&vertical=...&claim_type=...
+GET /claims/:id
+Total claims: 3,863
+Verdicts: Supported | Refuted | Ambiguous | Insufficient Evidence | Out of Scope
+Detail fields: claim_id, document_id, document_title, vertical_domain, claim_text,
+               claim_type, extracted_value, pdb_id, verdict, verdict_rationale,
+               confidence_score, verdict_method, evidence_url, page_url, audit_url,
+               created_at, updated_at, jsonld
+```
+
+### Bug Diagnosed & Fixed
+**Blank page on citation.is/registry:** Production was serving old JS bundle (`index-CcgC9A3S.js`) that called `/api/external/public/claims` — an endpoint that did NOT exist on the old server. Fixed by adding the proxy route to `externalProxy.ts` and saving checkpoint `2ea46eef` for publishing.
+
+**SocketException 'Failed host lookup: api.manus.im':** Transient Cloud Run cold-start DNS issue (previously documented in Auth Migration commit `5910511`). Not a code bug — resolves once server is warm.
+
+### Pending
+- User must click Publish in Manus Management UI to deploy checkpoint `2ea46eef` to citation.is

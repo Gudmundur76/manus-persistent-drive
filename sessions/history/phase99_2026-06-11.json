@@ -1,0 +1,65 @@
+{
+  "phase": "99",
+  "project": "citation-desk (citation.is)",
+  "sessionDate": "2026-06-11",
+  "status": "complete",
+  "completedAt": "2026-06-11T00:20:00.000Z",
+  "checkpointRef": "2ea46eef",
+  "summary": "Built /registry and /claims/:id pages on citation.is. Diagnosed and fixed blank page caused by missing server-side proxy for public REST API. Added Registry nav link. 26/26 tests pass.",
+  "workCompleted": [
+    "Audited ttruthdesk.claims public REST API — GET /api/public/claims (paginated, filterable) and GET /api/public/claims/:id (full detail with JSON-LD)",
+    "Extended server/externalProxy.ts with /api/external/public/* passthrough to https://ttruthdesk.claims/api/public/*",
+    "Added PublicClaim, PublicClaimDetail, PublicClaimsPage, RegistryQuery types to client/src/lib/api.ts",
+    "Added registryClaims() and claimById() functions to lib/api.ts",
+    "Created client/src/pages/RegistryPage.tsx — searchable, filterable, paginated registry of 3,863 claims",
+    "Created client/src/pages/ClaimDetail.tsx — full claim detail with verdict hero, rationale, evidence, metadata grid, external links (audit_url, page_url), JSON-LD ClaimReview SEO injection",
+    "Registered /registry and /claims/:id routes in App.tsx",
+    "Added Registry link (Database icon) to Nav.tsx",
+    "Wrote server/registry.proxy.test.ts — 6 Vitest tests for the new proxy (list, detail, 404, network error, verdict filter, query filter)",
+    "Installed supertest + @types/supertest for HTTP integration testing",
+    "Restored @types/web-push after it was removed during supertest install",
+    "All 26 tests pass, 0 TypeScript errors"
+  ],
+  "bugsDiagnosed": [
+    "Blank page on citation.is/registry: production site was serving old JS bundle (index-CcgC9A3S.js) that called /api/external/public/claims — an endpoint that did NOT exist on the old server. Fix: added the proxy route to externalProxy.ts and published new checkpoint.",
+    "SocketException 'Failed host lookup: api.manus.im': transient Cloud Run cold-start DNS issue, not a code bug. Production server resolves api.manus.im correctly once warm. Previously documented in phase-log.md under Auth Migration commit 5910511."
+  ],
+  "apiDiscoveries": {
+    "ttruthdesk_public_rest": {
+      "base": "https://ttruthdesk.claims/api/public",
+      "cors": "open (*)",
+      "endpoints": {
+        "list": "GET /claims?page=N&page_size=N&q=...&verdict=...&vertical=...&claim_type=...&updated_since=...",
+        "detail": "GET /claims/:id",
+        "schema": "GET /schemas/claims.schema.json"
+      },
+      "total_claims": 3863,
+      "verdicts": ["Supported", "Refuted", "Ambiguous", "Insufficient Evidence", "Out of Scope"],
+      "verticals": ["salmon_biotech", "structural_biology", "protein_supplements", "creatine_ergogenics", "gut_microbiome", "collagen_peptides", "plant_based_protein", "sports_nutrition_rcts", "uniprot", "clinicaltrials"],
+      "detail_fields": ["claim_id", "document_id", "document_title", "vertical_domain", "claim_text", "claim_type", "extracted_value", "pdb_id", "verdict", "verdict_rationale", "confidence_score", "verdict_method", "evidence_url", "page_url", "audit_url", "created_at", "updated_at", "jsonld"]
+    }
+  },
+  "filesChanged": [
+    "server/externalProxy.ts",
+    "client/src/lib/api.ts",
+    "client/src/pages/RegistryPage.tsx (NEW)",
+    "client/src/pages/ClaimDetail.tsx (NEW)",
+    "client/src/App.tsx",
+    "client/src/components/citation/Nav.tsx",
+    "server/registry.proxy.test.ts (NEW)",
+    "package.json (supertest + @types/supertest added)"
+  ],
+  "testStatus": {
+    "total": 26,
+    "passing": 26,
+    "failing": 0,
+    "tsErrors": 0,
+    "files": ["server/auth.logout.test.ts", "server/api.test.ts", "server/citationCopilot.test.ts", "server/registry.proxy.test.ts"]
+  },
+  "pendingActions": [
+    "User needs to click Publish in Manus Management UI to deploy checkpoint 2ea46eef to citation.is",
+    "Consider adding URL query param persistence to /registry filters for bookmarkable filtered views",
+    "Consider adding 'Copy citation link' button on /claims/:id",
+    "Consider wiring /registry Recent claims to homepage"
+  ]
+}
