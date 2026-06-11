@@ -853,3 +853,55 @@ Phase C1 — ClaimDetail: similar claims panel + OG meta tags
 
 ### Tests
 35/35 passing | 0 TypeScript errors
+
+## Phase C4 — SEO & Structured Data (2026-06-11)
+
+**Checkpoint:** e9d9f1bc
+**Tests:** 35/35 passing
+**TypeScript:** 0 errors
+
+### What was built
+
+**1. ClaimReview schema.org JSON-LD (client/src/pages/ClaimDetail.tsx)**
+
+The `JsonLdHead` component was upgraded to build a full `schema.org/ClaimReview` block client-side from the claim data already in React state, rather than relying on the upstream `jsonld[]` array (which is often empty). Key additions:
+
+- `verdictToRating()` helper maps verdict strings to schema.org `Rating` values: `Supported→5/True`, `Refuted→1/False`, `Ambiguous→3/Mixture`, else `2/Unverified`
+- `ClaimReview` block includes: `url`, `datePublished`, `author` (Organization: citation.is), `claimReviewed`, `itemReviewed` (Claim with `appearance` pointing to `evidence_url` and `author` pointing to `document_title`), `reviewRating`, `reviewBody`
+- `BreadcrumbList` block also injected (Registry → Claim #N)
+- Upstream `jsonld[]` array still appended after (backward-compatible)
+- Fixed TypeScript error: `claim.source_url` (non-existent field) → `claim.evidence_url` (correct field already used in the render)
+
+**2. Canonical link tags**
+
+- `ClaimDetail`: injects `<link rel="canonical" href="https://citation.is/claims/:id">` inside `JsonLdHead` useEffect, with proper cleanup on unmount (only removes if it created the element)
+- `EntityPage`: injects `<link rel="canonical" href="https://citation.is/entity/:type/:name">` in the OG meta useEffect, with proper cleanup on unmount
+
+**3. Dynamic sitemap.xml (server/sitemapGenerator.ts)**
+
+New `registerSitemapGenerator(app)` module registered in `server/_core/index.ts`:
+
+- `/sitemap.xml` → sitemap index referencing `/sitemap-pages.xml` and `/sitemap-claims.xml`
+- `/sitemap-pages.xml` → all static routes: homepage, search, registry, verticals, leaderboard, developers, about, audit, methodology, contradictions, OAI-PMH endpoints, data endpoints (claims.json, graph.json, openapi.json, api/md), llms.txt, llms-full.txt, rss.xml
+- `/sitemap-claims.xml` → all claim detail pages (`/claims/:id`) fetched live from the public REST API (`/api/public/claims?page=N&page_size=500`), with 30-minute in-memory cache and stale-while-revalidate fallback. Parallel page fetching (up to 20 pages = 10,000 claims). Each `<url>` entry includes `<lastmod>` from `updated_at`.
+- Cache headers: `public, max-age=1800, s-maxage=3600, stale-while-revalidate=86400`
+
+**4. robots.txt update**
+
+Added references to all three sitemaps:
+```
+Sitemap: https://citation.is/sitemap.xml
+Sitemap: https://citation.is/sitemap-pages.xml
+Sitemap: https://citation.is/sitemap-claims.xml
+Sitemap: https://citation.is/llms.txt
+```
+
+### Files changed
+
+- `client/src/pages/ClaimDetail.tsx` — verdictToRating(), full ClaimReview JSON-LD, BreadcrumbList, canonical link tag
+- `client/src/pages/EntityPage.tsx` — canonical link tag injection + cleanup
+- `server/sitemapGenerator.ts` — new file (dynamic sitemap generator)
+- `server/_core/index.ts` — import + register sitemapGenerator
+- `client/public/robots.txt` — added sitemap-pages.xml and sitemap-claims.xml references
+- `todo.md` — Phase C4 marked complete
+
