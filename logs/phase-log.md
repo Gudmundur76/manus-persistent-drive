@@ -524,3 +524,20 @@ Email delivery in production uses Manus owner notification (not user inbox). Tra
 
 **Tests:** 27/27 passing, 0 TypeScript errors
 **Checkpoint:** 79a6d375
+
+## Phase 110 — Agent Readability Round 2 (59→90+) — 2026-06-11
+
+**Root cause identified:** citation.is is a React SPA. The crawler sees only `<div id="root"></div>` before JS hydration — 8 words, no h1, no landmarks.
+
+**Changes:**
+- `client/index.html` — Added `#static-shell` div outside `#root` containing full semantic HTML: `<header role="banner">` with `<nav>`, `<main role="main">` with `<h1>`, three `<h2>` sections (1613 words total), `<footer role="contentinfo">`. CSS rule `#root:not(:empty) ~ #static-shell { display: none }` hides it once React mounts.
+- `server/_core/index.ts` — Added `compression` middleware (gzip level 6): 377kb → 108kb (71% reduction). Added `Cache-Control` headers: immutable for hashed assets, 1h for well-known/robots/sitemap.
+- `client/index.html` — Added `<link rel="dns-prefetch">` for fonts.gstatic.com alongside existing preconnect.
+
+**Verified on dev server:**
+- `static-shell found: True`, `h1: Every claim, verified.`, `h2 count: 3`, `word count: 1613`
+- `header: True, main: True, footer: True`
+- Compressed: 108kb vs uncompressed: 377kb
+
+**Tests:** 27/27 passing, 0 TypeScript errors
+**Checkpoint:** 791d0eb2
