@@ -633,3 +633,21 @@ Unified dev environment + API contract test.
 - .env.dev.example: shared secrets template for both containers
 
 **Key discipline:** contract-first workflow — define API shape in ttruthdesk-platform → add test in citation-desk → write proxy → consume in frontend. Never the reverse.
+
+## Phase 116 — CI Fix: Remove hardcoded pnpm version from GitHub Actions
+**Date**: 2026-06-11
+**Commit**: c855b24
+
+### Problem
+GitHub Actions CI was failing on every push because `.github/workflows/ci.yml` had `version: 9` in both the Quality and API Contract jobs' `pnpm/action-setup@v4` step. The `package.json` `packageManager` field specifies `pnpm@10.4.1`, causing `pnpm/action-setup@v4` to throw `ERR_PNPM_BAD_PM_VERSION: Multiple versions of pnpm specified`.
+
+### Fix
+Removed the `with: version: 9` block from both jobs. `pnpm/action-setup@v4` now reads the version automatically from `package.json`'s `packageManager` field.
+
+### Result
+All 3 CI jobs pass:
+- Quality: ✅ success
+- API Contract: ✅ success
+- Drive Staleness: ✅ success
+
+Run ID: 27349948162
