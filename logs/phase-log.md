@@ -752,3 +752,26 @@ Six new frontend features wired to the ttruthdesk-platform Phase 96-107 backend 
 
 ### Test results
 35/35 tests pass (SKIP_CONTRACT_TESTS=true), 0 TypeScript errors
+
+## Phase 119 — Critical Review Fixes (citation.is frontend)
+**Date:** 2026-06-11
+**Repo:** citation-desk (Manus webdev)
+**Checkpoint:** 5935e811
+
+### What was done
+Addressed the three highest-priority findings from the external critical review of citation.is.
+
+**1. Homepage — Live from the Registry section**
+- Added `FeaturedClaims` component: fetches 3 live Supported claims from `api.registryClaims()`, renders verdict badge, confidence %, PMID/DOI link, claim text, and document title.
+- Added "How verification works" 3-step pipeline section (Extract → Resolve & Cross-reference → Verdict + Confidence) with link to /methodology.
+
+**2. New /methodology page**
+- Full pipeline disclosure: 4 stages, verdict definitions table, confidence score range table (0.90-1.00 High → 0.00-0.49 Low), conflict resolution process (both claims retained + contradiction graph edge), LLM role (extraction + evaluation only, no internet access during evaluation), known error rates (3-7% false positive Supported, 8-12% entity resolution failure, 2-4% extraction hallucination).
+- Linked from homepage "How it works" section and footer nav.
+
+**3. Developers page — Try it right now section**
+- Dark bg section with live curl commands + real JSON response payloads for both `/api/external/public/claims` and `/api/public/verify-claim`.
+- Added "Why not Perplexity / Semantic Scholar?" comparison table (7 rows: unit of output, stable PID, confidence score, contradiction detection, MCP, provenance chain, re-evaluation).
+
+### Tests
+35/35 passing, 0 TypeScript errors.
