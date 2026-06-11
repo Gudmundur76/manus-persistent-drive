@@ -5,6 +5,7 @@ const escapeLike = (s: string) => s.replace(/[%_\\]/g, c => `\\${c}`);
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { siaHarnessRouter } from "./siaHarnessRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import {
@@ -4792,5 +4793,7 @@ Respond in this exact structure:
         };
       }),
   }),
+  // ─── SIA Harness Improvement Loop ────────────────────────────────────────────
+  sia: siaHarnessRouter,
 });
 export type AppRouter = typeof appRouter;

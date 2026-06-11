@@ -1584,3 +1584,55 @@ export const publicSubmissions = mysqlTable("public_submissions", {
 }));
 export type PublicSubmission = typeof publicSubmissions.$inferSelect;
 export type InsertPublicSubmission = typeof publicSubmissions.$inferInsert;
+
+// ─── SIA Harness Improvement Loop ─────────────────────────────────────────────
+// Stores results from SIA (Self-Improving AI) citation integrity task runs.
+// Each row represents one generation of the self-improvement loop.
+// The governing principle: improvements are only applied if they increase
+// citation integrity accuracy (combined score).
+
+export const siaGenerations = mysqlTable("sia_generations", {
+  id: int("id").autoincrement().primaryKey(),
+  runId: varchar("runId", { length: 64 }).notNull(),
+  generation: int("generation").notNull(),
+  combinedScore: float("combinedScore").notNull(),
+  citationStateAccuracy: float("citationStateAccuracy").notNull(),
+  passagePrecision: float("passagePrecision").notNull(),
+  misrepresentationRecall: float("misrepresentationRecall").notNull(),
+  nTotal: int("nTotal").notNull(),
+  nEvaluated: int("nEvaluated").notNull(),
+  targetAgentCode: text("targetAgentCode").notNull(),
+  improvementMd: text("improvementMd"),
+  createdAt: int("createdAt").notNull(),
+}, (t) => ({
+  runIdIdx: index("sia_gen_run_id_idx").on(t.runId),
+  scoreIdx: index("sia_gen_score_idx").on(t.combinedScore),
+}));
+
+export type SiaGeneration = typeof siaGenerations.$inferSelect;
+export type InsertSiaGeneration = typeof siaGenerations.$inferInsert;
+
+// Stores LLM-generated improvement proposals derived from SIA generation results.
+// Status flow: pending_review → approved → applied (or rejected).
+// Human review is required before any proposal is applied to production.
+export const siaImprovementProposals = mysqlTable("sia_improvement_proposals", {
+  id: int("id").autoincrement().primaryKey(),
+  runId: varchar("runId", { length: 64 }).notNull(),
+  generation: int("generation").notNull(),
+  combinedScore: float("combinedScore").notNull(),
+  scoreDelta: float("scoreDelta").notNull(),
+  proposal: text("proposal").notNull(),
+  status: mysqlEnum("status", ["pending_review", "approved", "rejected", "applied"])
+    .default("pending_review")
+    .notNull(),
+  reviewNote: text("reviewNote"),
+  reviewedAt: int("reviewedAt"),
+  reviewedBy: int("reviewedBy"),
+  createdAt: int("createdAt").notNull(),
+}, (t) => ({
+  runIdIdx: index("sia_prop_run_id_idx").on(t.runId),
+  statusIdx: index("sia_prop_status_idx").on(t.status),
+}));
+
+export type SiaImprovementProposal = typeof siaImprovementProposals.$inferSelect;
+export type InsertSiaImprovementProposal = typeof siaImprovementProposals.$inferInsert;
