@@ -443,3 +443,35 @@ Email delivery in production uses Manus owner notification (not user inbox). Tra
 - Migrated all OAuth call sites to openSignInDialog() (td:open-sign-in CustomEvent)
 
 **Result:** 16 tests pass, 0 TypeScript errors. No api.manus.im calls anywhere in codebase.
+
+## Phase 105 — 2026-06-11 — Remove Sign-In + Build Missing Public Pages (citation.is)
+**Checkpoint:** 702b603e
+**Key decision:** citation.is is a fully public read-only site — no user sign-in is needed anywhere on the frontend. The magic-link auth system built in Phase 104 was removed. Backend admin access (ttruthdesk.claims) remains restricted to owner and tight team only.
+
+**Auth cleanup:**
+- Deleted MagicLinkDialog.tsx
+- Removed openSignInDialog() and getLoginUrl() from const.ts
+- Removed UNAUTHORIZED → openSignInDialog() handler from main.tsx
+- Removed redirectOnUnauthenticated from useAuth.ts
+- Removed openSignInDialog import from DashboardLayout.tsx
+- Removed MagicLinkDialog mount from App.tsx
+- server/magicLink.ts kept dormant (backend endpoints exist but not linked from UI)
+
+**New proxy routes in externalProxy.ts:**
+- POST /api/public/verify-claim, GET /api/public/claims.json, GET /api/public/graph.json
+- GET /api/md, GET /openapi.json, GET /.well-known/mcp.json, GET /mcp
+- All proxy to ttruthdesk.claims server-side
+
+**New pages:**
+- /audit/:id — AuditDetail.tsx: verdict distribution bar, all claims from document, links to ttruthdesk.claims
+- /entity/:type/:name — EntityPage.tsx: knowledge graph entity with related claims, entity type icons
+- /developers — Developers.tsx: full REST API docs, collapsible endpoints, curl/Python/JS examples, MCP integration guide
+
+**Homepage improvements:**
+- Live recently verified claims from /api/external/public/claims (replaces hardcoded SAMPLE_CLAIMS)
+- Live total claim count from public registry API
+- Recent claims are clickable links to /claims/:id
+
+**Nav:** Added Developers link (Code2 icon)
+**Tests:** 16 pass, 0 TypeScript errors
+**Memory note:** citation.is = public presentation layer only. ttruthdesk.claims = private pipeline backend. Never add sign-in prompts to citation.is.

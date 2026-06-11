@@ -1,0 +1,76 @@
+{
+  "phase": 105,
+  "date": "2026-06-11",
+  "project": "citation-desk (citation.is)",
+  "checkpoint": "702b603e",
+  "status": "complete",
+  "summary": "Removed all sign-in/auth UI from citation.is (fully public read-only site) and built the missing public pages and proxy routes.",
+  "key_decision": "citation.is is a fully public read-only site — no user sign-in is needed anywhere on the frontend. The magic-link auth system built in Phase 104 was removed. Backend admin access (ttruthdesk.claims) remains restricted to owner and tight team only.",
+  "auth_cleanup": {
+    "removed": [
+      "MagicLinkDialog.tsx — deleted component file",
+      "openSignInDialog() and getLoginUrl() from const.ts",
+      "UNAUTHORIZED → openSignInDialog() handler from main.tsx",
+      "redirectOnUnauthenticated option from useAuth.ts",
+      "openSignInDialog import from DashboardLayout.tsx (replaced with 'Admin access restricted' message)",
+      "MagicLinkDialog mount from App.tsx"
+    ],
+    "kept_dormant": [
+      "server/magicLink.ts — backend endpoints remain but are not linked from UI",
+      "magic_link_tokens DB table — kept for potential future admin use"
+    ]
+  },
+  "new_proxy_routes": [
+    "POST /api/public/verify-claim → ttruthdesk.claims/api/public/verify-claim",
+    "GET /api/public/claims.json → ttruthdesk.claims/api/public/claims.json",
+    "GET /api/public/graph.json → ttruthdesk.claims/api/public/graph.json",
+    "GET /api/md → ttruthdesk.claims/api/md",
+    "GET /openapi.json → ttruthdesk.claims/openapi.json",
+    "GET /.well-known/mcp.json → ttruthdesk.claims/.well-known/mcp.json",
+    "GET /mcp → ttruthdesk.claims/mcp"
+  ],
+  "new_pages": [
+    {
+      "route": "/audit/:id",
+      "file": "client/src/pages/AuditDetail.tsx",
+      "description": "Audit report detail — shows all verified claims from a document, verdict distribution bar chart, links to ttruthdesk.claims audit page"
+    },
+    {
+      "route": "/entity/:type/:name",
+      "file": "client/src/pages/EntityPage.tsx",
+      "description": "Knowledge graph entity page — shows all claims mentioning the entity, entity type icon, support/refuted counts, links to knowledge graph"
+    },
+    {
+      "route": "/developers",
+      "file": "client/src/pages/Developers.tsx",
+      "description": "Developer documentation — full REST API docs with collapsible endpoints, code examples in curl/Python/JS, MCP integration guide, OpenAPI spec link, LLM grounding instructions"
+    }
+  ],
+  "homepage_improvements": [
+    "Live recently verified claims from /api/external/public/claims (replaces hardcoded SAMPLE_CLAIMS)",
+    "Live total claim count from public registry API (shown in hero text and stats grid)",
+    "Recent claims are clickable links to /claims/:id"
+  ],
+  "nav_changes": [
+    "Added Developers link (Code2 icon) to Nav.tsx",
+    "Removed Sign In button (was never present in Nav — was in DashboardLayout only)"
+  ],
+  "test_status": {
+    "tests_passing": 16,
+    "tests_total": 16,
+    "typescript_errors": 0
+  },
+  "constraints_respected": [
+    "No api.manus.im calls anywhere",
+    "No manualChunks in vite.config.ts",
+    "No user sign-in on public site",
+    "All proxy routes server-side (no CORS issues)"
+  ],
+  "next_phase_suggestions": [
+    "Phase 106: Improve /audit/:id to use a dedicated document-level API endpoint if ttruthdesk.claims exposes one (currently fetches first 200 claims and filters client-side)",
+    "Phase 107: Add JSON-LD structured data to /developers page for SEO",
+    "Phase 108: Add sitemap.xml and robots.txt updates for new routes",
+    "Phase 109: Add search.json / sitemap for knowledge graph entities",
+    "Phase 110: Build admin-only dashboard on ttruthdesk.claims (separate from citation.is)"
+  ]
+}
