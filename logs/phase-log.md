@@ -905,3 +905,66 @@ Sitemap: https://citation.is/llms.txt
 - `client/public/robots.txt` — added sitemap-pages.xml and sitemap-claims.xml references
 - `todo.md` — Phase C4 marked complete
 
+
+## Phase C5 — Developer Experience Improvements (2026-06-11)
+
+**Checkpoint:** 184ec543
+**Tests:** 35/35 passing
+**TypeScript:** 0 errors
+
+### What was built
+
+Complete rewrite of `client/src/pages/Developers.tsx` (613 → ~750 lines). All changes are purely frontend — no server routes, no schema changes.
+
+**1. Live API Playground (`LivePlayground` component)**
+- Interactive search form: text query input + verdict dropdown + Run button
+- Fires real `fetch` to `/api/external/public/claims` on the live citation.is API
+- Renders results as clickable claim cards with VerdictIcon, verdict badge, confidence %, document title
+- Shows total result count and elapsed time in ms
+- Dynamically generates the matching curl command as the user types
+- Collapsible raw JSON viewer (details/summary)
+- Error state with red alert box
+
+**2. One-Shot Claim Verifier (`ClaimVerifier` component)**
+- 3 example claim pills (lysozyme, EGFR, salmon ISA) that pre-fill the textarea
+- Fires real `POST /api/public/verify-claim`
+- Renders verdict badge + confidence + rationale + evidence URL with color coding per verdict
+- Elapsed time display
+- Collapsible raw JSON viewer
+
+**3. OAI-PMH documentation section**
+- Full endpoint reference using the existing `Endpoint` accordion component
+- Covers: Identify, ListMetadataFormats, ListSets, ListRecords (with all 5 params), GetRecord
+- Example curl commands for each
+
+**4. Agent Discovery section**
+- 6-card grid linking to all well-known discovery files:
+  `/.well-known/agent-card.json`, `/.well-known/mcp/server-card.json`, `/.well-known/api-catalog`, `/.well-known/agent-skills/index.json`, `/.well-known/openapi.json`, `/.well-known/oauth-authorization-server`
+
+**5. Improved MCP section**
+- Tool name cards: `list_claims`, `get_claim`, `verify_claim` with input schema descriptions
+- Removed redundant "Tool card" + "MCP endpoint" sub-sections; consolidated
+
+**6. API Changelog**
+- v1.1 (current, June 2026): 8 change items covering citations[], confidence trend, timeline, provenance, cooccurrence, OAI-PMH, MCP, llms.txt/rss.xml
+- v1.0 (stable, May 2026): 8 change items covering initial API surface
+
+**7. Rate Limits & SLA section**
+- 3-card grid: 60 req/min, unlimited bulk export, 99.5% uptime
+- Contact email for higher limits
+
+**8. TypeScript Types section**
+- Copy-paste types: `Verdict`, `VerticalDomain`, `PublicClaim`, `ClaimsResponse`, `VerifyClaimResult`
+- `searchClaims()` fetch helper function
+
+**9. REST Endpoints additions**
+- Added `llms.txt`, `llms-full.txt`, `rss.xml` to the endpoint accordion
+- Added `required` flag to endpoint params
+
+**10. Quick links grid**
+- Expanded from 3 to 4 cards: REST API, MCP Tool, LLM Grounding, Agent Card
+
+### Files changed
+- `client/src/pages/Developers.tsx` — full rewrite
+- `todo.md` — Phase C5 marked complete
+
