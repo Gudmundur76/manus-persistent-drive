@@ -492,3 +492,21 @@ Email delivery in production uses Manus owner notification (not user inbox). Tra
 **Future:** Mint real DataCite DOIs, apply for CoreTrustSeal
 
 **Checkpoint:** f48dcd5a | Tests: 16/16 | TypeScript: 0 errors
+
+## Phase 107 — Agent-Readiness Infrastructure (2026-06-11)
+
+**Goal:** Raise citation.is from Level 0 (7/14) to maximum achievable score on isitagentready.com.
+
+**Delivered:**
+- `client/public/.well-known/mcp/server-card.json` — MCP Server Card for agent discovery
+- `client/public/.well-known/api-catalog` — API Catalog in application/linkset+json format
+- `client/public/.well-known/agent-skills/index.json` — Agent Skills index (2 skills: search + verify)
+- `client/public/.well-known/http-message-signatures-directory` — Web Bot Auth directory (open access)
+- `client/public/auth.md` — Agent authentication guide (no auth required)
+- `server/agentHeaders.ts` — Middleware: Link response headers on all HTML, Markdown content negotiation, API Catalog content-type fix
+- `server/agentHeaders.test.ts` — 10 new tests covering all well-known files and middleware
+
+**Expected score improvement:** 7/14 → 12+/14 after publish
+**Remaining gaps (require infrastructure):** DNS-AID (DNS record), WebMCP (JS API), Commerce checks (optional)
+
+**Checkpoint:** f098685f | Tests: 26/26 | TypeScript: 0 errors
