@@ -475,3 +475,20 @@ Email delivery in production uses Manus owner notification (not user inbox). Tra
 **Nav:** Added Developers link (Code2 icon)
 **Tests:** 16 pass, 0 TypeScript errors
 **Memory note:** citation.is = public presentation layer only. ttruthdesk.claims = private pipeline backend. Never add sign-in prompts to citation.is.
+
+## Phase 106 — Science Visibility Infrastructure (2026-06-11)
+
+**Goal:** Add all technical prerequisites for OpenAIRE, BASE, and re3data registration; confirm Common Crawl access.
+
+**Delivered:**
+- `server/oaiPmh.ts`: Full OAI-PMH 2.0 endpoint at `/oai` — all 6 verbs, `oai_dc` + `datacite` metadata formats, 6 domain sets, claim IDs `oai:citation.is:claim.<id>`
+- `client/public/robots.txt`: Allows CCBot, GPTBot, ClaudeBot, Google-Extended, BaseBot, SemanticScholarBot, PerplexityBot
+- `client/public/sitemap.xml`: All routes + OAI-PMH URLs + data endpoints
+- `client/public/.well-known/opendata.json`: Schema.org DataCatalog descriptor
+- `docs/science-visibility-registration-guide.md`: Step-by-step guide with exact form values for re3data, BASE, OpenAIRE
+
+**Registration order:** re3data → BASE → OpenAIRE (requires re3data DOI)
+**Common Crawl:** No action needed — CCBot now allowed, next monthly crawl picks it up automatically
+**Future:** Mint real DataCite DOIs, apply for CoreTrustSeal
+
+**Checkpoint:** f48dcd5a | Tests: 16/16 | TypeScript: 0 errors
