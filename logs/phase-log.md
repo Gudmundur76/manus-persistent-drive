@@ -364,3 +364,25 @@ Detail fields: claim_id, document_id, document_title, vertical_domain, claim_tex
 
 ### Pending
 - User must click Publish in Manus Management UI to deploy checkpoint `2ea46eef` to citation.is
+
+## Phase 100 — 2026-06-11 — CopilotKit Blank-Page Fix + OAuth Migration
+
+**Project:** citation-desk (citation.is)  
+**Checkpoint:** 371cece4  
+**Tests:** 34 passed, 0 failed, 0 TypeScript errors
+
+### Root Causes Fixed
+1. **CopilotKit blank page**: `CopilotSidebar` was imported synchronously → 3.5MB bundle blocked React mount. Fixed: `React.lazy()` + `Suspense` in App.tsx.
+2. **OAuth ENOTFOUND api.manus.im**: Cloud Run has no VPC egress to api.manus.im. All auth redirects failed silently. Fixed: replaced with local magic-link JWT auth.
+
+### Changes
+- `App.tsx`: lazy-load CopilotSidebar, remove duplicate QueryClientProvider, mount GlobalSignInDialog
+- `const.ts`: deprecate `getLoginUrl()`, export `openSignInDialog()`
+- `main.tsx` + `useAuth.ts` + `DashboardLayout.tsx`: use `openSignInDialog()` everywhere
+- `MagicLinkDialog.tsx`: new email sign-in dialog (td:open-sign-in event)
+- `server/magicLink.ts`: POST /api/auth/magic-link/request + GET /api/auth/magic-link/verify
+- `drizzle/schema.ts` + `server/db.ts`: magic_link_tokens table + 4 DB helpers
+- `server/magicLink.test.ts`: 8 new tests
+
+### Known Limitation
+Email delivery in production uses Manus owner notification (not user inbox). Transactional email (SendGrid/Resend) deferred.
