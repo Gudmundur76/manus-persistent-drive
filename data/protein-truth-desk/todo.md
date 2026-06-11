@@ -1327,3 +1327,73 @@
 - [x] Update SIA evaluate.py to include chain distortion detection as a fourth metric (weight 0.15)
 - [x] Write citationChainAnalyzer.test.ts — 13 unit tests (stats logic, distortion scoring, non-fatal error paths)
 - [x] Save checkpoint and sync to memory repo
+
+## Phase 103: Composite Truth Signal (Stage 7)
+
+- [x] Add `compositeTruthScore` (real, 0–1) and `compositeTruthLabel` (text) columns to `claims` table in drizzle/schema.ts
+- [x] Generate migration 0039 with pnpm drizzle-kit generate
+- [x] Apply migration via webdev_execute_sql
+- [x] Write compositeTruthEngine.ts — deterministic rule-based scoring function combining upstream_verdict + provenance_score + chain_distortion_score into a single composite signal
+- [x] Define 8 composite truth labels: verified_faithful / verified_distorted / contradicted / contradicted_amplified / partially_supported / contested / insufficient_evidence / out_of_scope
+- [x] Add updateClaimVerdict extended to accept compositeTruthScore and compositeTruthLabel in server/db.ts
+- [x] Wire Stage 7 into analysisPipeline.ts as final stage after citation chain analysis
+- [x] Update claimsRegistrySerializer.ts to export composite_truth_score and composite_truth_label in claims.json
+- [x] tRPC claims.byDocument already returns all claim columns including composite fields via getClaimsByDocument
+- [x] Surface CompositeTruthBadge in AuditReport.tsx per-claim card (colour-coded label + score %)
+- [x] Update FrictionEngine to query graph for existing composite signals on semantically similar claims at submission time (completed in Phase 104 — priorGraphSignals field added to FrictionEngineResult, graph query wired in runPreflightScan)
+- [x] Write compositeTruthEngine.test.ts — unit tests covering all label branches and scoring function determinism (1005 tests passing)
+- [x] Save checkpoint and sync to memory repo
+
+## Phase 104: Knowledge Graph Traversal
+
+- [x] Add `graph_claim_edges` table to drizzle/schema.ts (sourceClaimId, targetClaimId, relationType, weight, createdAt) with indexes on sourceClaimId and targetClaimId
+- [x] Generate migration 0040 with pnpm drizzle-kit generate and apply via webdev_execute_sql
+- [x] Write `server/graphTraversal.ts` — SQL-based helpers: insertGraphClaimEdge, getGraphClaimEdgesBySource, findSimilarClaimsWithSignals, getCompositeSignalForClaim, buildClaimSubgraph, findClaimsByTextSimilarity
+- [x] Add graph traversal helpers directly in graphTraversal.ts (not db.ts, to keep separation of concerns)
+- [x] Wire graph traversal into FrictionEngine: query prior composite signals at submission time; surface as `priorGraphSignals` in FrictionEngineResult
+- [x] Add tRPC procedures `graph.priorSignals` and `graph.claimSubgraph`
+- [x] Surface prior graph signals in PreflightModal — Graph Memory panel renders when priorGraphSignals.length > 0
+- [x] Write `graphTraversal.test.ts` — 21 unit tests covering all helpers (null DB, error paths, mapping, dominant label, average score)
+- [x] Save checkpoint and sync to memory repo
+
+## Phase 105: Autonomous Re-evaluation Loop
+
+- [x] Build reEvaluationEngine.ts — getAffectedDocumentIds (lookback-based discovery from citation_edges), getEligibleClaimsForDocument (claims with verdicts on complete docs), reScoreClaim (idempotent per-claim re-scoring via computeCompositeTruth), runReEvaluationLoop (full orchestration with batchSize limit and error isolation)
+- [x] Register POST /api/scheduled/re-evaluate heartbeat endpoint in server/_core/index.ts — wired to runReEvaluationLoop via withCronLog, supports lookbackHours/batchSize/documentIds params, requireCronOrAdmin auth
+- [x] Write 24 unit tests in reEvaluationEngine.test.ts — idempotency, affected-doc discovery, per-claim error isolation, batchSize limit, getCitationChainStats failure, score tolerance, all verdict/distortion label paths
+- [x] 1050/1050 tests passing. TypeScript: 0 errors.
+- [x] Save checkpoint and sync to memory repo
+
+## Phase 106: Heartbeat Job Registration + Graph Edge Population
+
+- [x] Register re-evaluate-composite-truth heartbeat cron via manus-heartbeat create — task_uid: XYxgKr9QgnAZBhAvuCbnQR, cron: 0 0 */6 * * *, path: /api/scheduled/re-evaluate, next run: 18:00 UTC
+- [x] Build heartbeatRegistrar.ts — canonical registry of all 9 project-level cron jobs (name, taskUid, cron, path, description, registeredAt), getRegisteredJob(), requireJobTaskUid() helpers
+- [x] Wire Stage 8 graph edge population into analysisPipeline.ts — after Stage 7 composite truth scoring, calls findClaimsByTextSimilarity (top 3, minScore 0.6) and insertGraphClaimEdge for each match, non-fatal fire-and-forget
+- [x] Add re-evaluate-composite-truth to CRON_DESCRIPTIONS in AdminCrons.tsx so the cron health dashboard shows the correct description
+- [x] Write 19 unit tests in heartbeatRegistrar.test.ts — shape validation, uniqueness, path prefix, 6-field cron, getRegisteredJob, requireJobTaskUid error paths
+- [x] 1069/1069 tests passing. TypeScript: 0 errors.
+- [x] Save checkpoint and sync to memory repo
+
+## Phase 107: Contradiction Detection Engine
+- [x] contradiction_alerts table added to Drizzle schema and migration applied
+- [x] contradictionDetector.ts: classifySeverity, isContradiction, runContradictionScan, getOpenContradictionAlerts, getContradictionAlertCounts, updateContradictionAlertStatus
+- [x] POST /api/scheduled/contradiction-scan endpoint registered in index.ts
+- [x] Weekly heartbeat cron registered (task_uid: a6oNML4AmNbtxP3eT5HYbi, every Monday midnight)
+- [x] contradictions tRPC router: counts, list, updateStatus, runScan procedures
+- [x] ContradictionAlerts admin UI page at /admin/contradictions
+- [x] Admin.tsx: Contradiction Alerts card added
+- [x] App.tsx: /admin/contradictions route registered
+- [x] AdminCrons.tsx: re-evaluate-composite-truth added to CRON_DESCRIPTIONS
+- [x] heartbeatRegistrar.ts: contradiction-scan entry added
+- [x] contradictionDetector.test.ts: 31 tests (classifySeverity, isContradiction, buildAlertPairKey, getOpenContradictionAlerts, getContradictionAlertCounts, updateContradictionAlertStatus)
+- [x] 1100/1100 tests passing, TypeScript: 0 errors
+
+## Phase 108: Claim Confidence Timeline
+- [x] Add claim_score_history table to Drizzle schema and apply migration
+- [x] Add getClaimScoreHistory and insertClaimScoreSnapshot DB helpers to db.ts
+- [x] Wire snapshot writes into reEvaluationEngine.ts (reScoreClaim)
+- [x] Add claims.getScoreHistory tRPC procedure (merged into claims router to stay within 43-router type limit)
+- [x] Build SparklineChart.tsx component (pure SVG, zero deps, colour-coded by label, hover tooltip)
+- [x] Add CompositeTruthTimeline component to ClaimPage.tsx
+- [x] Write unit tests for score history, snapshot insertion, sparkline data logic, and label colour mapping (19 new tests)
+- [x] All 1119 tests passing, TypeScript: 0 errors

@@ -32,6 +32,7 @@ import {
   getAllGraphRelations,
   getContradictionRelations,
   getCorpusGrowthStats,
+  getCitationsByClaimId,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { fetchWikiPage } from "./wikiCompiler";
@@ -488,7 +489,14 @@ export const appRouter = router({
         const doc = await getDocumentById(input.documentId);
         if (!doc || doc.userId !== ctx.user.id)
           throw new TRPCError({ code: "NOT_FOUND" });
-        return getClaimsByDocument(input.documentId);
+        const claimsList = await getClaimsByDocument(input.documentId);
+        // Phase 96-E: attach citations[] to each claim
+        return Promise.all(
+          claimsList.map(async claim => {
+            const claimCitations = await getCitationsByClaimId(claim.id);
+            return { ...claim, citations: claimCitations };
+          })
+        );
       }),
 
     override: protectedProcedure
@@ -611,6 +619,19 @@ export const appRouter = router({
             .sourceCompletenessScore as number | null,
         }));
         return { metrics, breakdown };
+      }),
+
+    // --- Score History (Phase 108) ---
+    getScoreHistory: publicProcedure
+      .input(
+        z.object({
+          claimId: z.number(),
+          limit: z.number().min(1).max(100).default(30),
+        })
+      )
+      .query(async ({ input }) => {
+        const { getClaimScoreHistory } = await import("./db");
+        return getClaimScoreHistory(input.claimId, input.limit);
       }),
   }),
 
@@ -1079,8 +1100,37 @@ Respond in this exact structure:
           contradictionCount: contradictions.length,
         };
       }),
-  }),
 
+    /**
+     * Get prior composite truth signals for claims semantically similar to a given text.
+     * Used by FrictionEngine at submission time to surface graph-backed priors.
+     */
+    priorSignals: publicProcedure
+      .input(
+        z.object({
+          claimText: z.string().min(1).max(2000),
+          limit: z.number().int().min(1).max(10).default(5),
+        })
+      )
+      .query(async ({ input }) => {
+        const { findClaimsByTextSimilarity } = await import("./graphTraversal");
+        const signals = await findClaimsByTextSimilarity(input.claimText, {
+          limit: input.limit,
+          minScore: 0.7,
+        });
+        return { signals };
+      }),
+
+    /**
+     * Get 1-hop subgraph for a specific claim.
+     */
+    claimSubgraph: publicProcedure
+      .input(z.object({ claimId: z.number().int().positive() }))
+      .query(async ({ input }) => {
+        const { buildClaimSubgraph } = await import("./graphTraversal");
+        return buildClaimSubgraph(input.claimId, { limit: 10, minWeight: 0.6 });
+      }),
+  }),
   // ─── Wiki ──────────────────────────────────────────────────────────────────
   wiki: router({
     /** Legacy S3-backed page (entity/canonical name lookup) */
@@ -2351,7 +2401,17 @@ Respond in this exact structure:
           verticalDomain: input.verticalDomain,
           verdict: input.verdict,
         });
-        return { results, count: results.length };
+        // Phase 96-E: attach citations[] to each search result
+        const resultsWithCitations = await Promise.all(
+          results.map(async result => {
+            const claimCitations = await getCitationsByClaimId(result.id);
+            return { ...result, citations: claimCitations };
+          })
+        );
+        return {
+          results: resultsWithCitations,
+          count: resultsWithCitations.length,
+        };
       }),
 
     /**
@@ -4797,6 +4857,89 @@ Respond in this exact structure:
         };
       }),
   }),
+
+  // ─── Contradiction Alerts (Phase 107) ────────────────────────────────────────
+  contradictions: router({
+    /**
+     * List open/reviewed contradiction alerts for the admin dashboard.
+     * Returns up to 50 alerts ordered by severity (high → medium → low) then recency.
+     */
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const { ENV: _env } = await import("./_core/env");
+      if (ctx.user.role !== "admin" && ctx.user.openId !== _env.ownerOpenId) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getOpenContradictionAlerts } = await import(
+        "./contradictionDetector"
+      );
+      return getOpenContradictionAlerts(50);
+    }),
+
+    /**
+     * Count open contradiction alerts grouped by severity.
+     * Used by the admin dashboard badge/summary card.
+     */
+    counts: protectedProcedure.query(async ({ ctx }) => {
+      const { ENV: _env } = await import("./_core/env");
+      if (ctx.user.role !== "admin" && ctx.user.openId !== _env.ownerOpenId) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getContradictionAlertCounts } = await import(
+        "./contradictionDetector"
+      );
+      return getContradictionAlertCounts();
+    }),
+
+    /**
+     * Update the status of a contradiction alert.
+     * Allowed transitions: open → reviewed → resolved | dismissed
+     */
+    updateStatus: protectedProcedure
+      .input(
+        z.object({
+          alertId: z.number().int().positive(),
+          status: z.enum(["open", "reviewed", "resolved", "dismissed"]),
+          resolutionNotes: z.string().max(2000).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { ENV: _env } = await import("./_core/env");
+        if (ctx.user.role !== "admin" && ctx.user.openId !== _env.ownerOpenId) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        const { updateContradictionAlertStatus } = await import(
+          "./contradictionDetector"
+        );
+        await updateContradictionAlertStatus(
+          input.alertId,
+          input.status,
+          input.resolutionNotes
+        );
+        return { ok: true };
+      }),
+
+    /**
+     * Trigger an on-demand contradiction scan (admin only).
+     * Useful for testing or after a bulk re-evaluation run.
+     */
+    runScan: protectedProcedure
+      .input(
+        z
+          .object({ batchSize: z.number().int().min(1).max(2000).default(500) })
+          .optional()
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { ENV: _env } = await import("./_core/env");
+        if (ctx.user.role !== "admin" && ctx.user.openId !== _env.ownerOpenId) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        const { runContradictionScan } = await import(
+          "./contradictionDetector"
+        );
+        return runContradictionScan(input?.batchSize ?? 500);
+      }),
+  }),
+
   // ─── Citation Chain Analysis ─────────────────────────────────────────────────
   citationChain: router({
     getByDocument: publicProcedure

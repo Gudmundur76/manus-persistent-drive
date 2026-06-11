@@ -1,8 +1,8 @@
 {
   "meta": {
     "source": "todo.md",
-    "total": 914,
-    "done": 914,
+    "total": 1008,
+    "done": 1008,
     "pending": 0,
     "percent_complete": 100.0
   },
@@ -7316,6 +7316,758 @@
       "category": "feature",
       "phase": "Phase 97: CopilotKit Removal + Native chat.query",
       "description": "Save checkpoint",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-98-fix-sign-in-button-global-magiclinkdialog-001",
+      "category": "feature",
+      "phase": "Phase 98: Fix Sign-In Button (Global MagicLinkDialog)",
+      "description": "Mount MagicLinkDialog globally in App.tsx with useState open flag",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-98-fix-sign-in-button-global-magiclinkdialog-002",
+      "category": "feature",
+      "phase": "Phase 98: Fix Sign-In Button (Global MagicLinkDialog)",
+      "description": "Add useEffect in App.tsx to listen for open-sign-in-dialog custom event",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-98-fix-sign-in-button-global-magiclinkdialog-003",
+      "category": "feature",
+      "phase": "Phase 98: Fix Sign-In Button (Global MagicLinkDialog)",
+      "description": "Remove local MagicLinkDialog mount from TopNav (avoid double mount)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-98-fix-sign-in-button-global-magiclinkdialog-004",
+      "category": "feature",
+      "phase": "Phase 98: Fix Sign-In Button (Global MagicLinkDialog)",
+      "description": "TopNav sign-in button now calls openSignInDialog() event dispatch",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-98-fix-sign-in-button-global-magiclinkdialog-005",
+      "category": "feature",
+      "phase": "Phase 98: Fix Sign-In Button (Global MagicLinkDialog)",
+      "description": "Tested: clicking Sign in on unauthenticated dashboard gate opens email dialog",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-98-fix-sign-in-button-global-magiclinkdialog-006",
+      "category": "feature",
+      "phase": "Phase 98: Fix Sign-In Button (Global MagicLinkDialog)",
+      "description": "973/973 tests passing",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-98-fix-sign-in-button-global-magiclinkdialog-007",
+      "category": "feature",
+      "phase": "Phase 98: Fix Sign-In Button (Global MagicLinkDialog)",
+      "description": "Save checkpoint",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-001",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Add `sourcePassage` text column to `claims` table in drizzle/schema.ts",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-002",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Add `passageConfidence` float column to `claims` table",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-003",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Add `passageStartChar` / `passageEndChar` int columns for span tracking",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-004",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Generate migration 0036 with pnpm drizzle-kit generate",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-005",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Apply migration via webdev_execute_sql",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-006",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Write passageExtractor.ts \u2014 LLM-powered passage alignment helper (non-fatal, background task)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-007",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Extend updateClaimVerdict in db.ts to accept passage fields",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-008",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Wire extractPassageForClaim into analysisPipeline.ts as background task after each verdict",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-009",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Surface source passage in AuditReport claim cards (collapsible indigo quote block with confidence badge)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-010",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Write passageExtractor.test.ts \u2014 9 unit tests (all passing, 982 total)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-100-passage-level-extraction-citation-first-011",
+      "category": "quality",
+      "phase": "Phase 100: Passage-Level Extraction (Citation-First)",
+      "description": "Save checkpoint and sync to memory repo",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-101-misrepresentation-classification-citation-first-001",
+      "category": "quality",
+      "phase": "Phase 101: Misrepresentation Classification (Citation-First)",
+      "description": "Add `misrepresentationType` enum column to `claims` table in drizzle/schema.ts (amplification | selective_omission | scope_drift | causal_overclaim | fabrication | none | unknown)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-101-misrepresentation-classification-citation-first-002",
+      "category": "quality",
+      "phase": "Phase 101: Misrepresentation Classification (Citation-First)",
+      "description": "Generate migration 0037 with pnpm drizzle-kit generate",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-101-misrepresentation-classification-citation-first-003",
+      "category": "quality",
+      "phase": "Phase 101: Misrepresentation Classification (Citation-First)",
+      "description": "Apply migration via webdev_execute_sql",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-101-misrepresentation-classification-citation-first-004",
+      "category": "quality",
+      "phase": "Phase 101: Misrepresentation Classification (Citation-First)",
+      "description": "Write misrepresentationClassifier.ts \u2014 LLM-powered classifier (fires only for Contradicted / Partially Supported verdicts)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-101-misrepresentation-classification-citation-first-005",
+      "category": "quality",
+      "phase": "Phase 101: Misrepresentation Classification (Citation-First)",
+      "description": "Extend updateClaimVerdict in db.ts to accept misrepresentationType field",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-101-misrepresentation-classification-citation-first-006",
+      "category": "quality",
+      "phase": "Phase 101: Misrepresentation Classification (Citation-First)",
+      "description": "Wire classifyMisrepresentation into analysisPipeline.ts as background task after passage extraction",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-101-misrepresentation-classification-citation-first-007",
+      "category": "quality",
+      "phase": "Phase 101: Misrepresentation Classification (Citation-First)",
+      "description": "Surface misrepresentation type badge in AuditReport claim cards (colour-coded by category)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-101-misrepresentation-classification-citation-first-008",
+      "category": "quality",
+      "phase": "Phase 101: Misrepresentation Classification (Citation-First)",
+      "description": "Update SIA evaluate.py to score misrepresentation recall as a third metric",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-101-misrepresentation-classification-citation-first-009",
+      "category": "quality",
+      "phase": "Phase 101: Misrepresentation Classification (Citation-First)",
+      "description": "Write misrepresentationClassifier.test.ts \u2014 10 unit tests (all passing, 992 total)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-101-misrepresentation-classification-citation-first-010",
+      "category": "quality",
+      "phase": "Phase 101: Misrepresentation Classification (Citation-First)",
+      "description": "Save checkpoint and sync to memory repo",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-001",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Add `citation_edges` table to drizzle/schema.ts (sourceDocId, targetDocId, sourcePmid, targetPmid, hopNumber, distortionScore, distortionType, detectedAt)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-002",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Generate migration 0038 with pnpm drizzle-kit generate",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-003",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Apply migration via webdev_execute_sql",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-004",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Write citationChainAnalyzer.ts \u2014 discovers citing papers via PubMed elink API, scores distortion at each hop using LLM comparison",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-005",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Add DB helpers: insertCitationEdge, getCitationChainByDocument, getCitationChainStats",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-006",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Wire citationChainAnalyzer into analysisPipeline.ts as background task after misrepresentation classification",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-007",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Add tRPC procedure `citationChain.getByDocument` (publicProcedure, input: documentId) returning chain edges and stats",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-008",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Build CitationChainPanel.tsx component \u2014 visual hop-by-hop chain with distortion score bars and type badges",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-009",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Surface CitationChainPanel in AuditReport.tsx below the claims section",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-010",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Update SIA evaluate.py to include chain distortion detection as a fourth metric (weight 0.15)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-011",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Write citationChainAnalyzer.test.ts \u2014 13 unit tests (stats logic, distortion scoring, non-fatal error paths)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-102-citation-chain-analysis-012",
+      "category": "quality",
+      "phase": "Phase 102: Citation Chain Analysis",
+      "description": "Save checkpoint and sync to memory repo",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-001",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Add `compositeTruthScore` (real, 0\u20131) and `compositeTruthLabel` (text) columns to `claims` table in drizzle/schema.ts",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-002",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Generate migration 0039 with pnpm drizzle-kit generate",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-003",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Apply migration via webdev_execute_sql",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-004",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Write compositeTruthEngine.ts \u2014 deterministic rule-based scoring function combining upstream_verdict + provenance_score + chain_distortion_score into a single composite signal",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-005",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Define 8 composite truth labels: verified_faithful / verified_distorted / contradicted / contradicted_amplified / partially_supported / contested / insufficient_evidence / out_of_scope",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-006",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Add updateClaimVerdict extended to accept compositeTruthScore and compositeTruthLabel in server/db.ts",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-007",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Wire Stage 7 into analysisPipeline.ts as final stage after citation chain analysis",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-008",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Update claimsRegistrySerializer.ts to export composite_truth_score and composite_truth_label in claims.json",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-009",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "tRPC claims.byDocument already returns all claim columns including composite fields via getClaimsByDocument",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-010",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Surface CompositeTruthBadge in AuditReport.tsx per-claim card (colour-coded label + score %)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-011",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Update FrictionEngine to query graph for existing composite signals on semantically similar claims at submission time (completed in Phase 104 \u2014 priorGraphSignals field added to FrictionEngineResult, graph query wired in runPreflightScan)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-012",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Write compositeTruthEngine.test.ts \u2014 unit tests covering all label branches and scoring function determinism (1005 tests passing)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-103-composite-truth-signal-stage-7-013",
+      "category": "feature",
+      "phase": "Phase 103: Composite Truth Signal (Stage 7)",
+      "description": "Save checkpoint and sync to memory repo",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-104-knowledge-graph-traversal-001",
+      "category": "feature",
+      "phase": "Phase 104: Knowledge Graph Traversal",
+      "description": "Add `graph_claim_edges` table to drizzle/schema.ts (sourceClaimId, targetClaimId, relationType, weight, createdAt) with indexes on sourceClaimId and targetClaimId",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-104-knowledge-graph-traversal-002",
+      "category": "feature",
+      "phase": "Phase 104: Knowledge Graph Traversal",
+      "description": "Generate migration 0040 with pnpm drizzle-kit generate and apply via webdev_execute_sql",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-104-knowledge-graph-traversal-003",
+      "category": "feature",
+      "phase": "Phase 104: Knowledge Graph Traversal",
+      "description": "Write `server/graphTraversal.ts` \u2014 SQL-based helpers: insertGraphClaimEdge, getGraphClaimEdgesBySource, findSimilarClaimsWithSignals, getCompositeSignalForClaim, buildClaimSubgraph, findClaimsByTextSimilarity",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-104-knowledge-graph-traversal-004",
+      "category": "feature",
+      "phase": "Phase 104: Knowledge Graph Traversal",
+      "description": "Add graph traversal helpers directly in graphTraversal.ts (not db.ts, to keep separation of concerns)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-104-knowledge-graph-traversal-005",
+      "category": "feature",
+      "phase": "Phase 104: Knowledge Graph Traversal",
+      "description": "Wire graph traversal into FrictionEngine: query prior composite signals at submission time; surface as `priorGraphSignals` in FrictionEngineResult",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-104-knowledge-graph-traversal-006",
+      "category": "feature",
+      "phase": "Phase 104: Knowledge Graph Traversal",
+      "description": "Add tRPC procedures `graph.priorSignals` and `graph.claimSubgraph`",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-104-knowledge-graph-traversal-007",
+      "category": "feature",
+      "phase": "Phase 104: Knowledge Graph Traversal",
+      "description": "Surface prior graph signals in PreflightModal \u2014 Graph Memory panel renders when priorGraphSignals.length > 0",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-104-knowledge-graph-traversal-008",
+      "category": "feature",
+      "phase": "Phase 104: Knowledge Graph Traversal",
+      "description": "Write `graphTraversal.test.ts` \u2014 21 unit tests covering all helpers (null DB, error paths, mapping, dominant label, average score)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-104-knowledge-graph-traversal-009",
+      "category": "feature",
+      "phase": "Phase 104: Knowledge Graph Traversal",
+      "description": "Save checkpoint and sync to memory repo",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-105-autonomous-re-evaluation-loop-001",
+      "category": "feature",
+      "phase": "Phase 105: Autonomous Re-evaluation Loop",
+      "description": "Build reEvaluationEngine.ts \u2014 getAffectedDocumentIds (lookback-based discovery from citation_edges), getEligibleClaimsForDocument (claims with verdicts on complete docs), reScoreClaim (idempotent per-claim re-scoring via computeCompositeTruth), runReEvaluationLoop (full orchestration with batchSize limit and error isolation)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-105-autonomous-re-evaluation-loop-002",
+      "category": "feature",
+      "phase": "Phase 105: Autonomous Re-evaluation Loop",
+      "description": "Register POST /api/scheduled/re-evaluate heartbeat endpoint in server/_core/index.ts \u2014 wired to runReEvaluationLoop via withCronLog, supports lookbackHours/batchSize/documentIds params, requireCronOrAdmin auth",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-105-autonomous-re-evaluation-loop-003",
+      "category": "feature",
+      "phase": "Phase 105: Autonomous Re-evaluation Loop",
+      "description": "Write 24 unit tests in reEvaluationEngine.test.ts \u2014 idempotency, affected-doc discovery, per-claim error isolation, batchSize limit, getCitationChainStats failure, score tolerance, all verdict/distortion label paths",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-105-autonomous-re-evaluation-loop-004",
+      "category": "feature",
+      "phase": "Phase 105: Autonomous Re-evaluation Loop",
+      "description": "1050/1050 tests passing. TypeScript: 0 errors.",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-105-autonomous-re-evaluation-loop-005",
+      "category": "feature",
+      "phase": "Phase 105: Autonomous Re-evaluation Loop",
+      "description": "Save checkpoint and sync to memory repo",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-106-heartbeat-job-registration-graph-edge-population-001",
+      "category": "infra",
+      "phase": "Phase 106: Heartbeat Job Registration + Graph Edge Population",
+      "description": "Register re-evaluate-composite-truth heartbeat cron via manus-heartbeat create \u2014 task_uid: XYxgKr9QgnAZBhAvuCbnQR, cron: 0 0 */6 * * *, path: /api/scheduled/re-evaluate, next run: 18:00 UTC",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-106-heartbeat-job-registration-graph-edge-population-002",
+      "category": "infra",
+      "phase": "Phase 106: Heartbeat Job Registration + Graph Edge Population",
+      "description": "Build heartbeatRegistrar.ts \u2014 canonical registry of all 9 project-level cron jobs (name, taskUid, cron, path, description, registeredAt), getRegisteredJob(), requireJobTaskUid() helpers",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-106-heartbeat-job-registration-graph-edge-population-003",
+      "category": "infra",
+      "phase": "Phase 106: Heartbeat Job Registration + Graph Edge Population",
+      "description": "Wire Stage 8 graph edge population into analysisPipeline.ts \u2014 after Stage 7 composite truth scoring, calls findClaimsByTextSimilarity (top 3, minScore 0.6) and insertGraphClaimEdge for each match, non-fatal fire-and-forget",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-106-heartbeat-job-registration-graph-edge-population-004",
+      "category": "infra",
+      "phase": "Phase 106: Heartbeat Job Registration + Graph Edge Population",
+      "description": "Add re-evaluate-composite-truth to CRON_DESCRIPTIONS in AdminCrons.tsx so the cron health dashboard shows the correct description",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-106-heartbeat-job-registration-graph-edge-population-005",
+      "category": "infra",
+      "phase": "Phase 106: Heartbeat Job Registration + Graph Edge Population",
+      "description": "Write 19 unit tests in heartbeatRegistrar.test.ts \u2014 shape validation, uniqueness, path prefix, 6-field cron, getRegisteredJob, requireJobTaskUid error paths",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-106-heartbeat-job-registration-graph-edge-population-006",
+      "category": "infra",
+      "phase": "Phase 106: Heartbeat Job Registration + Graph Edge Population",
+      "description": "1069/1069 tests passing. TypeScript: 0 errors.",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-106-heartbeat-job-registration-graph-edge-population-007",
+      "category": "infra",
+      "phase": "Phase 106: Heartbeat Job Registration + Graph Edge Population",
+      "description": "Save checkpoint and sync to memory repo",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-001",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "contradiction_alerts table added to Drizzle schema and migration applied",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-002",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "contradictionDetector.ts: classifySeverity, isContradiction, runContradictionScan, getOpenContradictionAlerts, getContradictionAlertCounts, updateContradictionAlertStatus",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-003",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "POST /api/scheduled/contradiction-scan endpoint registered in index.ts",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-004",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "Weekly heartbeat cron registered (task_uid: a6oNML4AmNbtxP3eT5HYbi, every Monday midnight)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-005",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "contradictions tRPC router: counts, list, updateStatus, runScan procedures",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-006",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "ContradictionAlerts admin UI page at /admin/contradictions",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-007",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "Admin.tsx: Contradiction Alerts card added",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-008",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "App.tsx: /admin/contradictions route registered",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-009",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "AdminCrons.tsx: re-evaluate-composite-truth added to CRON_DESCRIPTIONS",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-010",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "heartbeatRegistrar.ts: contradiction-scan entry added",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-011",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "contradictionDetector.test.ts: 31 tests (classifySeverity, isContradiction, buildAlertPairKey, getOpenContradictionAlerts, getContradictionAlertCounts, updateContradictionAlertStatus)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-107-contradiction-detection-engine-012",
+      "category": "backend",
+      "phase": "Phase 107: Contradiction Detection Engine",
+      "description": "1100/1100 tests passing, TypeScript: 0 errors",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-108-claim-confidence-timeline-001",
+      "category": "feature",
+      "phase": "Phase 108: Claim Confidence Timeline",
+      "description": "Add claim_score_history table to Drizzle schema and apply migration",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-108-claim-confidence-timeline-002",
+      "category": "feature",
+      "phase": "Phase 108: Claim Confidence Timeline",
+      "description": "Add getClaimScoreHistory and insertClaimScoreSnapshot DB helpers to db.ts",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-108-claim-confidence-timeline-003",
+      "category": "feature",
+      "phase": "Phase 108: Claim Confidence Timeline",
+      "description": "Wire snapshot writes into reEvaluationEngine.ts (reScoreClaim)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-108-claim-confidence-timeline-004",
+      "category": "feature",
+      "phase": "Phase 108: Claim Confidence Timeline",
+      "description": "Add claims.getScoreHistory tRPC procedure (merged into claims router to stay within 43-router type limit)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-108-claim-confidence-timeline-005",
+      "category": "feature",
+      "phase": "Phase 108: Claim Confidence Timeline",
+      "description": "Build SparklineChart.tsx component (pure SVG, zero deps, colour-coded by label, hover tooltip)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-108-claim-confidence-timeline-006",
+      "category": "feature",
+      "phase": "Phase 108: Claim Confidence Timeline",
+      "description": "Add CompositeTruthTimeline component to ClaimPage.tsx",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-108-claim-confidence-timeline-007",
+      "category": "feature",
+      "phase": "Phase 108: Claim Confidence Timeline",
+      "description": "Write unit tests for score history, snapshot insertion, sparkline data logic, and label colour mapping (19 new tests)",
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "phase-108-claim-confidence-timeline-008",
+      "category": "feature",
+      "phase": "Phase 108: Claim Confidence Timeline",
+      "description": "All 1119 tests passing, TypeScript: 0 errors",
       "passes": true,
       "notes": ""
     }
