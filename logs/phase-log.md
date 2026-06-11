@@ -835,3 +835,21 @@ Phase C1 — ClaimDetail: similar claims panel + OG meta tags
 
 ### Tests
 35/35 pass, 0 TypeScript errors
+
+## Phase C3 — Entity Profile Page (2026-06-11)
+
+**Repo:** citation-desk (Manus webdev) | **Checkpoint:** 98b3749d
+
+### What was built
+- Rewrote `EntityPage.tsx` using `react-router-dom` v7 + `@tanstack/react-query` v5 (matching the rest of the codebase)
+- Primary data source changed from `registryClaims?q=name` to `timeline.forEntity` — returns all claims mentioning the entity with confidence scores, verdicts, pub years, and document titles
+- Added confidence trend sparkline (last 20 scored events) with trend direction badge
+- Added verdict distribution bar (colour-coded proportional segments)
+- Added co-occurrence related entities sidebar via `cooccurrence.forEntity` — shows up to 10 related entities with proportional weight bars
+- Added evidence summary stats panel (total claims, avg confidence, trend, year range)
+- Added OG meta tags (og:title, og:description, og:type, og:site_name) on mount
+- Fixed `ConfidenceSparkline` to accept minimal `SparklinePoint` type instead of requiring full `ConfidenceTrendPoint`
+- Added `EntityTimeline`, `EntityTimelineEvent` types and `timelineForEntity` method to `api.ts`
+
+### Tests
+35/35 passing | 0 TypeScript errors
