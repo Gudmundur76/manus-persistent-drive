@@ -1285,3 +1285,17 @@
 - [x] Tested: clicking Sign in on unauthenticated dashboard gate opens email dialog
 - [x] 973/973 tests passing
 - [x] Save checkpoint
+
+## Phase 100: Passage-Level Extraction (Citation-First)
+
+- [x] Add `sourcePassage` text column to `claims` table in drizzle/schema.ts
+- [x] Add `passageConfidence` float column to `claims` table
+- [x] Add `passageStartChar` / `passageEndChar` int columns for span tracking
+- [x] Generate migration 0036 with pnpm drizzle-kit generate
+- [x] Apply migration via webdev_execute_sql
+- [x] Write passageExtractor.ts — LLM-powered passage alignment helper (non-fatal, background task)
+- [x] Extend updateClaimVerdict in db.ts to accept passage fields
+- [x] Wire extractPassageForClaim into analysisPipeline.ts as background task after each verdict
+- [x] Surface source passage in AuditReport claim cards (collapsible indigo quote block with confidence badge)
+- [x] Write passageExtractor.test.ts — 9 unit tests (all passing, 982 total)
+- [ ] Save checkpoint and sync to memory repo

@@ -118,6 +118,11 @@ export const claims = mysqlTable("claims", {
     "fallback",
   ]),
   sourceCompletenessScore: float("sourceCompletenessScore"), // 0.0–1.0 at time of verdict
+  // Citation passage — the exact text span from the source document that the verdict is based on
+  sourcePassage: text("sourcePassage"),             // verbatim excerpt from the source (null = not yet extracted)
+  passageConfidence: float("passageConfidence"),    // 0.0–1.0 alignment confidence between claim and passage
+  passageStartChar: int("passageStartChar"),        // character offset start within the source text
+  passageEndChar: int("passageEndChar"),            // character offset end within the source text
   // Review
   reviewedBy: int("reviewedBy"),
   reviewedAt: timestamp("reviewedAt"),

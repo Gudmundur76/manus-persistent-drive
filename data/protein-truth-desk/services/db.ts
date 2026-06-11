@@ -382,6 +382,11 @@ export async function updateClaimVerdict(
     pdbEvidenceCheckedAt?: Date;
     verdictMethod?: string;
     sourceCompletenessScore?: number;
+    // Phase 100: passage-level extraction
+    sourcePassage?: string | null;
+    passageConfidence?: number | null;
+    passageStartChar?: number | null;
+    passageEndChar?: number | null;
   }
 ) {
   const db = await getDb();
@@ -394,6 +399,10 @@ export async function updateClaimVerdict(
     pdbEvidenceCheckedAt,
     verdictMethod,
     sourceCompletenessScore,
+    sourcePassage,
+    passageConfidence,
+    passageStartChar,
+    passageEndChar,
   } = update;
   const setData: Record<string, unknown> = {};
   if (verdict !== undefined) setData.verdict = verdict;
@@ -406,6 +415,10 @@ export async function updateClaimVerdict(
   if (verdictMethod !== undefined) setData.verdictMethod = verdictMethod;
   if (sourceCompletenessScore !== undefined)
     setData.sourceCompletenessScore = sourceCompletenessScore;
+  if (sourcePassage !== undefined) setData.sourcePassage = sourcePassage;
+  if (passageConfidence !== undefined) setData.passageConfidence = passageConfidence;
+  if (passageStartChar !== undefined) setData.passageStartChar = passageStartChar;
+  if (passageEndChar !== undefined) setData.passageEndChar = passageEndChar;
   if (Object.keys(setData).length > 0) {
     await db
       .update(claims)

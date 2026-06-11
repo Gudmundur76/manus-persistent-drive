@@ -1,56 +1,6 @@
 {
-  "phase": 100,
-  "date": "2026-06-11",
-  "project": "citation-desk (citation.is)",
-  "checkpoint": "371cece4",
-  "title": "CopilotKit Blank-Page Fix + OAuth Migration to Magic-Link Auth",
-  "summary": "Applied two critical fixes from the protein-truth-desk backend development history. (1) CopilotKit blank-page fix: lazy-loaded the 3.5MB CopilotSidebar bundle via React.lazy()+Suspense in App.tsx so React mounts immediately without waiting for the full CopilotKit bundle. Also removed a duplicate QueryClientProvider that would have caused tRPC hooks to see two separate caches. (2) OAuth migration: replaced all api.manus.im OAuth redirects with a local magic-link email auth system that works inside Cloud Run without VPC egress.",
-  "root_cause_fixed": {
-    "copilotkit_blank_page": "CopilotSidebar was imported synchronously, causing React to wait for the 3.5MB bundle before mounting. Fixed by React.lazy() + Suspense.",
-    "oauth_enotfound": "api.manus.im is unreachable from Cloud Run containers (no VPC egress). Every auth redirect failed with ENOTFOUND. Fixed by replacing OAuth redirects with local magic-link JWT auth."
-  },
-  "files_changed": [
-    "client/src/App.tsx — lazy-load CopilotSidebar, remove duplicate QueryClientProvider, mount GlobalSignInDialog",
-    "client/src/const.ts — deprecate getLoginUrl(), export openSignInDialog()",
-    "client/src/main.tsx — use openSignInDialog() on UNAUTHORIZED instead of OAuth redirect",
-    "client/src/_core/hooks/useAuth.ts — use openSignInDialog() on redirectOnUnauthenticated",
-    "client/src/components/DashboardLayout.tsx — use openSignInDialog() on sign-in button",
-    "client/src/components/citation/MagicLinkDialog.tsx — NEW: email sign-in dialog component",
-    "server/magicLink.ts — NEW: POST /api/auth/magic-link/request + GET /api/auth/magic-link/verify",
-    "server/_core/index.ts — register magic-link routes",
-    "server/db.ts — add magic-link DB helpers (create, findValid, markUsed, countRecent)",
-    "drizzle/schema.ts — add magic_link_tokens table",
-    "server/magicLink.test.ts — NEW: 8 tests for magic-link endpoints"
-  ],
-  "db_migration": {
-    "table": "magic_link_tokens",
-    "columns": ["id", "email", "tokenHash (SHA-256, unique)", "expiresAt", "usedAt", "createdAt"],
-    "security": "Never store raw token. Mark on first use. Rate limit: 5 tokens per email per 10 minutes. TTL: 15 minutes."
-  },
-  "auth_flow": {
-    "request": "POST /api/auth/magic-link/request { email } → rate-check → generate 32-byte random token → store SHA-256 hash → send link via Manus notification (prod) or console.log (dev) → return { ok: true }",
-    "verify": "GET /api/auth/magic-link/verify?token=<raw> → hash → find valid record → mark used → upsertUser(openId='email_<sha256>', loginMethod='magic_link') → createSessionToken → set cookie → redirect /",
-    "openId_prefix": "email_<sha256> — never calls api.manus.im, fully local JWT"
-  },
-  "sign_in_event": {
-    "event": "td:open-sign-in CustomEvent",
-    "dispatcher": "openSignInDialog() in client/src/const.ts",
-    "listener": "GlobalSignInDialog in App.tsx"
-  },
-  "test_results": {
-    "total": 34,
-    "passed": 34,
-    "failed": 0,
-    "typescript_errors": 0,
-    "new_tests": 8
-  },
-  "known_limitations": {
-    "email_delivery": "In production, magic links are sent via Manus owner notification (not directly to the requesting user's inbox). A transactional email provider (SendGrid/Resend) should be wired in server/magicLink.ts sendMagicLinkEmail() for full user-facing delivery.",
-    "manus_oauth": "Original OAuth callback at /api/oauth/callback is preserved for backward compatibility but is effectively unused since api.manus.im is unreachable from Cloud Run."
-  },
-  "pending_next": [
-    "Publish checkpoint 371cece4 to production via Management UI Publish button",
-    "Wire transactional email provider (SendGrid/Resend) for user-facing magic-link delivery",
-    "Add 'Recently verified' section to homepage using registry API"
-  ]
+  "status": "complete",
+  "completedAt": "2026-06-11T13:12:42.203Z",
+  "checkpointRef": "b82351a",
+  "lastPhase": "100"
 }
