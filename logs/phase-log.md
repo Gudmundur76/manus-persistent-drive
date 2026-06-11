@@ -593,3 +593,22 @@ Inspired by grow.contact citability patterns. Six improvements:
 7. Updated llms.txt — sub-contexts section, llms-full.txt, rss.xml, sitemap.xml references.
 
 27/27 tests pass, 0 TypeScript errors.
+
+## Phase 114 — Semantic HTML 100 + Citability 100 (2026-06-11)
+Checkpoint: ecaf7d58
+
+Targeted improvements to push Semantic HTML from 88 to 100 and Citability from 90 to 100.
+
+Semantic HTML additions to index.html static shell:
+- 3 article elements (hero, structural biology vertical, salmon vertical)
+- 1 aside element (registry at a glance stats)
+- 2 time elements with datetime="2026-06-11"
+- 40 abbr elements covering all acronyms
+- 1 blockquote with cite attribute
+- 1 cite element for source attribution
+- 6 h3 headings for deeper hierarchy
+- All 5 sections now have aria-label
+
+Citability: word count 534 → 819. All statistics attributed with source and date.
+
+27/27 tests pass, 0 TypeScript errors.
