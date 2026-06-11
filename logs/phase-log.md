@@ -612,3 +612,24 @@ Semantic HTML additions to index.html static shell:
 Citability: word count 534 → 819. All statistics attributed with source and date.
 
 27/27 tests pass, 0 TypeScript errors.
+
+## Phase 115 — 2026-06-11
+Unified dev environment + API contract test.
+
+**citation-desk:**
+- server/apiContract.test.ts: 8 tests validating GlobalClaimsRegistry + ClaimRecord shape against live ttruthdesk.claims API
+- server/externalProxy.ts: reads TTRUTHDESK_BASE_URL from env (falls back to https://ttruthdesk.claims)
+- .env.development.example: template with TTRUTHDESK_BASE_URL + SKIP_CONTRACT_TESTS
+- Dockerfile.dev: Node 22 + pnpm, hot-reload via tsx watch, port 3000
+- .github/workflows/ci.yml: quality job (push+PR), contract job (main push only), drive-staleness job
+- DEV_SETUP.md: full guide — clone all 3 repos, docker-compose up, contract-first workflow
+- 35/35 tests pass, 0 TypeScript errors
+
+**ttruthdesk-platform:**
+- Dockerfile.dev: Node 22 + pnpm, hot-reload via tsx watch, port 4000, pushed to GitHub
+
+**dev-environment/ (new sibling directory):**
+- docker-compose.dev.yml: orchestrates backend (port 4000) + frontend (port 3000) with TTRUTHDESK_BASE_URL=http://backend:4000
+- .env.dev.example: shared secrets template for both containers
+
+**Key discipline:** contract-first workflow — define API shape in ttruthdesk-platform → add test in citation-desk → write proxy → consume in frontend. Never the reverse.
