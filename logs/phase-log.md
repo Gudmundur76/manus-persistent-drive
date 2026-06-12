@@ -968,3 +968,24 @@ Complete rewrite of `client/src/pages/Developers.tsx` (613 → ~750 lines). All 
 - `client/src/pages/Developers.tsx` — full rewrite
 - `todo.md` — Phase C5 marked complete
 
+
+## Sprint — Audit Fixes + Branding Cleanup (2026-06-12)
+**Checkpoint:** cabd42c5
+**Tests:** 35/35 | **TS errors:** 0
+
+### Completed
+- CodeRabbit config added to citation-desk and ttruthdesk-platform repos
+- All ttruthdesk.claims/Truth Desk references removed from user-facing code (6 files)
+- wouter imports replaced with react-router-dom in SimilarClaims, DashboardLayout, NotFound
+- rewriteUrl() utility added to api.ts — rewrites old Cloud Run URLs to citation.is
+- /mcp proxy: 15s timeout + 504 response (was hanging indefinitely)
+- /developers: fixed nested anchor bug in CitationHome (inner <a> → <span role="link">)
+- openapi.json: now serves citation.is-branded static spec (not proxied ttruthdesk.claims)
+- llms-full.txt: rewritten to paginated API — serves full 3,985-claim corpus (was 200)
+- ttruthdesk db.ts: claimText < 15 chars filtered from public API (removes entity-only records)
+- All three repos pushed to GitHub (citation-desk: cabd42c5, ttruthdesk-platform: up-to-date)
+
+### Remaining (owner actions only)
+- Submit to re3data.org, BASE, OpenAIRE (manual owner actions)
+- Mint DataCite DOIs (future)
+- CoreTrustSeal certification (future)
