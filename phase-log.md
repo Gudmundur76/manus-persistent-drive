@@ -52,3 +52,52 @@
 - Source version tracking enables self-healing when papers are retracted/updated
 - citation.is frontend (github.com/Gudmundur76/citation-desk) comes when backend is fully ready
 - Next: Phase 111 TBD — likely API v2 hardening or ingestion pipeline expansion
+
+---
+
+## Phase 111 — OpenCitations Citation Graph Adapter
+**Date:** 2026-06-13
+**Commit:** c2ba211
+**Gate:** 0 ESLint | 0 TS errors | 72 test files | 1237 tests
+
+### What was built
+- `server/verticalAdapters/opencitations.ts` — 320 lines
+- `server/verticalAdapters/opencitations.test.ts` — 48 tests
+- `server/verticalAdapters/index.ts` — registered before genericSource
+
+### Source study (opencitations/oc_api, oc_ocdm)
+Read and ported 5 algorithms directly from OpenCitations' own source:
+1. `processOrderedAuthorList()` — ported from `metaapi.py:process_ordered_list()`
+   Authors arrive as linked-list: "name:role_id:next_role_id|..."
+   We find the start node (role not referenced as next by any other), then walk the chain.
+2. `parseCitationDurationYears()` — ported from `indexapi_common.py:cit_duration()`
+   ISO 8601 P-notation: "P2Y3M" → 2.25 years. Negative prefix = data error signal.
+3. `resolvePublicationType()` — ported from `metaapi.py:URI_TYPE_DICT`
+   Full 35-entry FaBiO URI → human label map (journal article, preprint, retraction notice, etc.)
+4. Self-citation detection — ported from `indexapi_common.py:cit_journal_sc/cit_author_sc`
+   Surfaces as a confidence flag when journal_sc="yes" or author_sc="yes"
+5. Graceful degradation contract — every fetch returns null/[] on error, never throws.
+   Adopted from their RequestException → return {}, [] pattern.
+
+### Confidence scoring
+- Base 0.70 (DOI found in OC Meta)
+- +0.12 if citations > 500
+- +0.10 if citations > 100
+- +0.08 if citations > 50
+- +0.05 if citations > 10
+- +0.05 if ORCID-verified author
+- +0.05 if peer-reviewed type (journal article, proceedings article, peer review, book chapter)
+- −0.10 if preprint
+- −0.30 if retraction notice
+- Clamped to [0.30, 0.95]
+
+### API calls (concurrent via Promise.all)
+1. `GET /meta/v1/metadata/doi:{doi}` — title, authors, pub_date, venue, type, publisher
+2. `GET /index/v2/citation-count/doi:{doi}` — integer citation count
+3. `GET /index/v2/citations/doi:{doi}` — sample of 5 incoming citations with timespan
+
+### Key design decisions
+- OC_ACCESS_TOKEN env var: when set, added as Authorization header (180 req/min → higher)
+- No title-based search: OC REST API does not support free-text search (SPARQL-only)
+  Returns explicit low-confidence flag recommending OpenAlex/CrossRef for title lookups
+- Registered before genericSource (must be last) in index.ts
