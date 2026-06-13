@@ -180,3 +180,39 @@ POST /api/mcp
 Authorization: Bearer <api_key>
 {"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"verify_claim","arguments":{"claim":"..."}}}
 ```
+
+## Phase 113 — API Key Usage Tracking (2026-06-13)
+**Commit:** fbdcc3d (bundled with Phase 114) | **Gate:** 0 TS | 0 ESLint | 76 test files | 1,327 tests
+### Deliverables
+- `drizzle/0045_bored_living_tribunal.sql`: migration adding `usageCount INT DEFAULT 0` to `api_keys` table
+- `server/apiKeyService.ts`: `touchLastUsed()` now increments `usageCount` atomically
+- `server/apiKeyService.ts`: `getUsage(keyId)` returns `{ usageCount, lastUsedAt }` for a key
+- `server/routers.ts`: `apiKeys.getUsage` (protected) and `apiKeys.listAll` (protected) tRPC procedures
+- `server/apiKeyUsage.test.ts`: 15 tests covering usage increment, getUsage, listAll
+
+## Phase 114 — SSE Streaming Verification Endpoint (2026-06-13)
+**Commit:** fbdcc3d | **Gate:** 0 TS | 0 ESLint | 76 test files | 1,327 tests
+### Deliverables
+- `server/streamVerifyRoute.ts` (475 lines): `GET /api/public/verify-claim/stream`
+  - SSE endpoint emitting 5 event types: `stage:extraction`, `stage:evidence`, `stage:verdict`, `final`, `error`
+  - Full pipeline: claim extraction → structural DB lookup → PubMed search → composite verdict
+  - Rate limit: 10 req/hr per IP (anonymous), unlimited with Bearer token
+  - `verdictToConfidence()`: Supported→0.92, Partially Supported→0.65, Ambiguous→0.45, Needs Expert Review→0.30, Insufficient Evidence→0.15, Out of Scope→0.05
+  - `MCP_STREAMING_CAPABILITY` descriptor exported for MCP server integration
+- `server/_core/index.ts`: `registerStreamVerifyRoute(app)` wired after `registerAnswerRoute`
+- `server/mcpServer.ts`: `capabilities.streaming: true` added to `initialize` response
+- `server/streamVerifyRoute.test.ts` (29 tests): logic-level tests (rate-limit, verdictToConfidence, input validation, sseWrite format, OPTIONS preflight, MCP descriptor)
+### Key Decisions
+- Logic-level testing (re-implemented helpers) rather than supertest SSE streaming — SSE routes with `Connection: keep-alive` cause supertest to hang. Pattern follows verifyClaimRoute.test.ts.
+- `confidence` field removed from VerdictResult reference (VerdictResult has no confidence field). Replaced with `verdictToConfidence(verdict)` helper.
+- ESLint complexity warning (43) on `handleStreamVerify` is pre-existing pattern (verifyClaimRoute has 29). It is a warning, not an error.
+### Architecture
+```
+GET /api/public/verify-claim/stream?claim=PDB+entry+1ABC+has+resolution+2.1
+Accept: text/event-stream
+
+event: stage:extraction  → {stage:1, primaryClaimText, primaryClaimType, primaryPdbId}
+event: stage:evidence    → {stage:2, pubmedCount, hasStructuralEvidence, pubmedResults[]}
+event: stage:verdict     → {stage:3, verdict, confidence:0.92, rationale}
+event: final             → {ok:true, verdict, streaming:true, apiVersion:"1.1", ...}
+```
