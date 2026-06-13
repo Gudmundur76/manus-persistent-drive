@@ -385,3 +385,42 @@ verify_claim, get_claim, search_claims, get_source_version, verify_claim_at_date
 - TSC errors: 0
 - ESLint warnings: 0
 
+
+## Phase 121 — Epistemic Provenance Chain
+**Date:** 2026-06-13
+**Commit:** de945fc
+**Status:** COMPLETE ✅
+
+### Deliverables
+- `server/epistemicProvenance.ts` — full provenance module
+  - `getDistortionChain(claimId)` — ordered hops from `citationEdges` (originalClaimId → hopNumber ASC)
+  - `getSemanticNeighbours(claimId, limit)` — top-N bidirectional edges from `graphClaimEdges` (weight DESC)
+  - `buildProvenanceResult()` — pure function assembling `ProvenanceResult` with `maxDistortionScore`, `hopCount`, `generatedAt`
+  - `registerProvenanceRoute(app)` — `GET /api/public/provenance/:claimId` + `OPTIONS` preflight, CORS headers, 400/404/200 contract
+  - `PROVENANCE_TOOLS_MANIFEST` — MCP tool descriptor for `get_provenance`
+- `server/epistemicProvenance.test.ts` — 27 tests (RED→GREEN via Ralph Wiggum loop)
+- `server/mcpServer.ts` — `get_provenance` wired as tool #11; `toolGetProvenance()` handler added
+- `server/mcpServer.test.ts` — tool count updated 10→11; fingerprint hash updated
+- `tests/integration/fixtures.ts` — `MCP_TOOLS` expanded to all 11 tools
+- `tests/integration/mcp.test.ts` — header + test name updated to reflect 11 tools
+
+### Gate Results
+- TSC: 0 errors
+- ESLint: 0 warnings
+- Vitest: **1464/1464 GREEN** (82 test files)
+
+### MCP Tool Inventory (cumulative)
+1. verify_claim
+2. search_claims
+3. get_claim
+4. get_source_version
+5. ask_question
+6. verify_claim_at_date (Phase 118)
+7. verify_claims_batch (Phase 119)
+8. submit_claim (Phase 120)
+9. flag_stale (Phase 120)
+10. report_contradiction (Phase 120)
+11. get_provenance (Phase 121) ← NEW
+
+### Sprint 117–121 Complete
+All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
