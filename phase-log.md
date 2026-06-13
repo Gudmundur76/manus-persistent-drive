@@ -463,3 +463,15 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 - mcpServer.ts: 11→12 tools, fingerprint updated
 - Tests: +16 (total 1595/1595 GREEN, 88 files)
 - Coverage: lines 35%, functions 47%, branches 72%
+
+## Phase 125 — Semantic Clustering in Wiki Compiler
+- **Date:** 2026-06-13
+- **Commit:** a05d486
+- **Tests:** 1608/1608 GREEN (89 files)
+- **TSC:** 0 errors
+- **What shipped:**
+  - `server/wikiClustering.ts`: UnionFind-based entity clustering via `findSimilarClaims`
+  - `clusterEntitiesBySimilarity` groups entities that share similar claim embeddings
+  - `buildClusterCrossLinks` appends a "## Related Entities" section to each wiki page
+  - Wired into `compileDocumentToWiki` for automatic cross-linking
+  - 13 new tests covering clustering, cross-links, empty inputs, error handling
