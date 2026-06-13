@@ -494,3 +494,14 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Tests:** +12 (1630 total, 91 files)  
 **Guardrails:** kill switch (DREAM_DISABLED), rate-limit 429, health threshold 422, audit log (manualTrigger=true)  
 **Gate:** TSC clean, ESLint clean, 1630/1630 GREEN  
+
+---
+
+## Phase 128 — Knowledge Gap Bridge
+**Date:** 2026-06-13  
+**Commit:** 62e03c4  
+**Feature:** Knowledge Gap Bridge — bridges open knowledge_gaps to coordQueue for autonomous evidence pursuit  
+**Files:** server/knowledgeGapBridge.ts, knowledgeGapBridge.test.ts, discoveryLoopJob.ts (wired)  
+**Tests:** +9 (1639 total, 92 files)  
+**Gap lifecycle:** open → pursued (pursuitQueueId + lastPursuedAt set on each bridged gap)  
+**Gate:** TSC clean, 1639/1639 GREEN  
