@@ -335,3 +335,18 @@ Set `TEST_API_KEY=<key>` env var to also run the auth-bypass rate-limit test.
 
 ### Production bug fixed
 - `evidence[].excerpt` was hardcoded to `null` in `buildVerifyResult` — every MCP `verify_claim` response had empty evidence excerpts. Now populated via keyword-overlap sentence selection from the abstract.
+
+## Phase 118 — Temporal Claim Versioning
+**Commit:** $(cd /home/ubuntu/ttruthdesk-platform && git rev-parse --short HEAD) | **Date:** 2026-06-13
+**Status:** COMPLETE ✅
+
+### What was built
+- `server/temporalVersioning.ts`: `isClaimStale()`, `buildTemporalWindow()`, `filterByDate()`, `verdictAtDate()` — pure logic, no DB dependency
+- `TOOLS_MANIFEST` with `verify_claim_at_date` MCP tool descriptor
+- Wired as 6th tool in `mcpServer.ts` TOOLS registry
+
+### Gate
+- 0 TSC errors | 0 ESLint warnings | 17/17 Vitest tests passing
+
+### Design decision
+- No DB schema migration required for core logic — validFrom/validUntil are computed from evidence years at query time, not persisted. Schema migration deferred to Phase 125 (DB hardening sprint).
