@@ -486,3 +486,11 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
   - `server/coordRoundTrip.ts`: full enqueue→dequeue→complete→status cycle with per-step latency
   - Null guard for `getDb()` returning null (DB unavailable path)
   - 10 new tests covering 200/404/500 responses and RoundTripResult shape
+
+## Phase 127 — 2026-06-13
+**Commit:** 68b2c68  
+**Feature:** Dream → Ingest Pipeline Bridge + POST /api/v2/dream/start  
+**Files:** server/dream/dreamIngestBridge.ts, dreamIngestBridge.test.ts, dreamStartRoute.ts  
+**Tests:** +12 (1630 total, 91 files)  
+**Guardrails:** kill switch (DREAM_DISABLED), rate-limit 429, health threshold 422, audit log (manualTrigger=true)  
+**Gate:** TSC clean, ESLint clean, 1630/1630 GREEN  
