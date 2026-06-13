@@ -216,3 +216,53 @@ event: stage:evidence    → {stage:2, pubmedCount, hasStructuralEvidence, pubme
 event: stage:verdict     → {stage:3, verdict, confidence:0.92, rationale}
 event: final             → {ok:true, verdict, streaming:true, apiVersion:"1.1", ...}
 ```
+
+---
+
+## Phase 115 — Stage 3.5: OpenCitations DOI Enrichment in Composite Truth Pipeline
+
+**Commit:** `7884f2b`
+**Date:** 2026-06-13
+**Gate:** 0 TS errors | 0 ESLint warnings on changed files | 77 test files | 1,350 tests passing
+
+### What was built
+
+**`server/openCitationsEnricher.ts`** (new, 105 lines)
+- Thin Stage 3.5 helper that extracts a DOI from claim text or `extractedValue`
+- Calls the registered `opencitations` vertical adapter via `getVertical("opencitations")`
+- Returns `{ citationAuthorityScore, isRetracted, citationCount, doi }` or `null` when no DOI present
+- Graceful degradation: returns `null` on any adapter error (never throws)
+- No DB writes, no side effects — pure enrichment helper
+
+**`server/compositeTruthEngine.ts`** (extended)
+- `CompositeTruthInput` gains two new optional fields:
+  - `citationAuthorityScore?: number | null` — OC confidence score [0,1]
+  - `isRetracted?: boolean | null` — retraction notice flag
+- Scoring adjustments:
+  - `citationAuthorityScore ≥ 0.80` → **+0.05 bonus** (highly cited, ORCID-verified)
+  - `citationAuthorityScore ≤ 0.30` → **−0.10 penalty** (low authority)
+  - `isRetracted === true` → **−0.15 penalty** (retraction notice; bonus still applies if authority ≥ 0.80 → net −0.10)
+- Rationale builder updated to surface OC signal in human-readable form
+- `eslint-disable-next-line complexity` added (function complexity: 32 → 42; pre-existing pattern)
+
+**`server/analysisPipeline.ts`** (extended)
+- Imports `openCitationsEnrichClaim` from the new enricher
+- Inside the Stage 7 composite-truth loop, fires OC enrichment per claim (non-fatal try/catch)
+- Passes `citationAuthorityScore` and `isRetracted` into `computeCompositeTruth()`
+
+**`server/openCitationsEnricher.test.ts`** (new, 27 tests)
+- DOI extraction from claim text vs extractedValue
+- Adapter delegation and retraction flag detection
+- `computeCompositeTruth` scoring: bonus, penalty, retraction, mid-range no-op, clamping
+- Rationale string assertions for all OC signal states
+
+### Architecture notes
+- Stage 3.5 sits inside the Stage 7 composite-truth loop, not in Stage 3 itself, to keep the
+  per-claim verdict loop fast. The OC lookup is a secondary enrichment that feeds the composite
+  signal rather than gating the primary verdict.
+- The adapter is called via `getVertical("opencitations")` so tests can mock it without touching
+  the real HTTP layer.
+- No schema migration required — `citationAuthorityScore` and `isRetracted` are transient inputs
+  to `computeCompositeTruth()` and are not persisted separately.
+- Retraction detection: `isRetracted` is derived from `confidenceFlags` containing "retraction"
+  (case-insensitive). This matches the OC adapter's own flag: `"⚠ RETRACTION NOTICE"`.
