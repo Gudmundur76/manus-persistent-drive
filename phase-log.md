@@ -101,3 +101,20 @@ Read and ported 5 algorithms directly from OpenCitations' own source:
 - No title-based search: OC REST API does not support free-text search (SPARQL-only)
   Returns explicit low-confidence flag recommending OpenAlex/CrossRef for title lookups
 - Registered before genericSource (must be last) in index.ts
+
+---
+
+## Phase 111b — PHILOSOPHY.md + MCP Server Spec
+**Date:** 2026-06-13
+**Commit:** 48e0d5b
+
+### What was committed
+- `PHILOSOPHY.md` — canonical design statement (written by the AI agent itself)
+  The 5 structural improvements, architectural table, long-term vision.
+  Every future phase is measured against: "Does this bring the system
+  closer to structured, machine-verifiable evidence with traceable provenance?"
+
+- `docs/mcp-server-spec.md` — full Phase 112 specification
+  Tools: verify_claim, search_claims, get_claim, get_source_version, ask_question
+  Typed I/O, rate limits, error codes, implementation status table.
+  Phase 112 scope: server/mcpServer.ts — MCP wrapper over existing tRPC procedures.
