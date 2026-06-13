@@ -171,3 +171,18 @@ The CI workflow runs `pnpm test:coverage --run` (vitest with coverage) but `@vit
 - package.json (+1 dep)
 - pnpm-lock.yaml (lockfile update)
 - vitest.config.ts (+11 lines coverage config)
+
+## 2026-06-13 — Phase 109 + 110 Learnings
+
+### Architecture decisions
+- **Source version hashing:** SHA-256 over `${title}|${etag}|${lastModified}|${contentLength}` — deterministic, fast, no false positives from whitespace changes
+- **Change type priority:** retraction > major > minor (keyword arrays in sourceVersionAgent.ts). Retraction always wins even if other keywords also present.
+- **Loop trigger threshold:** confidence < 0.6 is the empirically chosen boundary between "usable answer" and "needs more evidence". Anything below triggers autonomous pursuit.
+- **Rate limiting:** In-memory Map (ip → {count, windowStart}) is sufficient for single-process deployment. If horizontal scaling is needed, replace with Redis-backed counter.
+- **Graceful degradation pattern:** All LLM-dependent functions must return a valid typed result even on failure. Never throw to the caller — log the error, return a safe fallback with `loopTriggered: true` so the system self-heals.
+- **Mock shape for invokeLLM in tests:** Must include `id`, `created`, `model`, `choices[].index`, `choices[].finish_reason`, `choices[].message.role`. Missing any of these causes TS2741 errors.
+
+### Test patterns
+- Structural assertions (does file X contain string Y) are valid and valuable for wiring tests — they catch registration omissions without requiring full integration test setup.
+- Export constants from production code (`LOOP_TRIGGER_CONFIDENCE`, `ANON_RATE_LIMIT`) so tests can assert against the same values rather than hardcoding magic numbers.
+- Rate limit tests: use unique IPs per test (`test-ip-${Date.now()}-N`) to avoid cross-test contamination from the shared in-memory Map.
