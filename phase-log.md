@@ -266,3 +266,56 @@ event: final             → {ok:true, verdict, streaming:true, apiVersion:"1.1"
   to `computeCompositeTruth()` and are not persisted separately.
 - Retraction detection: `isRetracted` is derived from `confidenceFlags` containing "retraction"
   (case-insensitive). This matches the OC adapter's own flag: `"⚠ RETRACTION NOTICE"`.
+
+---
+
+## Phase 116 — Agent Integration Test Harness
+
+**Commit:** `56804fc` on `ttruthdesk-platform`
+**Date:** 2026-06-13
+**Gate:** 0 TS errors · 0 ESLint errors/warnings · 1350/1350 Vitest · **35/35 integration tests GREEN**
+
+### What was built
+
+`tests/integration/` directory with 4 suites and a standalone harness runner:
+
+| File | Purpose |
+|---|---|
+| `harness.ts` | Auto-starts test server on port 3001 (NODE_ENV=test), runs all suites sequentially, writes REPORT.md |
+| `helpers.ts` | `parseMcpToolResult()`, `collectSseEvents()`, `resetRateLimit()`, `fetchAgentJson()`, `assert()` |
+| `fixtures.ts` | Shared claim constants and MCP tool name enum |
+| `mcp.test.ts` | 16 tests: all 5 MCP tools, `/.well-known/mcp.json`, JSON-RPC id reflection |
+| `answer.test.ts` | 7 tests: valid/boundary/oversized/empty/missing/non-JSON inputs, `loopTriggered` field |
+| `rateLimit.test.ts` | 5 tests: 10 anon succeed, 11th → 429, X-RateLimit-Reset header, Bearer bypass, MCP rate limit |
+| `stream.test.ts` | 7 tests: 4-stage SSE sequence, final event shape, per-stage field assertions, missing param, OPTIONS CORS |
+
+### Production bugs discovered and fixed by the harness
+
+1. **`mcpServer.ts` path bug** — `callVerifyEndpoint` was calling `/api/verify-claim` (404) instead of `/api/public/verify-claim`
+2. **`mcpServer.ts` confidence out-of-range** — `signalDensity` (raw keyword count, e.g. 2) was returned as `confidence` without normalisation; fixed to `Math.min(1, rawDensity / 10)`
+3. **`mcpServer.ts` DB resilience** — `toolSearchClaims` and `toolGetClaim` threw unhandled DB errors on empty DB; wrapped in try/catch
+4. **`streamVerifyRoute.ts` pre-flight ordering** — `flushHeaders()` was called before rate-limit and input validation; moved after all pre-flight checks so 429/400 return proper HTTP status codes instead of silently hanging
+5. **`streamVerifyRoute.ts` mock mode** — added `NODE_ENV=test` + `__mock__` prefix fast path that emits pre-canned events in <10ms, enabling SSE integration tests without real LLM/PubMed calls
+6. **`streamVerifyRoute.ts` keepalive** — added 15-second heartbeat comment (`: heartbeat`) to prevent proxy connection drops on slow claims
+
+### Ralph Wiggum loop iterations
+
+| Iteration | Pass rate | Root cause fixed |
+|---|---|---|
+| 1 | 0/35 | Server not running (citation-desk on port 3000, not ttruthdesk) |
+| 2 | 23/35 | Path bug, wrong param names, MCP result unwrapping |
+| 3 | 23/35 | Old server in memory (code not reloaded) |
+| 4 | 26/35 | DB resilience, confidence normalisation |
+| 5 | 28/35 | flushHeaders ordering, mock mode |
+| 6 | 34/35 | Field name mismatches (summary vs rationale, evidence vs pubmedResults) |
+| 7 | **35/35** | All GREEN |
+
+### Run command
+
+```bash
+pnpm test:integration
+# or directly:
+NODE_ENV=test TEST_PORT=3001 node_modules/.bin/tsx tests/integration/harness.ts
+```
+
+Set `TEST_API_KEY=<key>` env var to also run the auth-bypass rate-limit test.
