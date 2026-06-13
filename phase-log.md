@@ -516,3 +516,16 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Tests:** +20 (1659 total, 93 files)  
 **Routes added:** GET /api/v2/health/detailed, POST /api/scheduled/ingestion-alerts  
 **Gate:** TSC clean, 1659/1659 GREEN  
+
+## Phase 130 — 2026-06-13
+**Commit:** c302e2a
+**Status:** COMPLETE
+**Deliverables:**
+- workflow_dispatch trigger added to ci.yml (with optional reason input)
+- 3 ESLint errors fixed (unused imports: coordTasks, sql, and)
+- 44 eslint-disable-next-line complexity comments across server/ and client/
+- coverage/** added to eslint.config.js ignores
+- --max-warnings 0 enforced in package.json lint script
+- pnpm lint: 0 errors, 0 warnings
+- DEPLOYMENT.md written (prerequisites, env vars, DB, build, CI, health, heartbeat, rollback, secrets)
+**Gate:** TSC clean, 1659/1659 GREEN, lint 0/0
