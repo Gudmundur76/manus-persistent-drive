@@ -118,3 +118,31 @@ Read and ported 5 algorithms directly from OpenCitations' own source:
   Tools: verify_claim, search_claims, get_claim, get_source_version, ask_question
   Typed I/O, rate limits, error codes, implementation status table.
   Phase 112 scope: server/mcpServer.ts — MCP wrapper over existing tRPC procedures.
+
+---
+
+## Phase 111b — Strict Discipline Enforcement: Structured Logger Migration
+**Date:** 2026-06-13
+**Commit:** d0e7186
+**Gate:** 0 ESLint errors | 0 TS errors | 73 test files | 1249 tests passing
+
+### What was done
+Enforced CodeRabbit Rule 8 (no console.* in production server code) and Rule 4 (typed error handling).
+
+**server/logger.ts** — new structured logger:
+- Factory pattern: `logger("component")` returns `{ info, warn, error, debug }`
+- JSON output to stdout (info/debug) and stderr (warn/error)
+- `errData(error: unknown)` helper: safely extracts `message`, `name`, `stack` from unknown catch values
+- Component namespacing in every log line
+- 12 Vitest tests in logger.test.ts
+
+**Migration across 76 production files:**
+- 310 `console.*` calls → `log.*` calls
+- 119 bare error variable arguments → `errData(error)` wrapped
+- 13 files had unused `errData` import removed after fix
+- embedRoutes.ts: client-side embed script `console.warn` restored (was inside template literal — migration script correctly identified and reverted)
+- indexNow.test.ts: updated to spy on `process.stdout` (structured logger output) instead of `console.warn`
+
+### Key learning
+Migration scripts that insert imports must handle multi-line import blocks correctly — insert AFTER the closing `} from "..."` line, not inside it. The v1 script had this bug; v2 fixed it by walking lines and tracking `in_multiline` state.
+
