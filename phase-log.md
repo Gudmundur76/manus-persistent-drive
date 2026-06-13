@@ -446,3 +446,20 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Coverage floor raised:** lines 35%, functions 48%, branches 48%
 **Key finding:** vitest 2.1.9 treats mockRejectedValue as unhandled rejection even when caught — use HTTP 404 mock path instead for error-path coverage
 **CI:** Pushed to main — Quality Gate, Drift Detection, Drive Staleness expected green
+
+## Phase 124a — Embedding Pipeline Wiring
+- Date: 2026-06-13
+- Commit: 18564d4 (ttruthdesk-platform)
+- Files: embeddingBackfillJob.ts, embeddingCoverageAudit.ts, embeddingPipeline.test.ts
+- autonomousIngest.ts: fire-and-forget indexClaim after Supported verdict
+- vectorStore.ts: export isSidecarAvailable
+- Tests: +9 (total 1595)
+
+## Phase 124b — find_similar Route + MCP Tool #12
+- Date: 2026-06-13
+- Commit: 18564d4 (ttruthdesk-platform)
+- Files: findSimilarRoute.ts, findSimilarRoute.test.ts
+- MCP tool #12: find_similar with staleness indicator
+- mcpServer.ts: 11→12 tools, fingerprint updated
+- Tests: +16 (total 1595/1595 GREEN, 88 files)
+- Coverage: lines 35%, functions 47%, branches 72%
