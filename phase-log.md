@@ -350,3 +350,19 @@ Set `TEST_API_KEY=<key>` env var to also run the auth-bypass rate-limit test.
 
 ### Design decision
 - No DB schema migration required for core logic — validFrom/validUntil are computed from evidence years at query time, not persisted. Schema migration deferred to Phase 125 (DB hardening sprint).
+
+## Phase 119 — Batch Verification API
+**Commit:** 1c4f310 | **Date:** 2026-06-13
+**Files:** server/batchVerify.ts, server/batchVerify.test.ts, server/mcpServer.ts
+**Tests:** 22/22 GREEN | TSC: 0 errors | ESLint: 0 warnings
+**Gate:** PASS
+
+### What was built
+- `claimTextHash()` — deterministic 16-char SHA-256 hex ID (case-insensitive, trimmed)
+- `validateBatchInput()` — 1–20 claims, dedup, 1000-char limit
+- `batchVerifyClaims()` — parallel verification, concurrency capped at 5
+- `buildBatchResult()` — response shaper with succeeded/failed counts + durationMs
+- `verify_claims_batch` MCP tool wired into mcpServer.ts (7 tools total)
+
+### MCP tool count: 7
+verify_claim, get_claim, search_claims, get_source_version, verify_claim_at_date, verify_claims_batch, ask_question
