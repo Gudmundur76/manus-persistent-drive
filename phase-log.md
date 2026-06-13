@@ -505,3 +505,14 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Tests:** +9 (1639 total, 92 files)  
 **Gap lifecycle:** open → pursued (pursuitQueueId + lastPursuedAt set on each bridged gap)  
 **Gate:** TSC clean, 1639/1639 GREEN  
+
+---
+
+## Phase 129 — Production Hardening
+**Date:** 2026-06-13  
+**Commit:** 4b3c177  
+**Feature:** Structured error codes, detailed health endpoint, push-based ingestion alerting  
+**Files:** server/structuredErrors.ts, detailedHealthRoute.ts, ingestionAlertJob.ts, phase129.test.ts, _core/index.ts  
+**Tests:** +20 (1659 total, 93 files)  
+**Routes added:** GET /api/v2/health/detailed, POST /api/scheduled/ingestion-alerts  
+**Gate:** TSC clean, 1659/1659 GREEN  
