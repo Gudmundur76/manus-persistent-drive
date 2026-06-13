@@ -146,3 +146,37 @@ Enforced CodeRabbit Rule 8 (no console.* in production server code) and Rule 4 (
 ### Key learning
 Migration scripts that insert imports must handle multi-line import blocks correctly — insert AFTER the closing `} from "..."` line, not inside it. The v1 script had this bug; v2 fixed it by walking lines and tracking `in_multiline` state.
 
+
+## Phase 112 — MCP Server (2026-06-13)
+**Commit:** 8cccceb | **Gate:** 0 TS | 0 ESLint | 74 test files | 1,287 tests
+
+### Deliverables
+- `server/mcpServer.ts` (590 lines): JSON-RPC 2.0 MCP server at `POST /api/mcp`
+  - 5 tools: `verify_claim`, `search_claims`, `get_claim`, `get_source_version`, `ask_question`
+  - Bearer token auth via `validateApiKey()` — authenticated callers bypass rate limiting
+  - Anonymous rate limit: 10 req/hr per tool per IP (in-memory, keyed by `${ip}:${toolName}`)
+  - MCP error codes: INVALID_REQUEST(-32600), METHOD_NOT_FOUND(-32601), INVALID_PARAMS(-32602), INTERNAL_ERROR(-32603), NOT_FOUND(-32001), RATE_LIMITED(-32002)
+  - `/.well-known/agent.json` updated: `mcp_endpoint` → `/api/mcp`
+  - Legacy `/mcp` stub replaced with forward to `/api/mcp`
+- `server/mcpServer.test.ts` (38 tests): all tools, auth bypass, rate limiting, error codes
+
+### Complexity Refactors (CodeRabbit compliance)
+- `validateClaimParam()` — extracted from toolVerifyClaim
+- `callVerifyEndpoint()` — extracted from toolVerifyClaim
+- `buildVerifyResult()` — extracted from toolVerifyClaim
+- `handleProtocolMethod()` — extracted from handleMcpPost
+- All functions now ≤ 20 cyclomatic complexity
+
+### Development Discipline Issues Encountered
+1. Python line-based refactor cut function signature incorrectly (missing `req: Request` param line)
+2. Second refactor left orphaned `}` on line 509 (depth went -1)
+3. Both fixed by brace-depth analysis + targeted line deletion + re-indentation
+4. Lesson: for structural refactors, use AST-aware tools or rewrite the function entirely rather than line-based surgery
+
+### Architecture
+Any MCP-compatible agent (Claude, GPT, Gemini) can now call:
+```
+POST /api/mcp
+Authorization: Bearer <api_key>
+{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"verify_claim","arguments":{"claim":"..."}}}
+```
