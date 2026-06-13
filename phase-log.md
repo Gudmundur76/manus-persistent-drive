@@ -319,3 +319,19 @@ NODE_ENV=test TEST_PORT=3001 node_modules/.bin/tsx tests/integration/harness.ts
 ```
 
 Set `TEST_API_KEY=<key>` env var to also run the auth-bypass rate-limit test.
+
+## Phase 117 — Verbatim Evidence Passages
+**Commit:** c457b12 | **Date:** 2026-06-13
+**Status:** COMPLETE ✅
+
+### What was built
+- `server/pubmedAbstractFetcher.ts`: `extractBestExcerpt()` (keyword-overlap sentence selector), `buildEvidenceWithExcerpts()` (evidence mapper with real excerpts), `selectBestPassage()` (top-scoring passage picker across all evidence)
+- Wired into `mcpServer.ts` `buildVerifyResult()` — `evidence[].excerpt` now populated from `abstractSnippet` (was always `null`)
+- `verifyClaimRoute.ts` response now includes `claimText` and `abstractSnippet` per pubmed result
+
+### Gate
+- 0 TSC errors | 0 ESLint warnings | 19/19 Vitest tests passing
+- No new DB schema required (abstractSnippet already in PubMedResult type)
+
+### Production bug fixed
+- `evidence[].excerpt` was hardcoded to `null` in `buildVerifyResult` — every MCP `verify_claim` response had empty evidence excerpts. Now populated via keyword-overlap sentence selection from the abstract.
