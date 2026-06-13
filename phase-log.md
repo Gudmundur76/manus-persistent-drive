@@ -475,3 +475,14 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
   - `buildClusterCrossLinks` appends a "## Related Entities" section to each wiki page
   - Wired into `compileDocumentToWiki` for automatic cross-linking
   - 13 new tests covering clustering, cross-links, empty inputs, error handling
+
+## Phase 126 — coordLayer Round-Trip + GET /tasks/:taskId
+- **Date:** 2026-06-13
+- **Commit:** 1108f68
+- **Tests:** 1618/1618 GREEN (90 files)
+- **TSC:** 0 errors
+- **What shipped:**
+  - `GET /tasks/:taskId` added to `coordApi/tasksRouter.ts` — single-task status lookup
+  - `server/coordRoundTrip.ts`: full enqueue→dequeue→complete→status cycle with per-step latency
+  - Null guard for `getDb()` returning null (DB unavailable path)
+  - 10 new tests covering 200/404/500 responses and RoundTripResult shape
