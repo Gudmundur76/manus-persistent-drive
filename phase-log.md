@@ -366,3 +366,22 @@ Set `TEST_API_KEY=<key>` env var to also run the auth-bypass rate-limit test.
 
 ### MCP tool count: 7
 verify_claim, get_claim, search_claims, get_source_version, verify_claim_at_date, verify_claims_batch, ask_question
+
+## Phase 120 — Bidirectional Agent Feedback
+**Commit**: b85dd8c
+**Date**: 2026-06-13
+**Status**: DONE
+
+### What was built
+- `server/agentFeedback.ts`: `validateSubmitClaim`, `validateFlagStale`, `validateReportContradiction`, `buildFeedbackAck`
+- Three new MCP tools wired into `mcpServer.ts` TOOLS registry: `submit_claim`, `flag_stale`, `report_contradiction`
+- `mcpServer.test.ts` updated: tool count 5→10, fingerprint hash updated for 10 tools
+  (sorted: ask_question, flag_stale, get_claim, get_source_version, report_contradiction, search_claims, submit_claim, verify_claim, verify_claim_at_date, verify_claims_batch)
+- 29 new tests GREEN
+
+### Test counts
+- New tests: 29
+- Total: 1,437 tests passing (81 files)
+- TSC errors: 0
+- ESLint warnings: 0
+
