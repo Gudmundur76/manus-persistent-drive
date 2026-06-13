@@ -437,3 +437,12 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 - todo.md: Phase 113 items marked done (already implemented); Phases 114-115
   moved to Backlog; Phase 123-130 sprint plan added
 - Note: --no-verify used for commit (todo.md checker false positive on sprint plan items)
+
+## Phase 123 — 2026-06-13
+**Commit:** c7da362
+**Tests added:** 79 (35 compositeTruthEngine + 44 vertical adapters)
+**Total tests:** 1570/1570 GREEN (86 files)
+**Coverage:** lines 35.01% / functions 48.16% / branches 69.61%
+**Coverage floor raised:** lines 35%, functions 48%, branches 48%
+**Key finding:** vitest 2.1.9 treats mockRejectedValue as unhandled rejection even when caught — use HTTP 404 mock path instead for error-path coverage
+**CI:** Pushed to main — Quality Gate, Drift Detection, Drive Staleness expected green
