@@ -650,3 +650,40 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
   - `POST /queue/dequeue`: empty queue → `{ item: null }` → updated to `toHaveProperty("item")`
 - **Total tests**: 2564 (223 test files) — all GREEN
 - **Gates**: TSC 0 errors | Lint 0 errors | CI pushed to GitHub
+
+## Sprint 0 Complete — 2026-06-14
+- **Commit**: 0e700bb
+- **Scope**: 4 production-hardening fixes from Sprint 0 technical review PDF
+- **Total tests**: 2602 (226 test files) — all GREEN
+- **Gates**: TSC 0 errors | Lint 0 errors | Pushed to GitHub (main)
+
+### Fix 1 — Persistent Rate Limiter
+- `server/_core/rateLimit.ts`: async DB-backed `checkRateLimit(ip, bucket, limit, windowMs)` with fail-open pattern
+- `drizzle/schema.ts`: added `rate_limit_buckets` table (upsert-based sliding window)
+- Wired into `answerRoute.ts`, `apiV2Router.ts`, `apiKeyService.ts`
+- Tests: `server/_core/rateLimit.test.ts` — 7 tests GREEN
+
+### Fix 2 — Silent Verdict Flip Notification
+- `server/verdictChangeDispatcher.ts`: fans out webhook delivery + publishes `verdict_changed` loop event
+- `server/reEvaluationEngine.ts`: wired `dispatchVerdictChanged` after `updateClaimVerdict` call
+- Tests: `server/reEvaluationEngine.test.ts` — 2 new tests GREEN
+
+### Fix 3 — Dream Engine Safety Gate
+- `server/autonomousLoop/loopOrchestrator.ts`: `AUTO_PROMOTE_THRESHOLD = 0.75`
+  - Hypotheses ≥0.75 → `auto_promoted` + `gap_closed` event published
+  - Hypotheses <0.75 → `pending` (staged for admin review)
+- `server/dreamStagingRoute.ts`: `POST /api/admin/dream-staging/:id/review` (approve/reject)
+- `server/_core/index.ts`: registered `registerDreamStagingRoute` + `registerBackfillEmbeddingsRoute`
+- Tests: `loopOrchestrator.test.ts` (4 new tests) + `dreamStagingRoute.test.ts` (8 tests) — GREEN
+- `drizzle/schema.ts`: `dream_staging_queue` table with `auto_promoted` status enum
+
+### Fix 4 — Embedding Schema + Backfill Endpoint
+- `drizzle/schema.ts`: `claim_embeddings` table with TiDB `VECTOR(1536)` customType
+- `server/backfillEmbeddingsRoute.ts`: `backfillMissingEmbeddings(opts)` + `POST /api/admin/backfill-embeddings`
+  - Queries claims without embeddings, calls `BUILT_IN_FORGE_API_URL/v1/embeddings`, upserts results
+  - Fail-open: DB or API unavailability returns zero counts, never throws
+  - Paginated with configurable limit (default 100, max 1000)
+- Tests: `server/backfillEmbeddingsRoute.test.ts` — 7 tests GREEN
+
+### Completion Promise
+"Sprint 0 complete: rate-limit persisted, verdict flips visible, dream loop gated, embeddings backfillable."
