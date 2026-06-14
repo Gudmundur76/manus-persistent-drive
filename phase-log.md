@@ -570,3 +570,9 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Total tests**: 2321 (up from 2306)
 **Gates**: TSC 0 errors, lint 0 warnings, 2321/2321 tests GREEN
 **Remaining untested**: ~15 modules (agentIngestionEndpoint, answerRoute, coordApi, coordApi/index, db, embedRoutes, llmsRoute, micronDeploy, pdfReportGenerator, platform/*, predictionBackfillJob, pubmedIngestJob, routers, seedKnowledgeGraph, siaHarnessRouter, sitemapRoute, storage, wikiPageRoute)
+
+## Cycle 25 — 2026-06-14 (commit 20eea80)
+**Files**: pubmedIngestJob.test.ts (3), predictionBackfillJob.test.ts (5), siaHarnessRouter.test.ts (4) = 12 new tests
+**Total tests**: 2333 (up from 2321)
+**Gates**: TSC 0 errors, lint 0 warnings, 2333/2333 tests GREEN
+**Remaining untested**: ~12 modules (agentIngestionEndpoint, answerRoute, coordApi, coordApi/index, db, embedRoutes, llmsRoute, micronDeploy, pdfReportGenerator, platform/*, routers, seedKnowledgeGraph, sitemapRoute, storage, wikiPageRoute)
