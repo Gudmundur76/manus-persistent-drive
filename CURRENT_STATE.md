@@ -10,53 +10,51 @@
 | :--- | :--- |
 | **Date Updated** | 2026-06-14 |
 | **Active Track** | `ttruthdesk-platform` |
-| **Active Sprint** | `sprint-1-cron-migration` |
+| **Active Sprint** | `sprint-2-phase-115` |
 | **Sprint Status** | DONE ✅ |
-| **Completion Promise** | `FLYWHEEL WIRED — VERDICT_COMPLETE TRAINS MODELS` |
+| **Completion Promise** | `CITATION GRAPH SCORING IN VERDICT PIPELINE — FLYWHEEL + SCORING COMPLETE` |
 
 ---
 
 ## What Was Just Done (This Session)
 
-**Sprint 0 gap-close + Sprint 1 (cron-migration) on ttruthdesk-platform completed.**
+**Sprint 2 (Phase 115 — Citation Graph Scoring) on ttruthdesk-platform completed.**
 
-### Sprint 0 Gap-Close (commit `e62a64a`)
-- Removed 3 in-memory rate limit Maps from `answerRoute.ts`, `apiV2Router.ts`, `apiKeyService.ts` — DB is now sole authority
-- Moved backfill endpoint from `/api/admin/backfill-embeddings` → `/api/scheduled/backfill-embeddings` with `requireCronOrAdmin` middleware
-- Added `resetRateLimitBuckets()` export to `_core/rateLimit.ts` for test cleanup
-- TypeScript: 0 errors, 2602/2602 tests passing
+### Sprint 2 — Phase 115: Citation Graph Scoring (commit `5915def`)
 
-### Sprint 1 — Training Flywheel + Reactive Cascades (commit `30d05d5`)
+**compositeTruthEngine.ts:**
+- Added `citationCount` log10 boost (clamped 0–0.25): `min(log10(n)/8, 0.25)` added to composite score
+- Added `selfCitationFraction` penalty: `−0.05 * fraction` applied when fraction > 0
+- Updated retraction penalty from −0.15 → −0.30 (Phase 115 spec)
+- Both new fields added to `CompositeTruthInput` interface and `ComputeCompositeTruth` function
 
-**Work Stream A — Training Flywheel Connection:**
-- `trainingCorpusListener.ts`: enriches `verdict_complete` events with full claim data (claimText, entities, provenance) and calls `ClaimsCorpusGenerator` from cognitive-loop-framework
-- Wired `notifyTrainingCorpus()` into `loopOrchestrator.ts` — the flywheel is now live
+**analysisPipeline.ts:**
+- Stage 3.5 now extracts `citationCount` and `selfCitationFraction` from OC enrichment result
+- Passes both fields into `computeCompositeTruth()`
+- Calls `setCitationGraphEnriched(claim.id)` after successful OC enrichment
 
-**Work Stream B — Self-Building Loop:**
-- Added `system_capability_required` event type (layer 4) to `eventBus.ts` and schema
-- Wired trigger in `metaLayer.ts` when health score drops to critical (≤30)
-- Added `spawnDevTask()` + `buildDevRepairPrompt()` to `manusOrchestrator.ts`
+**db.ts:** Added `setCitationGraphEnriched(claimId)` helper — sets `citationGraphEnriched=true` on claims table
 
-**Work Stream C — Reactive Event Cascades (Cron Migration):**
-- `scanLocalContradictions(claimId)` in `contradictionDetector.ts` — per-claim scan on every `verdict_complete` (replaces weekly full-graph cron)
-- `lintWikiPage(slug)` in `wikiEngine.ts` — per-page lint on every `compileDocumentToWiki()` (replaces weekly wiki-engine-lint cron)
-- `source_data_changed` event published from `analysisPipeline.ts` after semantic_similar edges (replaces 6-hour quality-scorer cron)
+**drizzle/schema.ts:** Added `citationGraphEnriched` boolean column to claims table
 
-- 19 new tests — 2621/2621 passing (228 files)
-- TypeScript: 0 errors, ESLint: 0 errors
-- Committed and pushed to GitHub: `feat(training): Sprint 1 — training flywheel, reactive cascades, self-build loop [sprint-1]`
+**drizzle/0046_sprint1_sprint2_tables.sql:** Migration SQL for `rate_limit_buckets`, `dream_staging_queue`, `claim_embeddings`, `citationGraphEnriched` column, `system_capability_required` event type
+
+**env.ts:** Added `TRAINING_CORPUS_ENABLED` and `TRAINING_CORPUS_PATH` to env schema
+
+- 17 new tests — 2638/2638 passing (229 files)
+- TypeScript: 0 errors
+- Committed and pushed to GitHub: `feat(phase-115): citation graph scoring in verdict pipeline [sprint-2]`
 
 ---
 
 ## What Must Be Done Next
 
-**ttruthdesk-platform Sprint 1 is COMPLETE.** The flywheel is wired. 2621 tests passing.
+**ttruthdesk-platform Sprint 2 is COMPLETE.** 2638 tests passing.
 
-**Next action — Sprint 2 (self-building loop):**
-1. Generate Drizzle migration SQL for the 3 new schema tables (`rate_limit_buckets`, `dream_staging_queue`, `claim_embeddings`) — these are in schema.ts but migration SQL has not been generated yet
-2. Add `TRAINING_CORPUS_ENABLED=true` to the production env config so the flywheel activates on deploy
-3. Write end-to-end integration test for `system_capability_required` → `spawnDevTask()` path
-4. Begin Phase 123 — the next planned development phase in `todo.md`
+**Next action — Sprint 3:**
+1. Phase 114 — Streaming Verification Endpoint: add `GET /api/v2/verify/stream` using Server-Sent Events so citation.is can show live verification progress
+2. Phase 116 — OpenCitations Stage 4: add `selfCitationFraction` computation to `openCitationsEnricher.ts` (currently returns null — the field is wired but not populated)
+3. Phase 117 — Contradiction Graph API: expose `GET /api/v2/claims/:id/contradictions` using the new `scanLocalContradictions()` function
 
 ---
 
@@ -69,7 +67,8 @@ The production scientific truth registry at citation.is.
 | :--- | :--- | :--- |
 | sprint-0-critical-fixes | Fix rate limiter, verdict flip, dream gate, embeddings | DONE ✅ |
 | sprint-1-cron-migration | Training flywheel, reactive cascades, self-build loop | DONE ✅ |
-| sprint-2-self-building-loop | Drizzle migrations, TRAINING_CORPUS_ENABLED, Phase 123 | NEXT |
+| sprint-2-phase-115 | Drizzle migrations, TRAINING_CORPUS_ENABLED, Phase 115 citation graph scoring | DONE ✅ |
+| sprint-3-streaming-api | Phase 114 SSE streaming, Phase 116 self-citation fraction, Phase 117 contradiction API | NEXT |
 
 **Blueprint:** `tracks/ttruthdesk-platform/blueprint/`
 
