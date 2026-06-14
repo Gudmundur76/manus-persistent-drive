@@ -619,3 +619,10 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Total tests:** 2485
 **Key insight:** Named imports from adapter modules bypass vi.mock(); must use vi.stubGlobal("fetch", mockFn) to intercept HTTP calls inside the adapter. Also: CELEX regex requires exactly 4 digits before R/L/D (e.g. 2016R0679 not 32016R0679).
 **Remaining untested adapters:** pdb, uniprot (already tested), fao, iaea, nasa, epa, fda (check if exist)
+
+## Cycle 33 — Jun 14 2026 ~02:55 UTC
+**Commit:** 4031942
+**Tests added:** 33 (court_listener×4, openfda_labels×4, uniprotVertical×4, collagenPeptides×3, creatineErgogenics×3, gutMicrobiome×3, plantBasedProtein×3, proteinSupplement×3, salmonBiotech×3, sportsNutritionRct×3)
+**Total tests:** 2518 (214 test files)
+**Key insight:** salmonBiotech uses PubChem REST directly (not synthesiseEvidence) — must mock fetch with PropertyTable/InformationList JSON shapes; court_listener has its own local registerVertical stub (not shared registry) — test via module load + source text inspection
+**Gates:** TSC clean, lint clean, all 2518 pass
