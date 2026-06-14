@@ -9,34 +9,54 @@
 | Field | Value |
 | :--- | :--- |
 | **Date Updated** | 2026-06-14 |
-| **Active Track** | `cognitive-loop-framework` |
-| **Active Sprint** | `sprint-5-autonomous-training-loop` |
+| **Active Track** | `ttruthdesk-platform` |
+| **Active Sprint** | `sprint-1-cron-migration` |
 | **Sprint Status** | DONE ✅ |
-| **Completion Promise** | `DATA FLYWHEEL CLOSED — CLAIMS TRAIN MODELS` |
+| **Completion Promise** | `FLYWHEEL WIRED — VERDICT_COMPLETE TRAINS MODELS` |
 
 ---
 
 ## What Was Just Done (This Session)
 
-**Sprint 5 of the cognitive-loop-framework was completed: the autonomous training loop (data flywheel).**
+**Sprint 0 gap-close + Sprint 1 (cron-migration) on ttruthdesk-platform completed.**
 
-- Built `ClaimsCorpusGenerator` — converts `verdict_complete` events from ttruthdesk.claims into 5 labelled training pair types: classify, extract, contradict, provenance, score. Appends to rolling JSONL corpus.
-- Built `CorpusWatcher` — monitors corpus growth, fires `corpus_ready_for_training` callback when new examples exceed configurable threshold. Resets baseline after each trigger.
-- Built `IncrementalTrainer` — runs `finetunePipeline.py --cpu` on new examples only, then refreshes Ollama model weights via `ollama create`. Delta fine-tune, not full retrain.
-- 10 new tests added — 60/60 passing, 0 failures across all six sprints
-- Committed and pushed to GitHub: `feat(training): autonomous training loop — data flywheel from ttruthdesk.claims`
+### Sprint 0 Gap-Close (commit `e62a64a`)
+- Removed 3 in-memory rate limit Maps from `answerRoute.ts`, `apiV2Router.ts`, `apiKeyService.ts` — DB is now sole authority
+- Moved backfill endpoint from `/api/admin/backfill-embeddings` → `/api/scheduled/backfill-embeddings` with `requireCronOrAdmin` middleware
+- Added `resetRateLimitBuckets()` export to `_core/rateLimit.ts` for test cleanup
+- TypeScript: 0 errors, 2602/2602 tests passing
 
-Completion Promise met: `DATA FLYWHEEL CLOSED — CLAIMS TRAIN MODELS`
+### Sprint 1 — Training Flywheel + Reactive Cascades (commit `30d05d5`)
 
-**Architecture:** Every claim verified by ttruthdesk.claims → training example → model improves → better verification → better claims. The loop is fully closed.
+**Work Stream A — Training Flywheel Connection:**
+- `trainingCorpusListener.ts`: enriches `verdict_complete` events with full claim data (claimText, entities, provenance) and calls `ClaimsCorpusGenerator` from cognitive-loop-framework
+- Wired `notifyTrainingCorpus()` into `loopOrchestrator.ts` — the flywheel is now live
+
+**Work Stream B — Self-Building Loop:**
+- Added `system_capability_required` event type (layer 4) to `eventBus.ts` and schema
+- Wired trigger in `metaLayer.ts` when health score drops to critical (≤30)
+- Added `spawnDevTask()` + `buildDevRepairPrompt()` to `manusOrchestrator.ts`
+
+**Work Stream C — Reactive Event Cascades (Cron Migration):**
+- `scanLocalContradictions(claimId)` in `contradictionDetector.ts` — per-claim scan on every `verdict_complete` (replaces weekly full-graph cron)
+- `lintWikiPage(slug)` in `wikiEngine.ts` — per-page lint on every `compileDocumentToWiki()` (replaces weekly wiki-engine-lint cron)
+- `source_data_changed` event published from `analysisPipeline.ts` after semantic_similar edges (replaces 6-hour quality-scorer cron)
+
+- 19 new tests — 2621/2621 passing (228 files)
+- TypeScript: 0 errors, ESLint: 0 errors
+- Committed and pushed to GitHub: `feat(training): Sprint 1 — training flywheel, reactive cascades, self-build loop [sprint-1]`
 
 ---
 
 ## What Must Be Done Next
 
-**cognitive-loop-framework v0.2.0 is COMPLETE.** All five sprints are done. 60 tests passing.
+**ttruthdesk-platform Sprint 1 is COMPLETE.** The flywheel is wired. 2621 tests passing.
 
-**Next action:** Wire the training loop into the ttruthdesk-platform `eventBus` so that `verdict_complete` events automatically trigger `ClaimsCorpusGenerator`. This requires the ttruthdesk developer to complete sprint-0-critical-fixes first (the eventBus must be stable before wiring the training loop to it).
+**Next action — Sprint 2 (self-building loop):**
+1. Generate Drizzle migration SQL for the 3 new schema tables (`rate_limit_buckets`, `dream_staging_queue`, `claim_embeddings`) — these are in schema.ts but migration SQL has not been generated yet
+2. Add `TRAINING_CORPUS_ENABLED=true` to the production env config so the flywheel activates on deploy
+3. Write end-to-end integration test for `system_capability_required` → `spawnDevTask()` path
+4. Begin Phase 123 — the next planned development phase in `todo.md`
 
 ---
 
@@ -47,17 +67,16 @@ The production scientific truth registry at citation.is.
 
 | Sprint | Focus | Status |
 | :--- | :--- | :--- |
-| sprint-0-critical-fixes | Fix rate limiter, verdict flip, dream gate, embeddings | AWAITING DEVELOPER |
-| sprint-1-cron-migration | Replace polling cron jobs with event-driven webhooks | QUEUED |
-| sprint-2-self-building-loop | Wire Meta-Agent to Manus API for autonomous repair | QUEUED |
+| sprint-0-critical-fixes | Fix rate limiter, verdict flip, dream gate, embeddings | DONE ✅ |
+| sprint-1-cron-migration | Training flywheel, reactive cascades, self-build loop | DONE ✅ |
+| sprint-2-self-building-loop | Drizzle migrations, TRAINING_CORPUS_ENABLED, Phase 123 | NEXT |
 
-**Next action:** Developer to implement fixes from `tracks/ttruthdesk-platform/blueprint/developer_note.md`.  
 **Blueprint:** `tracks/ttruthdesk-platform/blueprint/`
 
 ---
 
 ### Track B: cognitive-loop-framework
-The new autonomous cognitive loop framework — a general architecture for self-building, self-improving systems.
+The autonomous cognitive loop framework — a general architecture for self-building, self-improving systems.
 
 | Sprint | Focus | Status |
 | :--- | :--- | :--- |
