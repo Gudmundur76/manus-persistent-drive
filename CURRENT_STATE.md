@@ -10,33 +10,30 @@
 | :--- | :--- |
 | **Date Updated** | 2026-06-14 |
 | **Active Track** | `cognitive-loop-framework` |
-| **Active Sprint** | `sprint-0-command-centre` |
-| **Sprint Status** | IN PROGRESS |
-| **Completion Promise** | `SPRINT 0 COMPLETE — COMMAND CENTRE LIVE, BOTH TRACKS INITIALISED, DISCIPLINE DOC COMMITTED` |
+| **Active Sprint** | `sprint-2-memory-layer` |
+| **Sprint Status** | READY TO START |
+| **Completion Promise** | `SPRINT 2 COMPLETE — RUVECTOR INTEGRATED, EMBEDDINGS PIPELINE OPERATIONAL` |
 
 ---
 
 ## What Was Just Done (This Session)
 
-Sprint 0 of the Meta-Development System was initialised. The following was added to this repository:
+Sprint 1 of the cognitive-loop-framework was completed. The following was built:
 
-- `CURRENT_STATE.md` — this file (the single entry point)
-- `DEVELOPMENT_DISCIPLINE.md` — the law of the build, governing all three projects
-- `tracks/ttruthdesk-platform/` — isolated track for the production platform
-- `tracks/cognitive-loop-framework/` — isolated track for the new framework project
-- Sprint directories for all planned sprints across both tracks
-- Blueprint documents and sprint loop prompts for the first active sprints
-- `memory/compounding_log.md` — the unified compounding log
+- Initialised `cognitive-loop-framework` repository
+- Built `ASTExtractor` using `tree-sitter` and `tree-sitter-typescript`
+- Built `GraphWriter` to format AST nodes into `ttruthdesk-platform` compatible schema
+- Wrote full test suites for both components (`vitest`)
+- Resolved native binding compilation issues for tree-sitter
+- Committed all changes to the local repository
 
 ---
 
 ## What Must Be Done Next
 
-**Current sprint: `cognitive-loop-framework / sprint-0-command-centre`**
+**Current sprint: `cognitive-loop-framework / sprint-2-memory-layer`**
 
-Read: `tracks/cognitive-loop-framework/sprints/sprint-0-command-centre/loop_prompt.md`
-
-The sprint is not complete until the Completion Promise string above is produced and committed.
+Begin integrating RuVector to store the AST nodes and edges, and build the embedding pipeline to generate vector representations of the extracted code nodes.
 
 ---
 
@@ -47,11 +44,11 @@ The production scientific truth registry at citation.is.
 
 | Sprint | Focus | Status |
 | :--- | :--- | :--- |
-| sprint-0-critical-fixes | Fix rate limiter, verdict flip, dream gate, embeddings | QUEUED |
+| sprint-0-critical-fixes | Fix rate limiter, verdict flip, dream gate, embeddings | AWAITING DEVELOPER |
 | sprint-1-cron-migration | Replace polling cron jobs with event-driven webhooks | QUEUED |
 | sprint-2-self-building-loop | Wire Meta-Agent to Manus API for autonomous repair | QUEUED |
 
-**Next action:** Sprint 0 critical fixes begin after cognitive-loop-framework Sprint 0 is complete.  
+**Next action:** Developer to implement fixes from `tracks/ttruthdesk-platform/blueprint/developer_note.md`.  
 **Blueprint:** `tracks/ttruthdesk-platform/blueprint/`
 
 ---
@@ -61,9 +58,9 @@ The new autonomous cognitive loop framework — a general architecture for self-
 
 | Sprint | Focus | Status |
 | :--- | :--- | :--- |
-| sprint-0-command-centre | Initialise this command centre and quality infrastructure | IN PROGRESS |
-| sprint-1-codebase-indexer | tree-sitter AST parser → graph nodes and edges | QUEUED |
-| sprint-2-memory-layer | RuVector integration, embedding pipeline | QUEUED |
+| sprint-0-command-centre | Initialise this command centre and quality infrastructure | DONE |
+| sprint-1-codebase-indexer | tree-sitter AST parser → graph nodes and edges | DONE |
+| sprint-2-memory-layer | RuVector integration, embedding pipeline | READY TO START |
 | sprint-3-slm-deployment | Fine-tune Qwen2.5-Coder, deploy via Ollama | QUEUED |
 | sprint-4-loop-wiring | Wire L2 Self-Prompt to SLM, Meta-Agent to Manus API | QUEUED |
 

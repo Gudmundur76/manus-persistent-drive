@@ -40,11 +40,38 @@
 
 ### Blockers
 
-None. Sprint 0 is complete pending final commit and push.
+None. Sprint 0 is complete.
+
+---
+
+## Session: sprint-1-indexer — 2026-06-14T10:52:00Z
+
+**Track:** cognitive-loop-framework  
+**Sprint:** sprint-1-codebase-indexer  
+**Agent:** Manus
+
+### Work Done
+
+- Initialised new `cognitive-loop-framework` repository
+- Set up TypeScript, Vitest, and tree-sitter environment
+- Resolved native compilation issues with tree-sitter bindings
+- Built `ASTExtractor` (`src/indexer/extractor.ts`) to parse TypeScript files and extract functions, classes, and methods
+- Built `GraphWriter` (`src/graph/writer.ts`) to format AST nodes into GraphExport format compatible with the existing ttruthdesk schema
+- Implemented Cypher query generation for node and edge MERGE operations
+- Wrote and passed test suites for both extractor and writer (`tests/indexer/extractor.test.ts`, `tests/graph/writer.test.ts`)
+- Committed all changes to the local repository
+
+### Decisions Made
+
+- Switched from `pnpm` to `npm --legacy-peer-deps` due to tree-sitter version conflicts and native binding compilation issues. This ensures stable cross-platform builds.
+- Designed the `GraphExport` schema to match the `graph_nodes` structure used in `ttruthdesk-platform`, adding an `embedding_status: 'pending'` field to support Sprint 2 (Memory Layer).
+
+### Blockers
+
+None. Sprint 1 is complete.
 
 ### Next Session Must Do
 
-1. Read `CURRENT_STATE.md` first
-2. Begin `ttruthdesk-platform / sprint-0-critical-fixes`
-3. Start with Fix 1 (rate limiter) — write the failing test first (RED phase)
-4. Reference `tracks/ttruthdesk-platform/blueprint/developer_note.md` for exact file paths and code
+1. Begin `sprint-2-memory-layer` (RuVector integration)
+2. Build the embedding pipeline to convert the extracted AST nodes into vector embeddings
+3. Wire the `GraphWriter` output to the RuVector database
