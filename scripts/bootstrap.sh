@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+# =============================================================================
+# bootstrap.sh — Meta-Development Command Centre Session Initialization
+# UPDATED: Sprint 0 — 2026-06-14
+#
+# NEW USAGE (track-aware):
+#   bash scripts/bootstrap.sh <track_name> [session_id]
+#   Tracks: ttruthdesk-platform | cognitive-loop-framework
+#
+# LEGACY USAGE (still supported):
 # ─────────────────────────────────────────────────────────────────────────────
 # bootstrap.sh — Session-start persistent memory loader
 #
@@ -19,6 +28,38 @@
 #
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
+
+# ── NEW: Track-aware Command Centre boot ─────────────────────────────────────
+TRACK="${1:-}"
+if [ -n "$TRACK" ] && [ "$TRACK" != "main" ] && [ "$TRACK" != "pipeline" ] && [ "$TRACK" != "audit" ] && [ "$TRACK" != "research" ] && [ "$TRACK" != "parallel" ]; then
+  # Track-aware mode
+  DRIVE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/." && pwd)"
+  cd "$DRIVE_DIR"
+  git pull origin main --quiet 2>&1 || true
+  echo ""
+  echo "╔══════════════════════════════════════════════════════╗"
+  echo "║   META-DEVELOPMENT COMMAND CENTRE — SESSION BOOT    ║"
+  echo "╚══════════════════════════════════════════════════════╝"
+  echo "  Track: $TRACK"
+  echo ""
+  echo "════ CURRENT_STATE.md ══════════════════════════════════"
+  cat CURRENT_STATE.md
+  echo ""
+  echo "════ ACTIVE SPRINT PROMPT ══════════════════════════════"
+  FIRST_SPRINT=$(ls tracks/$TRACK/sprints/ 2>/dev/null | head -1)
+  if [ -n "$FIRST_SPRINT" ] && [ -f "tracks/$TRACK/sprints/$FIRST_SPRINT/loop_prompt.md" ]; then
+    cat "tracks/$TRACK/sprints/$FIRST_SPRINT/loop_prompt.md"
+  else
+    echo "No active sprint prompt found for track: $TRACK"
+  fi
+  echo ""
+  echo "════ RECENT MEMORY (last 40 lines) ════════════════════"
+  [ -f memory/compounding_log.md ] && tail -n 40 memory/compounding_log.md || echo "No compounding log yet."
+  echo ""
+  echo "✅ Bootstrap complete. Track: $TRACK — DO NOT read the other track."
+  exit 0
+fi
+# ── END: Track-aware boot ────────────────────────────────────────────────────
 
 DRIVE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SESSION_ID="${1:-session_$(date +%Y%m%d_%H%M%S)}"
