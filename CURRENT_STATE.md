@@ -10,13 +10,33 @@
 | :--- | :--- |
 | **Date Updated** | 2026-06-14 |
 | **Active Track** | `ttruthdesk-platform` + `cognitive-loop-framework` |
-| **Active Sprint** | `sprint-5-phase121-loop-orchestrator` |
+| **Active Sprint** | `sprint-6-third-pass-audit-fixes` |
 | **Sprint Status** | DONE ✅ |
-| **Completion Promise** | `PHASE 121 EPISTEMIC PROVENANCE VERIFIED + LOOP ORCHESTRATOR + TREE-SITTER FIX — 2686 + 60 TESTS` |
+| **Completion Promise** | `THIRD-PASS AUDIT FIXES — 2693 + 60 TESTS, TSC 0 ERRORS, COMMIT 637005f` |
 
 ---
 
 ## What Was Just Done (This Session)
+
+**Sprint 6 completed on ttruthdesk-platform (2026-06-14). cognitive-loop-framework unchanged (60/60 still passing).**
+
+### Sprint 6 — ttruthdesk-platform (commit `637005f`)
+
+**Phase 131 — Third-Pass Audit Fixes:**
+
+- **`server/externalPublicRouter.ts`** (new file, 7 tests) — 5 alias routes `/api/external/public/*` → `/api/public/*` (claims/:id, stats, verticals, leaderboard, contradictions). Registered in `_core/index.ts`.
+- **`/api/public/claims.json`** — added `try/catch` with `503 claims_registry_unavailable` fallback.
+- **`/mcp` GET endpoint** — SSE keep-alive confirmed correct behaviour; no code change needed.
+- **`generate-micron.ts`** — RSS `<link>` and `<guid>` fixed from `truthdesk.claims` → `citation.is`.
+- **`drizzle/0047_sprint6_data_quality.sql`** — 5-step UPDATE migration strips leaked prompt patterns from all claim rationales; targeted NULL for claim 300023.
+- **`salmonBiotech.ts`** — `ORGANISM_PATTERNS` expanded from 2 → 6 patterns covering fish, marine invertebrates, aquaculture species, Latin binomials/trinomials.
+- **`_core/index.ts` OpenAPI schemas** — `Claim` + `VerifyClaimResponse` verdict enums updated from legacy `[supported/refuted/inconclusive]` → canonical 6-verdict enum.
+- **`todo.md`** — all Third-Pass Audit Fix items marked `[x]`.
+- 2693/2693 tests passing (+7 new), TSC 0 errors.
+
+---
+
+## What Was Done Before (Sprint 5)
 
 **Sprint 5 completed on both tracks (2026-06-14).**
 
@@ -83,11 +103,14 @@
 
 **Sprint 5 COMPLETE** (ttruthdesk commit `924d340`, cognitive-loop commit `c4220ba`) — 2686 + 60 tests, 0 TS errors.
 
-**Next action — Sprint 6:**
-1. Phase 122+ — Frontier layer, inverse prompt engine, SIA harness improvements (next unchecked items in todo.md)
-2. Register ttruthdesk as open dataset on OpenAIRE/BASE (CC BY 4.0) — see OPENAIRE_REGISTRATION.md
-3. Apply Drizzle migration `0046_sprint1_sprint2_tables.sql` to production DB — see MIGRATION_RUNBOOK.md
-4. cognitive-loop-framework Sprint 6 — ClaimsCorpusGenerator, CorpusWatcher, IncrementalTrainer
+**Sprint 6 COMPLETE** (ttruthdesk commit `637005f`) — 2693 tests, 0 TS errors.
+
+**Next action — Sprint 7:**
+1. Apply `drizzle/0047_sprint6_data_quality.sql` to production DB (leaked prompt cleanup)
+2. Apply `drizzle/0046_sprint1_sprint2_tables.sql` to production DB — see MIGRATION_RUNBOOK.md
+3. Register ttruthdesk as open dataset on OpenAIRE/BASE (CC BY 4.0) — see OPENAIRE_REGISTRATION.md
+4. Phase 132+ — next unchecked items in todo.md
+5. cognitive-loop-framework Sprint 6 — ClaimsCorpusGenerator, CorpusWatcher, IncrementalTrainer
 
 ---
 
@@ -104,6 +127,7 @@ The production scientific truth registry at citation.is.
 | sprint-3-streaming-api | Phase 114 SSE streaming, Phase 116 self-citation fraction, Phase 117 contradiction API | DONE ✅ |
 | sprint-4-history-provenance-batch | Phase 118 claim history API, Phase 119 provenance chain API, Phase 120 batch verify | DONE ✅ |
 | sprint-5-phase121-loop-orchestrator | Phase 121 epistemic provenance verified; migration runbook; OpenAIRE registration doc | DONE ✅ |
+| sprint-6-third-pass-audit-fixes | External routes, claims.json error handling, RSS domain, NCBI patterns, OpenAPI verdicts | DONE ✅ |
 
 **Blueprint:** `tracks/ttruthdesk-platform/blueprint/`
 
