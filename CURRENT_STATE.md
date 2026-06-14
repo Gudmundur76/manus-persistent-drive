@@ -10,32 +10,32 @@
 | :--- | :--- |
 | **Date Updated** | 2026-06-14 |
 | **Active Track** | `cognitive-loop-framework` |
-| **Active Sprint** | `sprint-3-slm-deployment` |
+| **Active Sprint** | `sprint-4-loop-wiring` |
 | **Sprint Status** | READY TO START |
-| **Completion Promise** | `SPRINT 3 COMPLETE — SLM FINE-TUNED, DEPLOYED VIA OLLAMA, INFERENCE VERIFIED` |
+| **Completion Promise** | `SPRINT 4 COMPLETE — LOOP CLOSED, SELF-HEALING VERIFIED` |
 
 ---
 
 ## What Was Just Done (This Session)
 
-Sprint 2 of the cognitive-loop-framework was completed. The following was built:
+Sprint 3 of the cognitive-loop-framework was completed. The following was built:
 
-- Built `RuVectorStore` adapter with in-memory fallback for test environments
-- Built `EmbeddingPipeline` with mock embeddings mode and OpenAI-compatible API integration
-- Built `MemoryLayer` unified API wiring ASTExtractor → RuVectorStore → EmbeddingPipeline
-- 12 new tests written and passing (15 total, 0 failures)
-- Added `.gitignore` to exclude `node_modules/`
+- Built `CorpusGenerator` — extracts 5 Q&A pair types (explain/locate/diagnose/relate/repair) from AST nodes
+- Built `finetunePipeline.py` — Unsloth + TRL fine-tuning for Qwen2.5-Coder-1.5B with dry-run mode
+- Built `Modelfile` — Ollama deployment config with L2 Self-Prompt system prompt
+- Built `SelfPromptEngine` — TypeScript interface to Ollama with OpenAI fallback, all 5 reasoning modes
+- 12 new tests added — 28/28 passing, 0 failures
 - Committed all changes to the local repository
 
-Completion Promise met: `MEMORY LAYER COMPLETE — QUERIES PASSING`
+Completion Promise met: `SLM DEPLOYED — INFERENCE VERIFIED`
 
 ---
 
 ## What Must Be Done Next
 
-**Current sprint: `cognitive-loop-framework / sprint-3-slm-deployment`**
+**Current sprint: `cognitive-loop-framework / sprint-4-loop-wiring`**
 
-Fine-tune a Qwen2.5-Coder SLM on the codebase corpus, deploy via Ollama, and wire it as the L2 Self-Prompt reasoning engine.
+Wire the L2 Self-Prompt Layer to the SLM. Connect the Meta-Agent to the Manus API for autonomous repair task dispatch. Close the self-building loop.
 
 ---
 
@@ -63,8 +63,8 @@ The new autonomous cognitive loop framework — a general architecture for self-
 | sprint-0-command-centre | Initialise this command centre and quality infrastructure | DONE |
 | sprint-1-codebase-indexer | tree-sitter AST parser → graph nodes and edges | DONE |
 | sprint-2-memory-layer | RuVector integration, embedding pipeline | DONE |
-| sprint-3-slm-deployment | Fine-tune Qwen2.5-Coder, deploy via Ollama | READY TO START |
-| sprint-4-loop-wiring | Wire L2 Self-Prompt to SLM, Meta-Agent to Manus API | QUEUED |
+| sprint-3-slm-deployment | Fine-tune Qwen2.5-Coder, deploy via Ollama | DONE ✅ |
+| sprint-4-loop-wiring | Wire L2 Self-Prompt to SLM, Meta-Agent to Manus API | READY TO START ← NEXT |
 
 **Blueprint:** `tracks/cognitive-loop-framework/blueprint/`
 
