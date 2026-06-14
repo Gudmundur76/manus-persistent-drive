@@ -540,3 +540,9 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Files**: analysisPipeline.test.ts (4), truthLayer.test.ts (6), frontierLayer.test.ts (6), metaLayer.test.ts (5), selfPromptLayer.test.ts (7) = 28 new tests
 **Total tests**: 2175 (up from 2147)
 **Gates**: TSC 0 errors, lint 0 warnings, 2175/2175 tests GREEN
+
+## Cycle 20 — 2026-06-14 (commit ea62eba)
+**Files**: contextRouter.test.ts (5), memoryRouter.test.ts (6), verticalFeedConfig.test.ts (8), claimQueueWriter.test.ts (7), paperDiscoveredHandler.test.ts (5) = 31 new tests
+**Total tests**: 2206 (up from 2175)
+**Gates**: TSC 0 errors, lint 0 warnings, 2206/2206 tests GREEN
+**Remaining untested**: ~38 modules (coordApi.ts, db.ts, dream/*, discoveryLoopJob, embedRoutes, etc.)
