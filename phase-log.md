@@ -594,3 +594,9 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Total tests**: 2380 (up from 2359)
 **Gates**: TSC 0 errors, lint 0 warnings, 2380/2380 tests GREEN
 **Remaining untested**: _core/* (framework plumbing), coordApi/index, db, routers, seedKnowledgeGraph, storage, verticalAdapters/* (individual adapters)
+
+## Cycle 29 — 2026-06-14 (commit 1e016a1)
+**Files**: structuralBiology.test.ts (5), crossRef.test.ts (5), openAlex.test.ts (5), semanticScholar.test.ts (5) = 20 new tests
+**Total tests**: 2400 (up from 2380)
+**Gates**: TSC 0 errors, lint 0 warnings, 2400/2400 tests GREEN
+**Remaining untested**: ~20 verticalAdapters (who, cochrane, wikidata, pubchem, etc.), _core/*, coordApi/index, db, routers, seedKnowledgeGraph, storage
