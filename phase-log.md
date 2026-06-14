@@ -626,3 +626,10 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Total tests:** 2518 (214 test files)
 **Key insight:** salmonBiotech uses PubChem REST directly (not synthesiseEvidence) — must mock fetch with PropertyTable/InformationList JSON shapes; court_listener has its own local registerVertical stub (not shared registry) — test via module load + source text inspection
 **Gates:** TSC clean, lint clean, all 2518 pass
+
+## Cycle 34 — 2026-06-14
+- **Commit**: 812b4bd
+- **New tests**: 37 (genericSource, coordApi/index, forgeAdapter, llmAdapter, notificationAdapter, storageAdapter, seedKnowledgeGraph)
+- **Total tests**: 2555 (222 test files)
+- **Key fixes**: llmAdapter mock needed isAvailable+defaultModel; storageAdapter/notificationAdapter needed isAvailable; seedKnowledgeGraph is a script with local fetch — must stub global fetch not module import; fake timers needed for 1500ms batch delays
+- **TSC**: 0 errors | **Lint**: 0 errors
