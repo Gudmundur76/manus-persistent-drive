@@ -10,13 +10,33 @@
 | :--- | :--- |
 | **Date Updated** | 2026-06-14 |
 | **Active Track** | `ttruthdesk-platform` + `cognitive-loop-framework` |
-| **Active Sprint** | `sprint-7-sia-harness-training-module` |
+| **Active Sprint** | `sprint-8-pricing-page` |
 | **Sprint Status** | DONE ✅ |
-| **Completion Promise** | `PHASE 132 + TRAINING MODULE WIRED — 2700 + 60 TESTS, TSC 0 ERRORS, COMMIT fa71d9a` |
+| **Completion Promise** | `PHASE 133 PRICING PAGE — 2708 + 60 TESTS, TSC 0 ERRORS, COMMIT 54b8f9d` |
 
 ---
 
 ## What Was Just Done (This Session)
+
+**Sprint 8 completed on ttruthdesk-platform (2026-06-14). cognitive-loop-framework unchanged (60/60 still passing).**
+
+### Sprint 8 — ttruthdesk-platform (commit `54b8f9d`)
+
+**Phase 133 — Pricing Page + Billing Lead Capture:**
+
+- **`client/src/pages/Pricing.tsx`** (new file) — public marketing page at `/pricing` with three tier cards (Starter $1,500/audit, Diligence $5,000/audit, Platform Pilot $12,000/yr), interactive tier selector, Request Access form (name, email, organisation, tier, useCase), success state, and trust signal stats row.
+- **`server/billingRouter.ts`** (new file) — `billing.requestAccess` public tRPC procedure: validates input (zod), persists lead to `pricing_leads` DB table, fires Telegram notification + Forge email (fire-and-forget). Fails open — returns success even if DB is down as long as one notification channel is configured.
+- **`server/billingRouter.test.ts`** (new file) — 8 tests: happy path, DB unavailable + Telegram configured, DB unavailable + no notification channel (throws), invalid email, name too short, invalid tier, Telegram error (no throw), optional useCase.
+- **`drizzle/schema.ts`** — `pricingLeads` table added (id, name, email, organisation, tier, useCase, status, notifiedAt, createdAt, updatedAt) with tier/status/createdAt indexes.
+- **`drizzle/0048_sprint8_pricing_leads.sql`** — CREATE TABLE migration.
+- **`server/routers.ts`** — `billing: billingRouter` wired into appRouter.
+- **`client/src/App.tsx`** — lazy import + `<Route path="/pricing">` registered.
+- **`server/_core/env.ts`** — `adminNotifyEmail` (ADMIN_NOTIFY_EMAIL) added.
+- 2708/2708 tests passing (+8 new), TSC 0 errors.
+
+---
+
+## What Was Just Done Before (Sprint 7)
 
 **Sprint 7 completed on both tracks (2026-06-14).**
 
