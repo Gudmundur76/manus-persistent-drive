@@ -612,3 +612,10 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Total tests**: 2445 (up from 2418)
 **Gates**: TSC 0 errors, lint 0 warnings, 2445/2445 tests GREEN
 **Remaining untested**: ~10 verticalAdapters (arxiv, biorxiv, clinicaltrials, fda, epa, nasa, etc.), _core/*, coordApi/index, db, routers, seedKnowledgeGraph, storage
+
+## Cycle 32 — 2026-06-14 02:47 UTC
+**Commit:** b94970d
+**New tests:** 45 (arxiv×4, biorxiv×5, clinicalTrialsVertical×5, edgar_sec×5, europe_pmc×4, eurostat×4, eur_lex×4, clinvar×4, chembl×5 — all using vi.stubGlobal fetch mock pattern)
+**Total tests:** 2485
+**Key insight:** Named imports from adapter modules bypass vi.mock(); must use vi.stubGlobal("fetch", mockFn) to intercept HTTP calls inside the adapter. Also: CELEX regex requires exactly 4 digits before R/L/D (e.g. 2016R0679 not 32016R0679).
+**Remaining untested adapters:** pdb, uniprot (already tested), fao, iaea, nasa, epa, fda (check if exist)
