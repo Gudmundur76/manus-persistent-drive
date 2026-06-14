@@ -546,3 +546,9 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Total tests**: 2206 (up from 2175)
 **Gates**: TSC 0 errors, lint 0 warnings, 2206/2206 tests GREEN
 **Remaining untested**: ~38 modules (coordApi.ts, db.ts, dream/*, discoveryLoopJob, embedRoutes, etc.)
+
+## Cycle 21 — 2026-06-14 (commit 7ce7404)
+**Files**: graphConsolidator.test.ts (6), topologyHypothesisGenerator.test.ts (7), verticalFeedMerger.test.ts (7), embeddingBackfillJob.test.ts (6), _queryTranslator.test.ts (7) = 33 new tests
+**Total tests**: 2239 (up from 2206)
+**Gates**: TSC 0 errors, lint 0 warnings, 2239/2239 tests GREEN
+**Remaining untested**: ~33 modules (discoveryLoopJob, qualityPassJob, qualityScorerJob, sia/*, wikiLintJob, siaHarnessRouter, etc.)
