@@ -75,3 +75,38 @@ None. Sprint 1 is complete.
 1. Begin `sprint-2-memory-layer` (RuVector integration)
 2. Build the embedding pipeline to convert the extracted AST nodes into vector embeddings
 3. Wire the `GraphWriter` output to the RuVector database
+
+---
+
+## Session: sprint-2-memory — 2026-06-14T11:18:00Z
+
+**Track:** cognitive-loop-framework  
+**Sprint:** sprint-2-memory-layer  
+**Agent:** Manus
+
+### Work Done
+
+- Built `RuVectorStore` (`src/memory/ruvectorStore.ts`) — typed adapter for RuVector CLI with in-memory fallback for test environments. Implements cosine similarity, graph edge storage, bulk node upsert, and embedding completion marking.
+- Built `EmbeddingPipeline` (`src/memory/embeddingPipeline.ts`) — batch embedding pipeline using OpenAI-compatible API (`text-embedding-3-small`). Deterministic 128-dim mock embeddings for test environments. Configurable batch size (default 20).
+- Built `MemoryLayer` (`src/memory/index.ts`) — unified public API wiring ASTExtractor → RuVectorStore → EmbeddingPipeline. Single `ingestFile(path)` and `findSimilar(query)` interface.
+- Wrote 12 new tests across 3 describe blocks (RuVectorStore, EmbeddingPipeline, MemoryLayer integration). All 15 tests passing, 0 failures.
+- Added `.gitignore` to exclude `node_modules/` from version control.
+- Committed all changes to the local repository.
+
+### Decisions Made
+
+- RuVector CLI is wrapped via `execSync` with a typed adapter. Swapping to a different vector store requires only changing the adapter, not the pipeline.
+- Nodes are stored with `embeddingStatus: 'pending'` on bulk upsert and only become queryable after `markEmbeddingComplete` is called. This prevents partially-embedded nodes from polluting similarity results.
+- Mock embeddings are deterministic (char-code based normalisation), ensuring test reproducibility across environments.
+
+### Completion Promise Met
+
+`MEMORY LAYER COMPLETE — QUERIES PASSING`
+
+### Next Session Must Do
+
+1. Begin `sprint-3-slm-deployment`
+2. Generate training corpus from the codebase knowledge graph
+3. Fine-tune Qwen2.5-Coder-1.5B using Unsloth + TRL
+4. Deploy via Ollama and verify inference
+5. Point `FREELM_API_URL` at the local Ollama instance

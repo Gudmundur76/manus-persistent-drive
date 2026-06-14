@@ -10,30 +10,32 @@
 | :--- | :--- |
 | **Date Updated** | 2026-06-14 |
 | **Active Track** | `cognitive-loop-framework` |
-| **Active Sprint** | `sprint-2-memory-layer` |
+| **Active Sprint** | `sprint-3-slm-deployment` |
 | **Sprint Status** | READY TO START |
-| **Completion Promise** | `SPRINT 2 COMPLETE — RUVECTOR INTEGRATED, EMBEDDINGS PIPELINE OPERATIONAL` |
+| **Completion Promise** | `SPRINT 3 COMPLETE — SLM FINE-TUNED, DEPLOYED VIA OLLAMA, INFERENCE VERIFIED` |
 
 ---
 
 ## What Was Just Done (This Session)
 
-Sprint 1 of the cognitive-loop-framework was completed. The following was built:
+Sprint 2 of the cognitive-loop-framework was completed. The following was built:
 
-- Initialised `cognitive-loop-framework` repository
-- Built `ASTExtractor` using `tree-sitter` and `tree-sitter-typescript`
-- Built `GraphWriter` to format AST nodes into `ttruthdesk-platform` compatible schema
-- Wrote full test suites for both components (`vitest`)
-- Resolved native binding compilation issues for tree-sitter
+- Built `RuVectorStore` adapter with in-memory fallback for test environments
+- Built `EmbeddingPipeline` with mock embeddings mode and OpenAI-compatible API integration
+- Built `MemoryLayer` unified API wiring ASTExtractor → RuVectorStore → EmbeddingPipeline
+- 12 new tests written and passing (15 total, 0 failures)
+- Added `.gitignore` to exclude `node_modules/`
 - Committed all changes to the local repository
+
+Completion Promise met: `MEMORY LAYER COMPLETE — QUERIES PASSING`
 
 ---
 
 ## What Must Be Done Next
 
-**Current sprint: `cognitive-loop-framework / sprint-2-memory-layer`**
+**Current sprint: `cognitive-loop-framework / sprint-3-slm-deployment`**
 
-Begin integrating RuVector to store the AST nodes and edges, and build the embedding pipeline to generate vector representations of the extracted code nodes.
+Fine-tune a Qwen2.5-Coder SLM on the codebase corpus, deploy via Ollama, and wire it as the L2 Self-Prompt reasoning engine.
 
 ---
 
@@ -60,8 +62,8 @@ The new autonomous cognitive loop framework — a general architecture for self-
 | :--- | :--- | :--- |
 | sprint-0-command-centre | Initialise this command centre and quality infrastructure | DONE |
 | sprint-1-codebase-indexer | tree-sitter AST parser → graph nodes and edges | DONE |
-| sprint-2-memory-layer | RuVector integration, embedding pipeline | READY TO START |
-| sprint-3-slm-deployment | Fine-tune Qwen2.5-Coder, deploy via Ollama | QUEUED |
+| sprint-2-memory-layer | RuVector integration, embedding pipeline | DONE |
+| sprint-3-slm-deployment | Fine-tune Qwen2.5-Coder, deploy via Ollama | READY TO START |
 | sprint-4-loop-wiring | Wire L2 Self-Prompt to SLM, Meta-Agent to Manus API | QUEUED |
 
 **Blueprint:** `tracks/cognitive-loop-framework/blueprint/`
