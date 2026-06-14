@@ -10,9 +10,9 @@
 | :--- | :--- |
 | **Date Updated** | 2026-06-14 |
 | **Active Track** | `ttruthdesk-platform` |
-| **Active Sprint** | `sprint-2-phase-115` |
+| **Active Sprint** | `sprint-3-streaming-api` |
 | **Sprint Status** | DONE ✅ |
-| **Completion Promise** | `CITATION GRAPH SCORING IN VERDICT PIPELINE — FLYWHEEL + SCORING COMPLETE` |
+| **Completion Promise** | `PHASE 116 SELF-CITATION FRACTION + PHASE 117 CONTRADICTION API + PHASE 114 CONFIRMED — 2667 TESTS` |
 
 ---
 
@@ -51,10 +51,17 @@
 
 **ttruthdesk-platform Sprint 2 is COMPLETE.** 2638 tests passing.
 
-**Next action — Sprint 3:**
-1. Phase 114 — Streaming Verification Endpoint: add `GET /api/v2/verify/stream` using Server-Sent Events so citation.is can show live verification progress
-2. Phase 116 — OpenCitations Stage 4: add `selfCitationFraction` computation to `openCitationsEnricher.ts` (currently returns null — the field is wired but not populated)
-3. Phase 117 — Contradiction Graph API: expose `GET /api/v2/claims/:id/contradictions` using the new `scanLocalContradictions()` function
+**Sprint 3 is COMPLETE.** 2667 tests passing (commit `c9aad11`).
+
+### Sprint 3 — What Was Done
+- **Phase 116**: `selfCitationFraction` now populated in `OcEnrichmentResult` via `opencitations.ts` evidenceRaw. 5 new tests.
+- **Phase 117**: `GET /api/v2/claims/:id/contradictions` added to `apiV2Router.ts`. Calls `scanLocalContradictions(claimId)`. 5 new tests.
+- **Phase 114**: Confirmed already complete — `streamVerifyRoute.ts` with 29 tests was pre-existing.
+
+**Next action — Sprint 4:**
+1. Phase 118 — Temporal Claim Versioning API: `GET /api/v2/claims/:id/history` using the existing `claimVersions` table
+2. Phase 119 — Provenance Chain API: `GET /api/v2/claims/:id/provenance` using `claimProvenanceService.getChain()`
+3. Phase 120 — Batch Verification Endpoint: `POST /api/v2/verify/batch` for multi-claim verification in a single request
 
 ---
 
@@ -68,7 +75,8 @@ The production scientific truth registry at citation.is.
 | sprint-0-critical-fixes | Fix rate limiter, verdict flip, dream gate, embeddings | DONE ✅ |
 | sprint-1-cron-migration | Training flywheel, reactive cascades, self-build loop | DONE ✅ |
 | sprint-2-phase-115 | Drizzle migrations, TRAINING_CORPUS_ENABLED, Phase 115 citation graph scoring | DONE ✅ |
-| sprint-3-streaming-api | Phase 114 SSE streaming, Phase 116 self-citation fraction, Phase 117 contradiction API | NEXT |
+| sprint-3-streaming-api | Phase 114 SSE streaming, Phase 116 self-citation fraction, Phase 117 contradiction API | DONE ✅ |
+| sprint-4-history-provenance-batch | Phase 118 claim history API, Phase 119 provenance chain API, Phase 120 batch verify | NEXT |
 
 **Blueprint:** `tracks/ttruthdesk-platform/blueprint/`
 
