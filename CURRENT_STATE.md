@@ -10,9 +10,9 @@
 | :--- | :--- |
 | **Date Updated** | 2026-06-14 |
 | **Active Track** | `ttruthdesk-platform` |
-| **Active Sprint** | `sprint-3-streaming-api` |
+| **Active Sprint** | `sprint-4-history-provenance-batch` |
 | **Sprint Status** | DONE ✅ |
-| **Completion Promise** | `PHASE 116 SELF-CITATION FRACTION + PHASE 117 CONTRADICTION API + PHASE 114 CONFIRMED — 2667 TESTS` |
+| **Completion Promise** | `PHASE 118 CLAIM HISTORY + PHASE 119 PROVENANCE API + PHASE 120 BATCH VERIFY — 2686 TESTS` |
 
 ---
 
@@ -58,10 +58,13 @@
 - **Phase 117**: `GET /api/v2/claims/:id/contradictions` added to `apiV2Router.ts`. Calls `scanLocalContradictions(claimId)`. 5 new tests.
 - **Phase 114**: Confirmed already complete — `streamVerifyRoute.ts` with 29 tests was pre-existing.
 
-**Next action — Sprint 4:**
-1. Phase 118 — Temporal Claim Versioning API: `GET /api/v2/claims/:id/history` using the existing `claimVersions` table
-2. Phase 119 — Provenance Chain API: `GET /api/v2/claims/:id/provenance` using `claimProvenanceService.getChain()`
-3. Phase 120 — Batch Verification Endpoint: `POST /api/v2/verify/batch` for multi-claim verification in a single request
+**Sprint 4 COMPLETE** (commit `e0805c9`) — 2686/2686 tests, 0 TS errors.
+
+**Next action — Sprint 5:**
+1. Phase 121 — Citation graph enrichment backlog items (remaining unchecked items in todo.md)
+2. Phase 122+ — Frontier layer, inverse prompt engine, SIA harness improvements
+3. Register ttruthdesk as open dataset on OpenAIRE/BASE (CC BY 4.0)
+4. Apply Drizzle migration `0046_sprint1_sprint2_tables.sql` to production DB
 
 ---
 
@@ -76,7 +79,7 @@ The production scientific truth registry at citation.is.
 | sprint-1-cron-migration | Training flywheel, reactive cascades, self-build loop | DONE ✅ |
 | sprint-2-phase-115 | Drizzle migrations, TRAINING_CORPUS_ENABLED, Phase 115 citation graph scoring | DONE ✅ |
 | sprint-3-streaming-api | Phase 114 SSE streaming, Phase 116 self-citation fraction, Phase 117 contradiction API | DONE ✅ |
-| sprint-4-history-provenance-batch | Phase 118 claim history API, Phase 119 provenance chain API, Phase 120 batch verify | NEXT |
+| sprint-4-history-provenance-batch | Phase 118 claim history API, Phase 119 provenance chain API, Phase 120 batch verify | DONE ✅ |
 
 **Blueprint:** `tracks/ttruthdesk-platform/blueprint/`
 
