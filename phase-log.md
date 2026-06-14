@@ -529,3 +529,9 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 - pnpm lint: 0 errors, 0 warnings
 - DEPLOYMENT.md written (prerequisites, env vars, DB, build, CI, health, heartbeat, rollback, secrets)
 **Gate:** TSC clean, 1659/1659 GREEN, lint 0/0
+
+## Cycle 18 — 2026-06-14 (commit de02e24)
+**Files**: server/frontier/evidencePursuer.test.ts (7 tests), server/inversePrompt/inversePromptEngine.test.ts (5 tests)
+**Total tests**: 2147 (up from 2135)
+**Key fix**: makeDb() mock needs explicit chained mockReturnValue(db) for groupBy→orderBy→limit chain; both engine functions use getDb() (not getDbOrThrow) so null DB resolves with zeros.
+**Gates**: TSC 0 errors, lint 0 warnings, 2147/2147 tests GREEN
