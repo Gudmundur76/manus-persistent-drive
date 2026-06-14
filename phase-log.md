@@ -588,3 +588,9 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Total tests**: 2359 (up from 2349)
 **Gates**: TSC 0 errors, lint 0 warnings, 2359/2359 tests GREEN
 **Remaining untested**: coordApi/index, db, micronDeploy, platform/*, routers, seedKnowledgeGraph, storage
+
+## Cycle 28 — 2026-06-14 (commit 0add4f0)
+**Files**: verticalAdapters/types.test.ts (6), micronDeploy.test.ts (8), platform/index.test.ts (7) = 21 new tests
+**Total tests**: 2380 (up from 2359)
+**Gates**: TSC 0 errors, lint 0 warnings, 2380/2380 tests GREEN
+**Remaining untested**: _core/* (framework plumbing), coordApi/index, db, routers, seedKnowledgeGraph, storage, verticalAdapters/* (individual adapters)
