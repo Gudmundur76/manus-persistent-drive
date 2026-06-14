@@ -552,3 +552,9 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Total tests**: 2239 (up from 2206)
 **Gates**: TSC 0 errors, lint 0 warnings, 2239/2239 tests GREEN
 **Remaining untested**: ~33 modules (discoveryLoopJob, qualityPassJob, qualityScorerJob, sia/*, wikiLintJob, siaHarnessRouter, etc.)
+
+## Cycle 22 — 2026-06-14 (commit 5582a9e)
+**Files**: wikiLintJob.test.ts (5), qualityPassFeedbackCollector.test.ts (6), dreamStartRoute.test.ts (6), europePmcAdapter.test.ts (10), hostingerWebhook.test.ts (7) = 34 new tests
+**Total tests**: 2273 (up from 2239)
+**Gates**: TSC 0 errors, lint 0 warnings, 2273/2273 tests GREEN
+**Remaining untested**: ~22 modules (agentIngestionEndpoint, answerRoute, coordApi, discoveryLoopJob, embedRoutes, llmsRoute, micronDeploy, monitoringJob, openfdaAdapter, orchestratorTickJob, pdfReportGenerator, predictionBackfillJob, privateMode, pubmedIngestJob, qualityPassJob, qualityScorerJob, routers, seedKnowledgeGraph, siaHarnessRouter, sitemapRoute, storage, translateAndSearchApi, wikiPageRoute)
