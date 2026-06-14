@@ -582,3 +582,9 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Total tests**: 2349 (up from 2333)
 **Gates**: TSC 0 errors, lint 0 warnings, 2349/2349 tests GREEN
 **Remaining untested**: ~10 modules (coordApi/index, db, embedRoutes, llmsRoute, micronDeploy, pdfReportGenerator, platform/*, routers, seedKnowledgeGraph, storage, wikiPageRoute)
+
+## Cycle 27 — 2026-06-14 (commit 97c36f9)
+**Files**: wikiPageRoute.test.ts (2), embedRoutes.test.ts (3), llmsRoute.test.ts (3), pdfReportGenerator.test.ts (2) = 10 new tests
+**Total tests**: 2359 (up from 2349)
+**Gates**: TSC 0 errors, lint 0 warnings, 2359/2359 tests GREEN
+**Remaining untested**: coordApi/index, db, micronDeploy, platform/*, routers, seedKnowledgeGraph, storage
