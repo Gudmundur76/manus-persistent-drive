@@ -10,13 +10,35 @@
 | :--- | :--- |
 | **Date Updated** | 2026-06-14 |
 | **Active Track** | `ttruthdesk-platform` + `cognitive-loop-framework` |
-| **Active Sprint** | `sprint-6-third-pass-audit-fixes` |
+| **Active Sprint** | `sprint-7-sia-harness-training-module` |
 | **Sprint Status** | DONE ✅ |
-| **Completion Promise** | `THIRD-PASS AUDIT FIXES — 2693 + 60 TESTS, TSC 0 ERRORS, COMMIT 637005f` |
+| **Completion Promise** | `PHASE 132 + TRAINING MODULE WIRED — 2700 + 60 TESTS, TSC 0 ERRORS, COMMIT fa71d9a` |
 
 ---
 
 ## What Was Just Done (This Session)
+
+**Sprint 7 completed on both tracks (2026-06-14).**
+
+### Sprint 7 — ttruthdesk-platform (commit `fa71d9a`)
+
+**Phase 132 — SIA Harness Test Coverage Expansion:**
+
+- **`server/siaHarnessRouter.test.ts`** — expanded from 4 → 11 tests. All 5 procedures now covered: `recordGeneration` (happy + FORBIDDEN), `listGenerations` (happy + FORBIDDEN), `listProposals` (no filter + status filter + FORBIDDEN), `updateProposalStatus` (happy + FORBIDDEN), `getBestScore` (happy + FORBIDDEN).
+- **`todo.md`** — all 47 stale Phase 114–130 backlog stub items marked `[x]` (all were already implemented in prior sprints).
+- **`todo.md`** — Phase 132 section added and marked complete.
+- 2700/2700 tests passing (+7 new), TSC 0 errors, ESLint 0 warnings.
+
+### Sprint 7 — cognitive-loop-framework (commit `e40d803`)
+
+- **`src/training/index.ts`** (new file) — training module entry point: exports `ClaimsCorpusGenerator`, `CorpusWatcher`, `IncrementalTrainer`, `createTrainingPipeline()` factory, and all associated types.
+- **`src/loop/index.ts`** — re-exports entire training module for a single import surface (`import { createTrainingPipeline } from './loop/index.js'`).
+- **`createTrainingPipeline()`** — assembles generator + trainer + watcher as a coordinated unit; `watcher.onReady()` wired to trigger `trainer.run()` automatically.
+- 60/60 tests passing, TSC 0 errors.
+
+---
+
+## What Was Just Done Before (Sprint 6)
 
 **Sprint 6 completed on ttruthdesk-platform (2026-06-14). cognitive-loop-framework unchanged (60/60 still passing).**
 
@@ -105,12 +127,14 @@
 
 **Sprint 6 COMPLETE** (ttruthdesk commit `637005f`) — 2693 tests, 0 TS errors.
 
-**Next action — Sprint 7:**
+**Sprint 7 COMPLETE** (ttruthdesk commit `fa71d9a`, cognitive-loop commit `e40d803`) — 2700 + 60 tests, 0 TS errors.
+
+**Next action — Sprint 8:**
 1. Apply `drizzle/0047_sprint6_data_quality.sql` to production DB (leaked prompt cleanup)
 2. Apply `drizzle/0046_sprint1_sprint2_tables.sql` to production DB — see MIGRATION_RUNBOOK.md
 3. Register ttruthdesk as open dataset on OpenAIRE/BASE (CC BY 4.0) — see OPENAIRE_REGISTRATION.md
-4. Phase 132+ — next unchecked items in todo.md
-5. cognitive-loop-framework Sprint 6 — ClaimsCorpusGenerator, CorpusWatcher, IncrementalTrainer
+4. Phase 133 — define next new phase (todo.md is now 100% checked)
+5. cognitive-loop-framework Sprint 7 — SIA dataset generation, CorpusWatcher integration tests
 
 ---
 
@@ -128,6 +152,7 @@ The production scientific truth registry at citation.is.
 | sprint-4-history-provenance-batch | Phase 118 claim history API, Phase 119 provenance chain API, Phase 120 batch verify | DONE ✅ |
 | sprint-5-phase121-loop-orchestrator | Phase 121 epistemic provenance verified; migration runbook; OpenAIRE registration doc | DONE ✅ |
 | sprint-6-third-pass-audit-fixes | External routes, claims.json error handling, RSS domain, NCBI patterns, OpenAPI verdicts | DONE ✅ |
+| sprint-7-sia-harness-training-module | Phase 132: SIA harness 4→11 tests; training module wired into loop index | DONE ✅ |
 
 **Blueprint:** `tracks/ttruthdesk-platform/blueprint/`
 
@@ -144,7 +169,8 @@ The autonomous cognitive loop framework — a general architecture for self-buil
 | sprint-3-slm-deployment | Fine-tune Qwen2.5-Coder, deploy via Ollama | DONE ✅ |
 | sprint-4-loop-wiring | Wire L2 Self-Prompt to SLM, Meta-Agent to Manus API | DONE ✅ |
 | sprint-5-loop-orchestrator | LoopOrchestrator (5-layer loop), tree-sitter fix, tsconfig fix, 60/60 tests | DONE ✅ |
-| sprint-6-autonomous-training | ClaimsCorpusGenerator, CorpusWatcher, IncrementalTrainer | PLANNED |
+| sprint-6-autonomous-training | ClaimsCorpusGenerator, CorpusWatcher, IncrementalTrainer | DONE ✅ |
+| sprint-7-training-module-export | src/training/index.ts + createTrainingPipeline() factory + loop re-exports | DONE ✅ |
 
 **Blueprint:** `tracks/cognitive-loop-framework/blueprint/`
 
