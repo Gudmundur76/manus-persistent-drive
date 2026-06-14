@@ -600,3 +600,9 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 **Total tests**: 2400 (up from 2380)
 **Gates**: TSC 0 errors, lint 0 warnings, 2400/2400 tests GREEN
 **Remaining untested**: ~20 verticalAdapters (who, cochrane, wikidata, pubchem, etc.), _core/*, coordApi/index, db, routers, seedKnowledgeGraph, storage
+
+## Cycle 30 — 2026-06-14 (commit HEAD)
+**Files**: who.test.ts (5), wikidata.test.ts (4), pubchem.test.ts (5), world_bank.test.ts (4) = 18 new tests
+**Total tests**: 2418 (up from 2400)
+**Gates**: TSC 0 errors, lint 0 warnings, 2418/2418 tests GREEN
+**Remaining untested**: ~16 verticalAdapters (cochrane, owid, oecd, nist, ietf_rfc, ipcc, etc.), _core/*, coordApi/index, db, routers, seedKnowledgeGraph, storage
