@@ -1,6 +1,6 @@
 # citation.is & ttruthdesk.claims — Coordinated Product Status
 
-*Last updated: Sprint 12 complete — 2026-06-15*
+*Last updated: AAIF Integration complete — 2026-06-15*
 
 ## 1. Executive Summary
 
@@ -39,6 +39,15 @@ Based on direct specification from Perplexity.ai and strategic alignment, the de
 - Added `/developers/mcp` integration hub with all enterprise configs
 - Both repos green: citation-desk 35/35, ttruthdesk-platform 2708/2708
 
+### AAIF Integration ✅ COMPLETE
+- Installed goose v1.37.0 and agentgateway v1.2.1 in sandbox — both wired to citation.is MCP
+- Wrote `AGENTS.md` for both `citation-desk` and `ttruthdesk-platform` (structured persistent memory for AI agents)
+- Added `infra/agentgateway/config.yaml` to ttruthdesk-platform for enterprise proxy deployments
+- Added goose + agentgateway integration tabs to `/developers/mcp` page
+- Added AAIF Ecosystem badge in `/developers/mcp` hero linking to aaif.io
+- AAIF project proposal prepared for submission on public launch
+- MCP Python SDK + langchain-mcp-adapters installed for Python agent integration
+
 ### Sprint 12: Live Routing & Autonomous Ingestion ✅ COMPLETE
 - Fixed `loopTriggered` flag — now correctly `true` when PubMed results are present
 - Added `claimId` surfacing from upstream response in MCP `verify_claim`
@@ -51,7 +60,16 @@ Based on direct specification from Perplexity.ai and strategic alignment, the de
 - **Scope:** Audit `cognitive-loop-framework` SLM training component. Define claim density threshold. Wire trigger into autonomous ingest loop. Add `/developers/slm` page.
 - **Why:** Moves the product from a data API to a provider of transparent, auditable specialist reasoning engines — exactly what regulated enterprise clients require.
 
-## 4. Operational Rules
+## 4. Active Developer Tools (Sandbox)
+
+| Tool | Version | Purpose |
+|---|---|---|
+| goose | v1.37.0 | AAIF agent runtime — wired to citation.is MCP |
+| agentgateway | v1.2.1 | Enterprise MCP proxy with observability and retries |
+| MCP Python SDK | latest | Python agent integration |
+| langchain-mcp-adapters | latest | LangChain/LlamaIndex integration |
+
+## 5. Operational Rules
 
 1. **One Build:** We treat this as a single coordinated product.
 2. **AI Co-development:** We formally ask enterprise AI systems (Perplexity, Claude) what they need before building, and we build exactly what they specify.
