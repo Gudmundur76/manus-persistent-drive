@@ -1,105 +1,114 @@
 # citation.is & ttruthdesk.claims — Coordinated Product Status
 
-*Last updated: Sprint 16 domain ingest probe — 2026-06-15*
+*Last updated: Sprint 20 complete — 2026-06-15*
 
 ## 1. Executive Summary
 
 The platform is operating as a **single coordinated product build**.
-The backend (`ttruthdesk-platform`) and framework (`cognitive-loop-framework`) are healthy, fully tested, and stable.
-Sprint 14-15 complete. Sprint 16 in progress: domain-ingest-6h scheduled task confirmed active (task_uid=PrRB8eBgFuH2XA4QowVNAY, last fired 2026-06-15T12:04:39Z). PubMed probe run: 26 papers available across 5 domains (biology: 2, medicine: 10, chemistry: 5, physics: 8, climate: 1). Next scheduled fire: 2026-06-15T18:00Z. BUILT_IN_FORGE_API_KEY is a production-only env var — not available in non-project sandbox sessions. The heartbeat cron fires the endpoint directly in the webdev project context where the key is injected.
+The backend (`ttruthdesk-platform`) and frontend (`citation-desk`) are healthy, fully tested, and stable.
+Sprint 20 complete: all 5 Perplexity.ai documents executed. 6 commits across 2 repos. PR #8116 opened to punkpeye/awesome-mcp-servers.
 
-**Overall Product Status:** GREEN. The system never returns an empty result. Every enterprise query compounds the knowledge graph and feeds the SLM distillation pipeline. The autonomous ingest loop now runs across 5 scientific domains (biology, medicine, chemistry, physics, climate) and surfaces live coverage metrics to enterprise clients.
+**Overall Product Status:** GREEN. 2,719/2,719 tests passing. TSC clean. ESLint clean.
+The platform now covers 30+ research domains with 4,000+ verified claims. The MCP server exposes 12 tools. The discovery loop ingests claims across medicine, climate, economics, law, and structural biology.
 
 ## 2. Component Status
 
 ### 2.1 Primary Build: `citation-desk` (Frontend)
 - **Role:** Public product surface, developer documentation, and MCP discovery layer.
+- **Repo:** `Gudmundur76/citation-desk`
 - **Current State:** Green (Tests: 27/27 passing, TSC: clean).
-- **Recent Work (Sprint 14):** Added `status.domains` tRPC procedure (proxies `/api/public/status/domains` with graceful degradation). Added domain coverage widget to `/status` page — sortable table with colour-coded verification rate badges, totals footer, 5-min refresh. Added `domain-ingest-6h` to Scheduled Jobs table.
-- **Next Action:** Sprint 17 (add SLM training status row to domain coverage widget once first training run completes).
+- **Recent Work (Sprint 20):**
+  - Fixed em-dash encoding bug in "Needs Expert Review" label
+  - Changed "97 Supported" stat label to "Supported Claims" (was misleading as percentage)
+  - Wired loop animation cards to live `/api/public/corpus-growth` endpoint
+  - Updated FAQPage JSON-LD: 8 Q&A pairs, 12 MCP tools, 30+ domains, correct MCP endpoint
+  - Updated Organization JSON-LD: `alternateName`, `foundingDate`, `knowsAbout`, `contactPoint`, `sameAs`, `hasOfferCatalog`
+  - Updated static shell for PerplexityBot: 4,000+ claims, 30+ domains, Medicine/Climate/Economics/Law verticals
+  - Fixed MCP endpoint reference: `/mcp` → `https://ttruthdesk.claims/api/mcp`
+- **Last Commit:** `518dff9` — feat(seo): Sprint 20 File 5 — FAQPage + Organization JSON-LD + PerplexityBot optimization
+- **Next Action:** Sprint 21 (add SPO triple to verify_claim response; add `sameAs` LinkedIn + X to Organization schema)
 
 ### 2.2 Platform Backend: `ttruthdesk-platform`
 - **Role:** Core engine, API provider, autonomous ingestion loop, and live query router.
+- **Repo:** `Gudmundur76/ttruthdesk-platform`
 - **Current State:** Green (Tests: 2719/2719 passing, TSC: clean, ESLint: clean).
-- **Recent Work (Sprint 14-15):** Added `domainIngestScheduler.ts` — 5-domain autonomous PubMed ingest (3 queries/domain, 400ms rate-limiting, 7/7 tests). Registered `POST /api/scheduled/domain-ingest` (requireCronOrAdmin). Added `GET /api/public/status/domains` with 5-min Cache-Control and 15-key domain label map. Registered `domain-ingest-6h` in `heartbeatRegistrar.ts`. **CI fix (Sprint 15):** migrated pnpm config to `pnpm-workspace.yaml`; fixed `trainingBridge.ts` TS2307 by using runtime import path. CI green on `63c2fd2`.
-- **Next Action:** Sprint 17 (monitor domain density growth, trigger first SLM training run at 50+ pairs/domain). Domain ingest cron active — fires every 6h. 26 papers queued for next tick.
+- **Recent Work (Sprint 20):**
+  - Fixed `verify_claim` confidence scoring: per-item keyword-overlap scoring (was flat 0.1 for all items)
+  - Fixed `search_claims`: `min_confidence` filter moved into DB query; `total` now returns filtered count
+  - Added `getContradictionsForClaim()` to `db.ts`; `verify_claim` now returns `contradictions[]` field
+  - Added `/api/public/corpus-growth` endpoint (wired to `getCorpusGrowthStats()`)
+  - Added 60+ domain signals to `CLAIM_SIGNALS` for medicine, climate, economics, law
+  - Added `GET /api/v2/entities/resolve?name=&type=` endpoint for entity resolution
+  - Added `docs/mcp-listing.md` — mcpservers.org + glama.ai submission details
+  - Added `docs/crossref-scite-integration.md` — 4-phase Crossref + Scite integration plan
+- **Last Commit:** `ced06a8` — docs(sprint20): File 4 — MCP listing plan + Crossref/Scite integration spec
+- **Next Action:** Sprint 21 (implement Crossref DOI retraction detection; add NOAA + FRED adapters; add SPO triple to verify_claim response)
 
 ### 2.3 Framework / R&D: `cognitive-loop-framework`
 - **Role:** Autonomous verification logic and SLM distillation pipelines.
 - **Current State:** Green (Tests: 68/68 passing).
-- **Next Action:** Sprint 15 (SLM training runs will begin automatically as claim density grows to 50+ pairs/domain).
+- **Next Action:** Monitor domain density growth; trigger first SLM training run at 50+ pairs/domain.
 
-## 3. Strategic Roadmap: The Enterprise AI Infrastructure Sequence
+## 3. Strategic Roadmap
 
-Based on direct specification from Perplexity.ai and strategic alignment, the development sequence is now locked into the following path:
-
-### Sprint 11: The MCP Server ✅ COMPLETE
-- Built `@citation-is/mcp-server` npm package (TypeScript, MCP SDK, `search_claims`, `verify_claim`, `get_claim`)
-- Updated `/.well-known/mcp.json` to citation.is branding
-- Added `/developers/mcp` integration hub with all enterprise configs
-- Both repos green: citation-desk 35/35, ttruthdesk-platform 2708/2708
-
-### AAIF Integration ✅ COMPLETE
-- Installed goose v1.37.0 and agentgateway v1.2.1 in sandbox — both wired to citation.is MCP
-- Wrote `AGENTS.md` for both `citation-desk` and `ttruthdesk-platform` (structured persistent memory for AI agents)
-- Added `infra/agentgateway/config.yaml` to ttruthdesk-platform for enterprise proxy deployments
-- Added goose + agentgateway integration tabs to `/developers/mcp` page
-- Added AAIF Ecosystem badge in `/developers/mcp` hero linking to aaif.io
-- AAIF project proposal prepared for submission on public launch
-- MCP Python SDK + langchain-mcp-adapters installed for Python agent integration
-
+### Sprint 11: MCP Server ✅ COMPLETE
 ### Sprint 12: Live Routing & Autonomous Ingestion ✅ COMPLETE
-- Fixed `loopTriggered` flag — now correctly `true` when PubMed results are present
-- Added `claimId` surfacing from upstream response in MCP `verify_claim`
-- Added `findClaimByText` to `db.ts` for fast registry lookup
-- Added 4 new live routing tests (2712/2712 passing)
-- Updated `/developers/mcp` page with Live Routing section documenting the full three-step flow
-
 ### Sprint 13: SLM Distillation ✅ COMPLETE
-- Added `trainingBridge.ts` — singleton that holds `ClaimsCorpusGenerator` + `CorpusWatcher`
-- `emitVerdictEvent()` wired into `autonomousIngest.ts` after every `updateClaimVerdict()`
-- `CorpusWatcher` auto-triggers `IncrementalTrainer` when domain hits 50-pair threshold
-- Added `/developers/slm` page — full pipeline documentation, JSONL format, Ollama examples, domain status table
-- Both repos green: citation-desk 35/35, ttruthdesk-platform 2712/2712
-
 ### Sprint 14: Claim Coverage Growth ✅ COMPLETE
-- Added `domainIngestScheduler.ts` — autonomous 5-domain PubMed ingest (biology/medicine/chemistry/physics/climate)
-  - 3 targeted queries per domain, 400ms rate-limiting, 7/7 tests passing
-- Registered `POST /api/scheduled/domain-ingest` (requireCronOrAdmin) — designed to run every 6 hours
-- Added `GET /api/public/status/domains` — per-domain claim counts, verification rates, 5-min Cache-Control
-  - Maps 15 domain keys to human-readable labels
-- Added `status.domains` tRPC procedure in citation-desk — proxies upstream with graceful degradation
-- Added domain coverage widget to citation-desk `/status` page
-  - Colour-coded verification rate badges (green ≥70%, amber ≥40%, grey <40%)
-  - Totals footer row, 5-min refresh, empty-state message
-- Added `domain-ingest-6h` row to Scheduled Jobs table
-- Fixed ESLint: prefixed unused `CorpusReadyStats` with `_` in `trainingBridge.ts`
-- Both repos green: citation-desk 27/27, ttruthdesk-platform 2719/2719, TSC clean, ESLint clean
-
 ### Sprint 15: CI Fix & Scheduled Task ✅ COMPLETE
-- Diagnosed root cause of all CI failures: `trainingBridge.ts` used a static string literal in a dynamic `import()` for the optional `cognitive-loop-framework` sibling package, causing `TS2307` on CI where the package is absent.
-- Fixed by using a runtime variable `const modulePath = "..."; await import(modulePath)` — tsc cannot statically resolve it.
-- Migrated `pnpm.patchedDependencies` and `pnpm.overrides` from deprecated `package.json` `"pnpm"` field to `pnpm-workspace.yaml` (pnpm v10 requirement).
-- Registered `domain-ingest-6h` heartbeat job in `heartbeatRegistrar.ts`.
-- Configured Manus scheduled task (6-hour interval) to POST `/api/scheduled/domain-ingest`.
-- CI green on `63c2fd2`: TSC clean, ESLint clean, 2719/2719 tests passing.
+### Sprint 16: Domain Ingest Probe ✅ COMPLETE
+### Sprint 17: SLM Progress Widget ✅ COMPLETE
+### Sprint 18: AAIF Toolchain Integration ✅ COMPLETE
+### Sprint 19: manually_reviewed filter + RAG page ✅ COMPLETE
 
-### Sprint 16: Claim Density & SLM Training Activation (Immediate Next)
-- **Goal:** Drive claim density to 50+ pairs per domain so SLM training runs begin firing automatically.
-- **Scope:** Monitor `/api/public/status/domains` for density growth. Verify first SLM training run fires when a domain hits threshold. Surface training status in the `/status` page widget.
-- **Why:** The pipeline is fully built and instrumented. Sprint 16 is purely operational — watch the flywheel spin.
+### Sprint 20: Perplexity 5-Document Execution ✅ COMPLETE
+- File 1: Fixed verify_claim pipeline (confidence scoring, search_claims, contradictions, corpus-growth)
+- File 2: Added 60+ domain signals for medicine, climate, economics, law
+- File 3: Validated all 6 developer asks; added entity resolve endpoint
+- File 4: MCP listing docs + Crossref/Scite integration plan; PR #8116 to awesome-mcp-servers
+- File 5: FAQPage + Organization JSON-LD + PerplexityBot optimization
+
+### Sprint 21: Critical Gaps from Gap Analysis (Next)
+- **Goal:** Close the 5 critical gaps identified in the Sprint 20 gap analysis.
+- **Scope:**
+  1. Add SPO triple to `verify_claim` response (Perplexity's #1 ask)
+  2. Implement Crossref DOI retraction detection (Phase 1 of crossref-scite-integration.md)
+  3. Add NOAA adapter (complete climate domain)
+  4. Add FRED adapter (complete economics domain)
+  5. Test citation.is visibility in Perplexity ("What is citation.is?")
+  6. Submit metadata to OpenCitations
+  7. Add `sameAs` LinkedIn + X to Organization schema
 
 ## 4. Active Developer Tools (Sandbox)
 
-| Tool | Version | Purpose |
-|---|---|---|
-| goose | v1.37.0 | AAIF agent runtime — wired to citation.is MCP |
-| agentgateway | v1.2.1 | Enterprise MCP proxy with observability and retries |
-| MCP Python SDK | latest | Python agent integration |
-| langchain-mcp-adapters | latest | LangChain/LlamaIndex integration |
+| Tool | Version | Purpose | Status |
+|---|---|---|---|
+| goose | v1.37.0 | AAIF agent runtime — wired to citation.is MCP | INSTALLED |
+| agentgateway | v1.2.1 | Enterprise MCP proxy with observability and retries | INSTALLED |
+| MCP Python SDK | latest | Python agent integration | INSTALLED |
+| langchain-mcp-adapters | latest | LangChain/LlamaIndex integration | INSTALLED |
 
-## 5. Operational Rules
+## 5. MCP Server Status
+
+- **Endpoint:** `https://ttruthdesk.claims/api/mcp`
+- **Discovery:** `https://ttruthdesk.claims/.well-known/mcp.json`
+- **Tools:** 12 (verify_claim, search_claims, get_claim, get_provenance, verify_claims_batch, find_similar, get_entity_claims, get_domain_stats, get_contradictions, list_verticals, get_corpus_stats, entity_resolve)
+- **Anonymous rate limit:** 10 req/hr per IP per tool
+- **awesome-mcp-servers PR:** https://github.com/punkpeye/awesome-mcp-servers/pull/8116
+
+## 6. Persistent Memory Repos
+
+| Repo | Purpose | Last Push |
+|---|---|---|
+| `Gudmundur76/citation-desk` | Frontend codebase | Sprint 20 — 518dff9 |
+| `Gudmundur76/ttruthdesk-platform` | Backend codebase | Sprint 20 — ced06a8 |
+| `Gudmundur76/manus-persistent-drive` | Session state, phase log, memory | Sprint 19 — 12bba8f (updating now) |
+| `Gudmundur76/memorydesk` | Cross-project AI memory layer | Not updated this sprint |
+
+## 7. Operational Rules
 
 1. **One Build:** We treat this as a single coordinated product.
 2. **AI Co-development:** We formally ask enterprise AI systems (Perplexity, Claude) what they need before building, and we build exactly what they specify.
 3. **Always Green:** We do not leave the session until the active repo passes `pnpm check` and `vitest`.
+4. **Memory Sync:** Every sprint MUST end with: (a) update CURRENT_STATE.md, (b) append to compounding_log.md, (c) update agent_memory_blocks.json, (d) run goose verification, (e) push manus-persistent-drive.
+5. **Ralph Wiggum Loop:** All TDD feature development uses the Ralph loop pattern (write failing test → fix → green → commit).

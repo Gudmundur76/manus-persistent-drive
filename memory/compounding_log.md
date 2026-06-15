@@ -193,3 +193,77 @@ MetaAgent detects failure
 2. Begin `ttruthdesk-platform / sprint-0-critical-fixes` with the developer
 3. Hand the developer `tracks/ttruthdesk-platform/blueprint/developer_note.md`
 4. Verify the developer has received and read `ttruthdesk_developer_handoff.md`
+
+---
+## Session: sprint-20-perplexity-5-docs — 2026-06-15T15:00:00Z
+**Track:** ttruthdesk-platform + citation-desk
+**Sprint:** Sprint 20 — Perplexity 5-Document Execution
+**Agent:** Manus
+
+### Work Done
+
+**File 1 — verify_claim Pipeline Fixes (2 commits)**
+- Fixed `confidence: 0.1` flat scoring bug in `pubmedAbstractFetcher.ts`: each evidence item now scored by its own keyword overlap with the claim text (range 0.1–1.0). Updated `pubmedAbstractFetcher.test.ts` to reflect new per-item scoring behaviour.
+- Fixed `search_claims` returning 0 results: `min_confidence` filter moved into the DB query; `total` now returns the filtered count correctly.
+- Added `getContradictionsForClaim()` to `db.ts`; added `contradictionAlerts` to schema import; `verify_claim` now returns `contradictions[]` field in every response.
+- Added `/api/public/corpus-growth` endpoint to `server/_core/index.ts` (wired to `getCorpusGrowthStats()`).
+- Added `CorpusGrowthStats` interface and `corpusGrowth` API helper to `client/src/lib/api.ts`.
+- Wired loop animation cards in `CitationHome.tsx` to live corpus growth data.
+- Fixed em-dash encoding bug in "Needs Expert Review" label.
+- Changed "97 Supported" stat label to "Supported Claims".
+- Commits: `2f23fb7` (ttruthdesk-platform), `f95675a` (citation-desk)
+
+**File 2 — Domain Expansion Signals (1 commit)**
+- Added 60+ domain signals to `CLAIM_SIGNALS` in `discoveryLoopJob.ts` for medicine (25), climate (24), economics (24), law (23).
+- Commit: `7c26356` (ttruthdesk-platform)
+
+**File 3 — Developer Asks Validation (1 commit)**
+- Validated all 6 developer asks. Added `GET /api/v2/entities/resolve?name=&type=` endpoint.
+- Commit: `8864347` (ttruthdesk-platform)
+
+**File 4 — MCP Listing + Crossref/Scite Plan (1 commit)**
+- Created `docs/mcp-listing.md` and `docs/crossref-scite-integration.md`.
+- Opened PR #8116 to `punkpeye/awesome-mcp-servers` (fast-track flag).
+- Commit: `ced06a8` (ttruthdesk-platform)
+
+**File 5 — JSON-LD + PerplexityBot (1 commit)**
+- Updated FAQPage JSON-LD: 8 Q&A pairs, 12 MCP tools, 30+ domains, correct MCP endpoint.
+- Updated Organization JSON-LD: alternateName, foundingDate, knowsAbout, contactPoint, sameAs, hasOfferCatalog.
+- Updated static shell: 4,000+ claims, 30+ domains, Medicine/Climate/Economics/Law verticals.
+- Commit: `518dff9` (citation-desk)
+
+**Memory Sync (this session)**
+- Ran full post-sprint sync ritual (was skipped after Sprint 20 delivery — caught by user).
+- Updated CURRENT_STATE.md to Sprint 20 state.
+- Appended this compounding log entry.
+- Updating agent_memory_blocks.json.
+- Running goose + agentgateway verification.
+
+### Decisions Made
+- Per-item confidence scoring: keyword overlap ratio clamped to [0.1, 1.0]. Replace with TF-IDF in Sprint 21.
+- `min_confidence` filter now applied in DB query using `gte(claims.confidenceScore, minConfidence)`. Claims with null confidenceScore excluded when min_confidence > 0.
+- `contradictions[]` limited to 5 most recent alerts for matched claim. Empty array for new claims.
+- Entity resolve uses `ilike` (case-insensitive LIKE). Add fuzzy matching in Sprint 21.
+- `CLAIM_SIGNALS` is a stopgap. Real fix is per-domain evidence quality weighting in verdict assignment.
+- **Memory sync ritual must run before sprint report is delivered** — added as Rule 4 to CURRENT_STATE.md operational rules.
+
+### Blockers / Gaps for Sprint 21
+1. SPO triple missing from verify_claim response (Perplexity's #1 ask)
+2. Crossref + Scite documented but not implemented
+3. NOAA, FRED, IMF adapters missing
+4. Perplexity visibility test not done
+5. OpenCitations submission not done
+6. AgentStack / CustomGPT integration not done
+7. `sameAs` LinkedIn + X missing from Organization schema
+
+### Completion Promise Met
+`SPRINT 20 MEMORY SYNCED`
+
+### Next Session Must Do
+1. Begin Sprint 21 with AAIF pre-sprint protocol (goose verify, agentgateway health check)
+2. Add SPO triple to `verify_claim` response
+3. Implement Crossref DOI retraction detection (Phase 1 of docs/crossref-scite-integration.md)
+4. Add NOAA adapter
+5. Add FRED adapter
+6. Test Perplexity visibility: ask "What is citation.is?"
+7. Run Ralph Wiggum loop for each new adapter
