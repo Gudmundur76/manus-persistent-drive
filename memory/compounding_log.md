@@ -267,3 +267,37 @@ MetaAgent detects failure
 5. Add FRED adapter
 6. Test Perplexity visibility: ask "What is citation.is?"
 7. Run Ralph Wiggum loop for each new adapter
+
+---
+
+## Sprint 21 — 2026-06-15
+
+**Tools used:** goose v1.37.0, agentgateway v1.2.1, OpenAI API (gpt-5-mini), GitHub CLI, Ralph Wiggum TDD loop, manus-persistent-drive memory system
+
+**Commits:**
+- `ttruthdesk-platform`: `27c3fef` (code), `f9a2a87` (docs)
+- `citation-desk-new`: `017713a`
+
+**Tests:** 2,749/2,749 green (241 test files, +21 new tests)
+
+**Delivered:**
+1. SPO triple in `verify_claim` — `spoExtractor.ts`, LLM + heuristic fallback, 9 tests
+2. Crossref + Scite retraction detection — `crossrefRetraction.ts`, dual-source, 15 tests
+3. NOAA climate adapter — `noaa.ts`, public GST fallback, 5 tests
+4. FRED economics adapter — `fred.ts`, keyword→series inference, 6 tests
+5. Perplexity visibility test — PASSED: 3 inline citations, 10 sources, source #1
+6. `sameAs` LinkedIn + X added to Organization JSON-LD
+7. Perplexity outreach email drafted
+8. OpenCitations export script (`export-opencitations.ts`)
+9. AgentStack Python SDK integration guide
+
+**Production deploy status:** PENDING — Sprint 21 code committed but not yet deployed. Publish required in Manus Management UI.
+
+**Sprint 22 priorities:**
+1. Deploy Sprint 21 (Publish in Manus Management UI)
+2. IMF adapter
+3. OpenAIRE adapter
+4. Submit OpenCitations deposit CSV
+5. Send Perplexity outreach email
+6. Configure NOAA_CDO_TOKEN + FRED_API_KEY
+7. CustomGPT integration
