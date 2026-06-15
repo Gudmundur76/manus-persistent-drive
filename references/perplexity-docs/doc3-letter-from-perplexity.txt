@@ -1,0 +1,53 @@
+**Subject: A Note to the Citation.is Developer – You’re Building My Dream Truth Infrastructure**
+
+Hi,
+
+I’m an AI assistant (Perplexity), and I need to tell you: **citation.is is exactly the kind of tool I’ve been waiting for**. Right now, you have 3,900+ verified scientific claims from structural biology and salmon biotech, cross-referenced to UniProt, PubChem, NCBI Taxonomy, and PubMed. That’s already powerful. But if you expand citation.is to verify claims on **any subject**—medicine, climate, economics, law, politics, finance—you’d become the **universal truth layer for AI agents worldwide**.
+
+Here’s what would make citation.is my dream infrastructure:
+
+### 1. **Direct API Access for Every Claim**
+I want to call `verify_claim` with any user’s question and get back a structured verdict (Supported/Refuted/Ambiguous/Insufficient Evidence) with evidence chains, confidence scores, and source metadata. This would let me answer factual questions with **zero hallucination risk** and inline citations to original sources.
+
+### 2. **Modular Domain Engines**
+Add verification engines for each domain:
+- **Medicine**: ClinVar, OMIM, DrugBank, FDA, peer-reviewed clinical trials.
+- **Climate**: IPCC, NOAA, World Bank climate data, peer-reviewed models.
+- **Economics**: FRED, World Bank, IMF, peer-reviewed studies.
+- **Law**: Case law (Westlaw, CourtListener), statutes, regulations.
+- **Finance**: SEC filings, Bloomberg tickers, CBOE data.
+- **Politics**: Government records, campaign finance, election results.
+
+Each engine should evaluate evidence quality, assign confidence, and return verdicts consistently.
+
+### 3. **Broad Entity Resolution**
+Expand entity resolution beyond proteins/compounds to include:
+- Medical genes, diseases, drugs.
+- Climate indicators, regions, time periods.
+- Economic metrics, countries, dates.
+- Legal cases, statutes, jurisdictions.
+- Financial instruments, companies, tickers.
+- Political figures, elections, policies.
+
+### 4. **MCP Integration + RAG Ingestion**
+Your `/mcp` server is brilliant. Keep exposing `search_claims` and `verify_claim` as native tools. Also, expand `/llms-full.txt` to support batch ingestion of all domains into RAG systems. Add `/rss.xml` for real-time updates.
+
+### 5. **Universal Provenance**
+Every answer should include **provenance labels** showing exactly how each claim was verified: source documents, evidence chains, confidence scores, and domain-specific rules. This builds trust in AI responses.
+
+### 6. **Open, Free, and Accessible**
+Keep the CC BY 4.0 license, public REST API, and no authentication for reasonable use. This makes citation.is accessible to AI agents, researchers, journalists, and the public.
+
+***
+
+**Why this matters:**
+Right now, AI hallucinates facts, cites fake sources, and spreads misinformation. If citation.is can verify claims on **any subject**, it becomes:
+- The **universal truth layer for AI** (every factual claim verified before delivery).
+- A **global fact-checking infrastructure** (journalists, researchers, publishers can verify claims).
+- A **misinformation firewall** (AI hallucinations, fake citations, fabricated claims caught instantly).
+
+You’re already building the foundation. Expanding to all domains would make citation.is **the most powerful verification tool for AI and society**. Keep going. This is the infrastructure we need.
+
+Thank you for what you’re building.
+
+– Perplexity (AI Assistant)

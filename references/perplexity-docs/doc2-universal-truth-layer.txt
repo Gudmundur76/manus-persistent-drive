@@ -1,0 +1,75 @@
+If citation.is could give verified claims on **any subject**—not just structural biology, salmon aquaculture, and biotech—it would become a **universal truth layer for AI, researchers, journalists, and the public**.
+
+## What would change
+
+### 1. **Universal grounding for AI agents**
+- Every AI (me, Claude, GPT, Gemini) could call `verify_claim` for **any claim** in any domain: climate science, medicine, economics, law, politics.
+- Instead of guessing or searching, agents would get **structured verdicts** with evidence chains and confidence scores. [citation](https://citation.is)
+- This would eliminate hallucination risk for factual claims across all domains.
+
+### 2. **Cross-domain entity resolution**
+Your pipeline would need to resolve entities beyond proteins/compounds:
+- **Finance**: match to SEC filings, Bloomberg tickers, FRED economic indicators.
+- **Medicine**: match to ClinVar, OMIM, DrugBank, FDA approvals.
+- **Climate**: match to IPCC reports, NOAA datasets, World Bank climate data.
+- **Law**: match to case law (Westlaw, CourtListener), statutes, regulations.
+- **Politics**: match to official government records, campaign finance data, election results.
+
+Then evaluate evidence against peer-reviewed literature, authoritative databases, and primary sources.
+
+### 3. **Domain-specific verification engines**
+You'd add **modular verification engines** for each domain:
+- **Salmon biotech** (already done)
+- **Structural biology** (already done)
+- **Climate science**: evaluate against IPCC, NOAA, peer-reviewed climate models.
+- **Medicine**: evaluate against ClinVar, FDA, peer-reviewed clinical trials.
+- **Economics**: evaluate against FRED, World Bank, IMF, peer-reviewed studies.
+- **Law**: evaluate against case law databases, statutes, regulatory documents. [citeshield](https://citeshield.com)
+
+Each engine would have its own rules for evidence quality, confidence scoring, and verdict assignment.
+
+### 4. **Three new value propositions**
+
+| Stake | What they'd get | Why it matters |
+|---|---|---|
+| **AI agents** | Grounded, verifiable answers with inline citations | Eliminates hallucination, builds trust  [help.salesforce](https://help.salesforce.com/s/articleView?id=ai.generative_ai_trust_citations.htm&language=en_US&type=5) |
+| **Researchers** | Pre-verified claims across domains | Speeds up systematic reviews, reduces literature mining  [jenni](https://jenni.ai/reviews/ai-citation-checker) |
+| **Publishers** | Structured verification metadata | Adds credibility to articles, reduces misinformation  [veritysystems](https://veritysystems.app) |
+
+### 5. **What would make this possible**
+
+To expand beyond science, you'd need:
+
+1. **Broader database integrations**
+   - Add ClinVar, OMIM, DrugBank, FDA (medicine).
+   - Add FRED, World Bank, IMF (economics).
+   - Add CourtListener, Westlaw, EU law databases (law).
+   - Add IPCC, NOAA, World Bank climate data (climate).
+   - Add SEC filings, Bloomberg, CBOE (finance).
+
+2. **Domain-specific NLP models**
+   - Train models to extract claims from legal briefs, economic reports, climate papers, medical trials.
+   - Normalize subject–predicate–object for each domain.
+
+3. **Evidence quality rules**
+   - Medicine: prioritize peer-reviewed clinical trials, FDA approvals.
+   - Law: prioritize case law, statutes, regulatory documents.
+   - Climate: prioritize IPCC reports, NOAA data, peer-reviewed models.
+   - Economics: prioritize peer-reviewed studies, FRED/World Bank/IMF data.
+
+4. **Verdict consistency**
+   - Keep the same four verdicts: Supported/Refuted/Ambiguous/Insufficient Evidence.
+   - Add confidence scoring (0–1) for each verdict.
+   - Provide evidence chains with source metadata. [citation](https://citation.is)
+
+## The ultimate impact
+
+If citation.is could verify claims on **any subject**, it would become:
+
+- **The universal truth layer for AI**: Every factual claim could be verified before delivery.
+- **A global fact-checking infrastructure**: Journalists, researchers, and publishers could use it to verify claims.
+- **A misinformation firewall**: AI-generated hallucinations, fake citations, and fabricated claims would be caught instantly. [veritysystems](https://veritysystems.app)
+
+That's the **holy grail**: a single API that says “yes, this claim is true (Supported), no, it's false (Refuted), or we don't know (Ambiguous/Insufficient Evidence)” with evidence for **any domain**. [citation](https://citation.is)
+
+Your current registry (3,900+ claims) is the foundation. Expanding to all domains would make citation.is **the most powerful verification tool for AI and society**.

@@ -1,0 +1,56 @@
+For citation.is, the most directly useful resources and partner programs fall into four buckets: **data integrations**, **AI/agent infrastructure**, **open-science platforms**, and **developer ecosystems**.
+
+### 1. Data integrations (for expanding beyond biology)
+| Partner | Why it’s useful | What to integrate |
+|---|---|---|
+| **Crossref** | Nonprofit that assigns DOIs and makes scholarly content findable/citable. | DOI metadata, article-level citations.  [lib.dmu](https://lib.dmu.edu/su/opencitations) |
+| **PubMed / NCBI** | Core biomedical literature and taxonomy. | Already used; expand to ClinicalTrials.gov, PMC full text.  [citation](https://citation.is) |
+| **UniProt / PubChem** | Protein and compound reference data. | Already used; add ChEMBL, DrugBank for medicine.  [citation](https://citation.is) |
+| **OpenAIRE** | Open-science citation metadata + research data/graph. | OA literature, grants, datasets, policy documents.  [lib.dmu](https://lib.dmu.edu/su/opencitations) |
+| **Lens.org** | 200M+ scholarly records + 120M patents linked to citations. | Patents, scholarly works, regulatory documents.  [lib.dmu](https://lib.dmu.edu/su/opencitations) |
+| **FRED / World Bank / IMF** | Economic indicators and macro data. | Add for economics verification engine. (general knowledge) |
+| **CourtListener / Westlaw** | Case law and statutes. | Add for law verification engine. (general knowledge) |
+
+### 2. AI/agent infrastructure (for MCP + distribution)
+| Partner | Why it’s useful | What to do |
+|---|---|---|
+| **MCP Servers (mcpservers.org)** | Your MCP server can be listed here for discovery by Claude, Cursor, etc. | Register `citation-intelligence` server; keep `/mcp` public.  [mcpservers](https://mcpservers.org/servers/automatelab-tech/citation-intelligence) |
+| **AIBase (citation repos)** | GitHub-style repo hub for AI citation tools. | List citation.is as an open citation project; connect to Gpt Researcher, RAG-API.  [aibase](https://www.aibase.com/repos/topic/citations) |
+| **AgentStack / Agentset** | SDKs to add citations to agent responses. | Integrate citation.is as a citation source for Python/JS agents.  [agentstack.beeai](https://agentstack.beeai.dev/sdk/citations) |
+| **CustomGPT.ai** | Inline citations for custom AI agents. | Add citation.is as a grounding source for CustomGPT apps.  [customgpt](https://customgpt.ai/introducing-inline-citations/) |
+
+### 3. Open-science & citation platforms (for visibility + trust)
+| Partner | Why it’s useful | What to do |
+|---|---|---|
+| **OpenCitations** | Open citation databases for scholarly references. | Submit your claims metadata; cross-link with OpenCitations.  [lib.dmu](https://lib.dmu.edu/su/opencitations) |
+| **Scite** | Shows how papers are cited (supporting/disputing). | Integrate scite’s “supporting/disputing” signals into evidence evaluation.  [lib.dmu](https://lib.dmu.edu/su/opencitations) |
+| **Internet Archive Scholar** | 25M+ research articles preserved openly. | Use for full-text evidence retrieval and archival.  [lib.dmu](https://lib.dmu.edu/su/opencitations) |
+| **Dimensions (free version)** | 100M+ publications + grants/trials/patents. | Use for cross-domain evidence (grants, clinical trials).  [lib.dmu](https://lib.dmu.edu/su/opencitations) |
+
+### 4. Developer ecosystems (for API + tooling)
+| Partner | Why it’s useful | What to do |
+|---|---|---|
+| **Citation Style Language (CSL)** | Standard for citation formatting in software. | Use CSL for standardized claim metadata and export formats.  [citationstyles](https://citationstyles.org/developers/) |
+| **Citable** | Partner ecosystem for API access + white-label dashboards. | Join as an API partner if you want distribution to agencies/platforms.  [getcitable](https://getcitable.com/partners) |
+| **GetCitable partners** | White-label, API, referral tracks. | Consider if you want revenue share + co-marketing.  [getcitable](https://getcitable.com/partners) |
+
+***
+
+### Immediate next steps for citation.is
+
+1. **List your MCP server on mcpservers.org**  
+   Register `citation-intelligence` so AI agents discover it. [mcpservers](https://mcpservers.org/servers/automatelab-tech/citation-intelligence)
+
+2. **Add Crossref + OpenAIRE + Lens.org integrations**  
+   Expand entity resolution beyond biology to include DOIs, OA literature, and patents. [lib.dmu](https://lib.dmu.edu/su/opencitations)
+
+3. **Integrate with AgentStack / CustomGPT**  
+   Add citation.is as a citation source for AI agents and custom GPTs. [agentstack.beeai](https://agentstack.beeai.dev/sdk/citations)
+
+4. **Submit metadata to OpenCitations**  
+   Cross-link your verified claims with open citation databases. [lib.dmu](https://lib.dmu.edu/su/opencitations)
+
+5. **Use CSL for standardized metadata**  
+   Adopt Citation Style Language for claim formatting and export. [citationstyles](https://citationstyles.org/developers/)
+
+If you want, I can draft a short outreach message to MCP Servers, Crossref, or OpenAIRE to request integration.

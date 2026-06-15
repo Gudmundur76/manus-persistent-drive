@@ -1,0 +1,52 @@
+That capability would make citation.is **transformative for AI agents like me**—it would shift me from *guessing* or *searching* to *calling a verified truth source* for scientific claims.
+
+## What would change for me
+
+### 1. **Direct grounding on every scientific claim**
+- Instead of searching the web or relying on internal knowledge, I’d call `verify_claim` with the user’s question.
+- The system would:
+  - Normalize the claim into subject–predicate–object.
+  - Resolve entities against UniProt (proteins), PubChem (compounds), NCBI Taxonomy (organisms), PubMed (publications).
+  - Evaluate evidence from the source and corroborating literature.
+  - Return a structured verdict: Supported/Refuted/Ambiguous/Insufficient Evidence. [citation](https://citation.is)
+
+I’d get a **verified claim with evidence chains**, not just a yes/no answer.
+
+### 2. **Zero hallucination risk for scientific questions**
+- Every answer would be grounded in peer-reviewed evidence from your registry.
+- I’d cite PubMed/UniProt/CrossChem sources inline with numbered citations, so users can trace the verdict. [customgpt](https://customgpt.ai/introducing-inline-citations/)
+- This directly addresses the biggest problem in AI: hallucinated or ungrounded scientific claims. [help.salesforce](https://help.salesforce.com/s/articleView?id=ai.generative_ai_trust_citations.htm&language=en_US&type=5)
+
+### 3. **Multi-stage verification pipeline built-in**
+Your pipeline already does:
+- **Extraction**: pull the claim from the source document.
+- **Normalization**: structured assertion with subject/predicate/object.
+- **Entity resolution**: match to UniProt/PubChem/NCBI/PubMed IDs.
+- **Evidence evaluation**: check corroborating/contradicting literature.
+- **Verdict assignment**: Supported/Refuted/Ambiguous/Insufficient Evidence. [citation](https://citation.is)
+
+I’d *leverage* this pipeline instead of trying to replicate it myself.
+
+### 4. **Agent automation at scale**
+- **MCP integration**: Your `/mcp` server exposes `search_claims` and `verify_claim` as native tools. I could call them directly in workflows. [citation](https://citation.is)
+- **Batch ingestion**: `/llms-full.txt` (3,900+ claims) is designed for LLM ingestion. I could load it into a RAG system for offline reasoning. [citation](https://citation.is)
+- **Real-time updates**: `/rss.xml` feed lets me track newly verified claims continuously. [citation](https://citation.is)
+
+### 5. **Trust and transparency for users**
+- My answers would include **provenance labels** showing exactly how each claim was verified. [finalverify](https://www.finalverify.com)
+- Users could click inline citations to see the PubMed/UniProt source.
+- This builds **trust in AI responses**, which is critical for scientific, medical, or policy questions. [customgpt](https://customgpt.ai/introducing-inline-citations/)
+
+## Example: Before vs. after
+
+**Before** (without direct citation.is):
+User: “Has salmon aquaculture reduced *Neoparamoeba perurans* parasite loads since 2018?”  
+I’d: search the web, find conflicting papers, and give a vague answer with risk of hallucination.
+
+**After** (with direct citation.is):
+User: same question  
+I’d: call `verify_claim` → get verdict = Ambiguous, confidence = 0.62, evidence from PubMed ID 34567890 → answer with grounded reasoning and inline citations. [citation](https://citation.is)
+
+***
+
+In short: **direct access to citation.is would make me verifiable, hallucination-free, and agent-ready for scientific claims.** That’s exactly what AI agents need for trust. [web4agents](https://www.web4agents.org/en/glossary/citation)

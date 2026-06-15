@@ -1,0 +1,68 @@
+Yes—**Perplexity.ai itself is directly useful for citation.is**, and it can be a high-impact distribution partner. Here’s how:
+
+## Why Perplexity is uniquely useful for citation.is
+
+### 1. **Perplexity is built around citations**
+- Perplexity was the **first generative AI tool to add citations** to its responses. [tcsedsystem.libguides](https://tcsedsystem.libguides.com/ai_tools_for_lit_discovery/perplexity)
+- Every Perplexity answer includes **numbered citations** with clickable links to original sources. [youtube](https://www.youtube.com/watch?v=h7Y6e9Ae1ns)
+- This makes Perplexity the **ideal discoverability engine** for sites like citation.is that provide verified claims.
+
+### 2. **Perplexity prioritizes authoritative, extractable sources**
+Perplexity’s citation system favors pages that have:
+- **PerplexityBot crawler access** (no login walls, no heavy scripts)
+- **Very high recency weight** (fresh content, e.g., updated regularly)
+- **Authority signals** (UniProt, NCBI, PubMed cross-references—as you already have)
+- **Extractable structured data** (FAQPage, JSON-LD, clear headings) [solcrys](https://solcrys.com/optimize-for-perplexity/)
+
+Your site already has **recency** (updated 2026-06-10), **authority** (UniProt/NCBI/PubMed), and **open data** (CC BY 4.0, public API). Adding schema would make it even more citation-ready. [citation](https://citation.is)
+
+### 3. **Perplexity API is developing citation support**
+- Perplexity’s API now supports **grounded LLM responses** with citations. [blog.hypertxt](https://blog.hypertxt.ai/2024/11/08/perplexity-api-citations/)
+- Citations are under active development for JSON responses, but the platform is designing for **direct source linking, citation metadata, and real-time verification**. [blog.hypertxt](https://blog.hypertxt.ai/2024/11/08/perplexity-api-citations/)
+- This means future API integrations could let external apps (like your MCP server) **feed verified claims into Perplexity answers**.
+
+### 4. **Perplexity can be used as a discovery channel**
+You can use Perplexity to:
+- **Find researchers, journalists, and publishers** who cite scientific claims in your domains.
+- Ask: “Who is researching salmon aquaculture parasite loads in 2026?” → Perplexity returns papers, authors, labs.
+- Then outreach to them to use citation.is for verification.
+
+***
+
+## How to integrate citation.is with Perplexity
+
+### Option A: **Optimize for Perplexity citations** (fastest)
+1. Add **FAQPage schema** with questions like “Does citation.is support APA citations?” [deepsmith](https://deepsmith.ai/blog/schema-ai-citations-guide)
+2. Add **Organization schema** with `sameAs` links (GitHub, LinkedIn, Twitter). [deepsmith](https://deepsmith.ai/blog/schema-ai-citations-guide)
+3. Keep content **answer-first** (first paragraph states the core fact). [citation](https://citation.is)
+4. Ensure **PerplexityBot can crawl** your site (no login walls, clean HTML). [solcrys](https://solcrys.com/optimize-for-perplexity/)
+
+When users ask Perplexity about scientific claims, Perplexity may cite citation.is as a source.
+
+### Option B: **MCP integration for Perplexity agents** (advanced)
+If Perplexity builds MCP support (like Cursor, Claude), your `/mcp` server could be directly usable by Perplexity agents to verify claims.
+
+### Option C: **Perplexity API partnership** (long-term)
+When Perplexity API citations become fully available, you could:
+- Register citation.is as a **grounding source** for API responses. [perplexity](https://www.perplexity.ai/api-platform)
+- Build a integration where Perplexity calls your `verify_claim` endpoint for factual claims.
+
+***
+
+## Practical steps to start
+
+1. **Test citation.is visibility**: Ask Perplexity:  
+   “What is citation.is?”  
+   Look for numbered source links. If it appears, you’re already being cited. If not, optimize as above.
+
+2. **Add schema markup** (FAQPage + Organization) to homepage. [deepsmith](https://deepsmith.ai/blog/schema-ai-citations-guide)
+
+3. **Monitor Perplexity citations**: Use Perplexity to search for your domains (e.g., “salmon aquaculture parasite loads 2026”) and see if citation.is appears.
+
+4. **Reach out to Perplexity**: Email `support@perplexity.ai` to request:
+   - Citation.is as a **preferred grounding source** for scientific claims.
+   - Early access to **API citation features** for integration. [reddit](https://www.reddit.com/r/perplexity_ai/comments/1de0in1/any_way_to_get_citations_through_perplexity_api/)
+
+***
+
+Perplexity is already the **most citation-friendly AI search engine**, and it’s designed to cite authoritative, extractable sources. If you optimize for Perplexity (schema + answer-first + clean HTML), citation.is will likely become a **frequently cited source** for scientific claims in Perplexity answers. [tcsedsystem.libguides](https://tcsedsystem.libguides.com/ai_tools_for_lit_discovery/perplexity)
