@@ -1,12 +1,12 @@
 # citation.is & ttruthdesk.claims — Coordinated Product Status
 
-*Last updated: Sprint 14 complete — 2026-06-15*
+*Last updated: Sprint 15 CI fix — 2026-06-15*
 
 ## 1. Executive Summary
 
 The platform is operating as a **single coordinated product build**.
 The backend (`ttruthdesk-platform`) and framework (`cognitive-loop-framework`) are healthy, fully tested, and stable.
-Sprint 14 is complete: the autonomous domain-ingest scheduler is live, the `/api/public/status/domains` endpoint is deployed, and the citation-desk `/status` page now shows a real-time domain coverage widget with per-domain claim counts and verification rates.
+Sprint 14 is complete. Sprint 15 CI fix is complete: resolved the root cause of all CI failures — `trainingBridge.ts` used a static string literal in a dynamic `import()` for the optional `cognitive-loop-framework` sibling package, causing `TS2307` on CI. Fixed by using a runtime variable. Also migrated `pnpm.patchedDependencies` and `pnpm.overrides` to `pnpm-workspace.yaml` (pnpm v10 requirement). CI is now green on commit `63c2fd2`.
 
 **Overall Product Status:** GREEN. The system never returns an empty result. Every enterprise query compounds the knowledge graph and feeds the SLM distillation pipeline. The autonomous ingest loop now runs across 5 scientific domains (biology, medicine, chemistry, physics, climate) and surfaces live coverage metrics to enterprise clients.
 
@@ -21,8 +21,8 @@ Sprint 14 is complete: the autonomous domain-ingest scheduler is live, the `/api
 ### 2.2 Platform Backend: `ttruthdesk-platform`
 - **Role:** Core engine, API provider, autonomous ingestion loop, and live query router.
 - **Current State:** Green (Tests: 2719/2719 passing, TSC: clean, ESLint: clean).
-- **Recent Work (Sprint 14):** Added `domainIngestScheduler.ts` — 5-domain autonomous PubMed ingest (3 queries/domain, 400ms rate-limiting, 7/7 tests). Registered `POST /api/scheduled/domain-ingest` (requireCronOrAdmin). Added `GET /api/public/status/domains` with 5-min Cache-Control and 15-key domain label map. Fixed ESLint: prefixed unused `CorpusReadyStats` with `_` in `trainingBridge.ts`.
-- **Next Action:** Sprint 15 (configure Manus scheduled task to POST domain-ingest every 6h).
+- **Recent Work (Sprint 14-15):** Added `domainIngestScheduler.ts` — 5-domain autonomous PubMed ingest (3 queries/domain, 400ms rate-limiting, 7/7 tests). Registered `POST /api/scheduled/domain-ingest` (requireCronOrAdmin). Added `GET /api/public/status/domains` with 5-min Cache-Control and 15-key domain label map. Registered `domain-ingest-6h` in `heartbeatRegistrar.ts`. **CI fix (Sprint 15):** migrated pnpm config to `pnpm-workspace.yaml`; fixed `trainingBridge.ts` TS2307 by using runtime import path. CI green on `63c2fd2`.
+- **Next Action:** Sprint 16 (monitor domain density growth, trigger first SLM training run at 50+ pairs/domain).
 
 ### 2.3 Framework / R&D: `cognitive-loop-framework`
 - **Role:** Autonomous verification logic and SLM distillation pipelines.
@@ -76,10 +76,18 @@ Based on direct specification from Perplexity.ai and strategic alignment, the de
 - Fixed ESLint: prefixed unused `CorpusReadyStats` with `_` in `trainingBridge.ts`
 - Both repos green: citation-desk 27/27, ttruthdesk-platform 2719/2719, TSC clean, ESLint clean
 
-### Sprint 15: Claim Density & SLM Training Activation (Immediate Next)
+### Sprint 15: CI Fix & Scheduled Task ✅ COMPLETE
+- Diagnosed root cause of all CI failures: `trainingBridge.ts` used a static string literal in a dynamic `import()` for the optional `cognitive-loop-framework` sibling package, causing `TS2307` on CI where the package is absent.
+- Fixed by using a runtime variable `const modulePath = "..."; await import(modulePath)` — tsc cannot statically resolve it.
+- Migrated `pnpm.patchedDependencies` and `pnpm.overrides` from deprecated `package.json` `"pnpm"` field to `pnpm-workspace.yaml` (pnpm v10 requirement).
+- Registered `domain-ingest-6h` heartbeat job in `heartbeatRegistrar.ts`.
+- Configured Manus scheduled task (6-hour interval) to POST `/api/scheduled/domain-ingest`.
+- CI green on `63c2fd2`: TSC clean, ESLint clean, 2719/2719 tests passing.
+
+### Sprint 16: Claim Density & SLM Training Activation (Immediate Next)
 - **Goal:** Drive claim density to 50+ pairs per domain so SLM training runs begin firing automatically.
-- **Scope:** Configure Manus scheduled task to POST `/api/scheduled/domain-ingest` every 6 hours. Monitor `/api/public/status/domains` for density growth. Verify first SLM training run fires when a domain hits threshold.
-- **Why:** The pipeline is fully built and instrumented. Sprint 15 is purely operational — turn the crank and watch the flywheel spin.
+- **Scope:** Monitor `/api/public/status/domains` for density growth. Verify first SLM training run fires when a domain hits threshold. Surface training status in the `/status` page widget.
+- **Why:** The pipeline is fully built and instrumented. Sprint 16 is purely operational — watch the flywheel spin.
 
 ## 4. Active Developer Tools (Sandbox)
 
