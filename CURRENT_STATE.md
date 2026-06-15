@@ -1,12 +1,12 @@
 # citation.is & ttruthdesk.claims — Coordinated Product Status
 
-*Last updated: Sprint 15 CI fix — 2026-06-15*
+*Last updated: Sprint 16 domain ingest probe — 2026-06-15*
 
 ## 1. Executive Summary
 
 The platform is operating as a **single coordinated product build**.
 The backend (`ttruthdesk-platform`) and framework (`cognitive-loop-framework`) are healthy, fully tested, and stable.
-Sprint 14 is complete. Sprint 15 CI fix is complete: resolved the root cause of all CI failures — `trainingBridge.ts` used a static string literal in a dynamic `import()` for the optional `cognitive-loop-framework` sibling package, causing `TS2307` on CI. Fixed by using a runtime variable. Also migrated `pnpm.patchedDependencies` and `pnpm.overrides` to `pnpm-workspace.yaml` (pnpm v10 requirement). CI is now green on commit `63c2fd2`.
+Sprint 14-15 complete. Sprint 16 in progress: domain-ingest-6h scheduled task confirmed active (task_uid=PrRB8eBgFuH2XA4QowVNAY, last fired 2026-06-15T12:04:39Z). PubMed probe run: 26 papers available across 5 domains (biology: 2, medicine: 10, chemistry: 5, physics: 8, climate: 1). Next scheduled fire: 2026-06-15T18:00Z. BUILT_IN_FORGE_API_KEY is a production-only env var — not available in non-project sandbox sessions. The heartbeat cron fires the endpoint directly in the webdev project context where the key is injected.
 
 **Overall Product Status:** GREEN. The system never returns an empty result. Every enterprise query compounds the knowledge graph and feeds the SLM distillation pipeline. The autonomous ingest loop now runs across 5 scientific domains (biology, medicine, chemistry, physics, climate) and surfaces live coverage metrics to enterprise clients.
 
@@ -16,13 +16,13 @@ Sprint 14 is complete. Sprint 15 CI fix is complete: resolved the root cause of 
 - **Role:** Public product surface, developer documentation, and MCP discovery layer.
 - **Current State:** Green (Tests: 27/27 passing, TSC: clean).
 - **Recent Work (Sprint 14):** Added `status.domains` tRPC procedure (proxies `/api/public/status/domains` with graceful degradation). Added domain coverage widget to `/status` page — sortable table with colour-coded verification rate badges, totals footer, 5-min refresh. Added `domain-ingest-6h` to Scheduled Jobs table.
-- **Next Action:** Sprint 15 (configure 6-hour Manus scheduled task, monitor density growth).
+- **Next Action:** Sprint 17 (add SLM training status row to domain coverage widget once first training run completes).
 
 ### 2.2 Platform Backend: `ttruthdesk-platform`
 - **Role:** Core engine, API provider, autonomous ingestion loop, and live query router.
 - **Current State:** Green (Tests: 2719/2719 passing, TSC: clean, ESLint: clean).
 - **Recent Work (Sprint 14-15):** Added `domainIngestScheduler.ts` — 5-domain autonomous PubMed ingest (3 queries/domain, 400ms rate-limiting, 7/7 tests). Registered `POST /api/scheduled/domain-ingest` (requireCronOrAdmin). Added `GET /api/public/status/domains` with 5-min Cache-Control and 15-key domain label map. Registered `domain-ingest-6h` in `heartbeatRegistrar.ts`. **CI fix (Sprint 15):** migrated pnpm config to `pnpm-workspace.yaml`; fixed `trainingBridge.ts` TS2307 by using runtime import path. CI green on `63c2fd2`.
-- **Next Action:** Sprint 16 (monitor domain density growth, trigger first SLM training run at 50+ pairs/domain).
+- **Next Action:** Sprint 17 (monitor domain density growth, trigger first SLM training run at 50+ pairs/domain). Domain ingest cron active — fires every 6h. 26 papers queued for next tick.
 
 ### 2.3 Framework / R&D: `cognitive-loop-framework`
 - **Role:** Autonomous verification logic and SLM distillation pipelines.
