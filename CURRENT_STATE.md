@@ -8,15 +8,40 @@
 
 | Field | Value |
 | :--- | :--- |
-| **Date Updated** | 2026-06-14 |
-| **Active Track** | `ttruthdesk-platform` + `cognitive-loop-framework` |
-| **Active Sprint** | `sprint-8-pricing-page` |
+| **Date Updated** | 2026-06-15 |
+| **Active Track** | `citation-desk` + `cognitive-loop-framework` |
+| **Active Sprint** | `sprint-9-onboarding-sia-dataset` |
 | **Sprint Status** | DONE ✅ |
-| **Completion Promise** | `PHASE 133 PRICING PAGE — 2708 + 60 TESTS, TSC 0 ERRORS, COMMIT 54b8f9d` |
+| **Completion Promise** | `PHASE C13 ONBOARDING + SIA DATASET GENERATOR — 35 + 68 TESTS, TSC 0 ERRORS, COMMITS 1d7061f + 81e0f70` |
 
 ---
 
 ## What Was Just Done (This Session)
+
+**Sprint 9 completed on citation-desk + cognitive-loop-framework (2026-06-15). ttruthdesk-platform unchanged (2708/2708 still passing).**
+
+### Sprint 9 — citation-desk (commit `1d7061f`)
+
+**Phase C12 — Backend Issue Resolution:**
+- 3 stale `[BACKEND]` items in todo.md resolved: NCBI routing confirmed fixed (ttruthdesk Sprint 6), MCP SSE confirmed correct, verify-claim POST endpoint confirmed working.
+
+**Phase C13 — Onboarding Flow:**
+- **`client/src/pages/Welcome.tsx`** (new file, 409 lines) — 3-step fullscreen onboarding wizard: Step 1 verdict taxonomy (6 verdict cards with colour-coded dots), Step 2 pipeline stages visual (Extract → Resolve → Validate → Score), Step 3 example search queries (3 live-style claim cards with verdict badges). Animated progress breadcrumb, Skip intro link (sets `localStorage.citation_onboarded`), final CTA navigates to /search.
+- **`client/src/App.tsx`** — `/welcome` route renders outside Nav/Footer shell (AppShell routing pattern).
+- **`todo.md`** — Phase C12 + C13 sections added and marked done.
+- 35/35 tests pass, TSC 0 errors.
+
+### Sprint 9 — cognitive-loop-framework (commit `81e0f70`)
+
+**Sprint 7 — SIA Dataset Generation:**
+- **`src/training/siaDatasetGenerator.ts`** (new file) — deterministic synthetic SIA task dataset generator. Seeded mulberry32 PRNG; produces `claims.jsonl` (public) + `ground_truth.jsonl` (private) in exact SIA task schema. Covers all 4 citation states with realistic distribution and confidence ranges. Public and private claim_ids never overlap. `distribution()` method returns state counts.
+- **`tests/training/siaDatasetGenerator.test.ts`** (new file) — 8 tests: schema validation, determinism, seed independence, distribution, directory creation, ID overlap.
+- **`src/training/index.ts`** — `SIADatasetGenerator` + types exported.
+- 68/68 tests passing (+8 new), TSC 0 errors.
+
+---
+
+## What Was Just Done Before (Sprint 8)
 
 **Sprint 8 completed on ttruthdesk-platform (2026-06-14). cognitive-loop-framework unchanged (60/60 still passing).**
 
@@ -149,12 +174,17 @@
 
 **Sprint 7 COMPLETE** (ttruthdesk commit `fa71d9a`, cognitive-loop commit `e40d803`) — 2700 + 60 tests, 0 TS errors.
 
-**Next action — Sprint 8:**
-1. Apply `drizzle/0047_sprint6_data_quality.sql` to production DB (leaked prompt cleanup)
-2. Apply `drizzle/0046_sprint1_sprint2_tables.sql` to production DB — see MIGRATION_RUNBOOK.md
-3. Register ttruthdesk as open dataset on OpenAIRE/BASE (CC BY 4.0) — see OPENAIRE_REGISTRATION.md
-4. Phase 133 — define next new phase (todo.md is now 100% checked)
-5. cognitive-loop-framework Sprint 7 — SIA dataset generation, CorpusWatcher integration tests
+**Sprint 8 COMPLETE** (ttruthdesk commit `54b8f9d`) — 2708 tests, 0 TS errors.
+
+**Sprint 9 COMPLETE** (citation-desk commit `1d7061f`, cognitive-loop commit `81e0f70`) — 35 + 68 tests, 0 TS errors.
+
+**Next action — Sprint 10:**
+1. Apply `drizzle/0048_sprint8_pricing_leads.sql` to production DB
+2. Apply `drizzle/0047_sprint6_data_quality.sql` to production DB (leaked prompt cleanup)
+3. Apply `drizzle/0046_sprint1_sprint2_tables.sql` to production DB — see MIGRATION_RUNBOOK.md
+4. Register ttruthdesk as open dataset on OpenAIRE/BASE (CC BY 4.0) — see OPENAIRE_REGISTRATION.md
+5. citation-desk Phase C14 — define next new phase
+6. cognitive-loop-framework Sprint 8 — CorpusWatcher integration tests with SIADatasetGenerator
 
 ---
 
@@ -173,6 +203,7 @@ The production scientific truth registry at citation.is.
 | sprint-5-phase121-loop-orchestrator | Phase 121 epistemic provenance verified; migration runbook; OpenAIRE registration doc | DONE ✅ |
 | sprint-6-third-pass-audit-fixes | External routes, claims.json error handling, RSS domain, NCBI patterns, OpenAPI verdicts | DONE ✅ |
 | sprint-7-sia-harness-training-module | Phase 132: SIA harness 4→11 tests; training module wired into loop index | DONE ✅ |
+| sprint-8-pricing-page | Phase 133: Pricing page + billing lead capture + pricingLeads DB table | DONE ✅ |
 
 **Blueprint:** `tracks/ttruthdesk-platform/blueprint/`
 
@@ -191,6 +222,7 @@ The autonomous cognitive loop framework — a general architecture for self-buil
 | sprint-5-loop-orchestrator | LoopOrchestrator (5-layer loop), tree-sitter fix, tsconfig fix, 60/60 tests | DONE ✅ |
 | sprint-6-autonomous-training | ClaimsCorpusGenerator, CorpusWatcher, IncrementalTrainer | DONE ✅ |
 | sprint-7-training-module-export | src/training/index.ts + createTrainingPipeline() factory + loop re-exports | DONE ✅ |
+| sprint-8-sia-dataset-generator | SIADatasetGenerator: synthetic claims.jsonl + ground_truth.jsonl for offline SIA evaluation | DONE ✅ |
 
 **Blueprint:** `tracks/cognitive-loop-framework/blueprint/`
 
