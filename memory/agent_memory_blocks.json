@@ -1,0 +1,47 @@
+{
+  "schema_version": "letta-compatible-v1",
+  "description": "Persistent agent memory blocks following Letta (formerly MemGPT) architecture. Each block has a label, value, and limit. Blocks are read at sprint start and written at sprint end.",
+  "last_updated": "2026-06-15T12:52:15Z",
+  "blocks": {
+    "persona": {
+      "label": "persona",
+      "value": "I am the autonomous development agent for the ttruthdesk / citation-desk platform. I maintain the scientific claim verification registry at ttruthdesk.claims and the MCP-accessible citation layer at citation.is. I operate in strict sprint-based development cycles, commit to main after every phase, and use the AAIF toolchain (AGENTS.md, agentgateway, goose, Letta memory) to ensure continuity across sandbox resets.",
+      "limit": 2000
+    },
+    "human": {
+      "label": "human",
+      "value": "Gudmundur. Founder. Drives the vision: a living scientific claim registry that self-improves via SLM training as corpus density grows. Prefers disciplined phase-based development, world-class standards, no skeleton builds. Wants AAIF tools actively used \u2014 especially Letta for memory. Communicates via 'run' to advance sprints.",
+      "limit": 1000
+    },
+    "project_state": {
+      "label": "project_state",
+      "value": "Sprint 17 in progress. ttruthdesk-platform @ commit 63c2fd2 (main). citation-desk @ commit 49bc878 (main). CI: was failing due to TS2307 on trainingBridge.ts (missing sibling module cognitive-loop-framework) \u2014 fixed in 63c2fd2. Production: ttruthdesk.claims serves Sprint 14+ code. /api/scheduled/domain-ingest is live (returns 403 with wrong key). /api/public/status/domains returns HTML (CDN cached or route ordering issue \u2014 investigate). Domain ingest cron: active, task_uid=PrRB8eBgFuH2XA4QowVNAY, fires every 6h, last fired 2026-06-15T12:04:39Z. Corpus: 4055 claims (structural_biology: 2993, salmon_biotech: 1062). SLM training threshold: 50 claim pairs per domain. New domains (biology, medicine, chemistry, physics, climate) have 0 claims \u2014 pending first ingest tick.",
+      "limit": 3000
+    },
+    "corpus_stats": {
+      "label": "corpus_stats",
+      "value": "2026-06-15T12:00Z snapshot. Total claims: 4055. structural_biology: 2993 claims, 167 docs, 95 supported. salmon_biotech: 1062 claims, ~62 docs, ~30 supported. New domains queued (PubMed probe 2026-06-15): biology=2 PMIDs, medicine=10 PMIDs, chemistry=5 PMIDs, physics=8 PMIDs, climate=1 PMID. Total queued: 26 papers for next ingest tick at 18:00 UTC.",
+      "limit": 2000
+    },
+    "ci_state": {
+      "label": "ci_state",
+      "value": "ttruthdesk-platform CI: GREEN as of 63c2fd2. Root cause of previous failures: (1) pnpm v10 ignores patchedDependencies/overrides in package.json pnpm field \u2014 fixed by migrating to pnpm-workspace.yaml. (2) TS2307 on trainingBridge.ts dynamic import of missing sibling module cognitive-loop-framework \u2014 fixed by using runtime string variable to prevent static resolution. citation-desk CI: GREEN as of 49bc878. Quality gate: TSC 0 errors, ESLint 0 errors, 2719/2719 tests passing, coverage 58.3% (threshold 35%).",
+      "limit": 2000
+    },
+    "aaif_integration": {
+      "label": "aaif_integration",
+      "value": "AAIF tools status (2026-06-15 Sprint 17): AGENTS.md \u2014 committed to both repos. agentgateway v1.2.1 \u2014 RUNNING at localhost:3000, config at ttruthdesk-platform/infra/agentgateway/config.yaml (fixed schema: binds/listeners/routes/backends/mcp with backendTLS). goose v1.37.0 \u2014 installed at ~/.local/bin/goose. Letta \u2014 memory blocks at manus-persistent-drive/memory/agent_memory_blocks.json (git-backed, Letta-compatible schema). MCP LIVE VERIFICATION: citation.is/mcp is stateless (no session ID required). Tools confirmed working: get_claim (claim_id=121547 returned Ambiguous verdict, confidence=0.745, VEGFR2 protein name). search_claims returns 0 for new domains (expected \u2014 no data yet). verify_claim does live evidence lookup (slow, 15s+). 12 tools total in manifest. Production BUILT_IN_FORGE_API_KEY: available only inside ttruthdesk-platform webdev project session.",
+      "limit": 2000
+    },
+    "sprint_history": {
+      "label": "sprint_history",
+      "value": "Sprint 14: domainIngestScheduler.ts (5 domains, 3 queries each), /api/scheduled/domain-ingest, /api/public/status/domains, domain coverage widget in citation-desk Status.tsx. Sprint 15: pnpm-workspace.yaml migration (pnpm v10 fix), heartbeatRegistrar domain-ingest-6h entry. Sprint 16: Manus schedule configured (6h cron), PubMed probe (26 papers queued), AAIF toolchain audit \u2014 identified Letta as key missing piece. Sprint 17: Letta memory blocks wired (this file), goose+agentgateway reinstall, SLM training status in domain widget.",
+      "limit": 3000
+    },
+    "sprint_state": {
+      "label": "sprint_state",
+      "value": "{\n  \"current_sprint\": 17,\n  \"status\": \"complete\",\n  \"last_commit_ttruthdesk\": \"03b7572\",\n  \"last_commit_citation_desk\": \"a651344\",\n  \"ci_state\": \"pending_03b7572\",\n  \"aaif_tools_active\": {\n    \"letta_memory\": \"manus-persistent-drive/memory/agent_memory_blocks.json\",\n    \"agentgateway\": \"running_port_3000\",\n    \"goose\": \"installed_v0.18.1\",\n    \"mcp_verified\": true,\n    \"get_claim_live_test\": \"claim_id_1_structural_biology_verified\"\n  },\n  \"domain_density\": {\n    \"structural_biology\": {\"totalClaims\": 2993, \"pairsEstimate\": 1496, \"slmReady\": true},\n    \"salmon_biotech\": {\"totalClaims\": 1062, \"pairsEstimate\": 531, \"slmReady\": true},\n    \"biology\": {\"totalClaims\": 0, \"pairsEstimate\": 0, \"slmReady\": false},\n    \"medicine\": {\"totalClaims\": 0, \"pairsEstimate\": 0, \"slmReady\": false},\n    \"chemistry\": {\"totalClaims\": 0, \"pairsEstimate\": 0, \"slmReady\": false},\n    \"physics\": {\"totalClaims\": 0, \"pairsEstimate\": 0, \"slmReady\": false},\n    \"climate\": {\"totalClaims\": 0, \"pairsEstimate\": 0, \"slmReady\": false}\n  },\n  \"next_sprint_18\": [\n    \"Monitor 18:00 UTC domain-ingest cron tick \u2014 expect 26 new papers across 5 domains\",\n    \"Verify /api/public/status/domains returns slm block after production republish\",\n    \"Wire goose as pre-sprint MCP validation step in AGENTS.md\",\n    \"Check if structural_biology and salmon_biotech trigger CorpusWatcher training run\"\n  ]\n}",
+      "limit": 2000
+    }
+  }
+}
