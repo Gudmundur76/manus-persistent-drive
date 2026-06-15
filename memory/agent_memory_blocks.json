@@ -1,7 +1,7 @@
 {
   "schema_version": "letta-compatible-v1",
   "description": "Persistent agent memory blocks following Letta (formerly MemGPT) architecture. Each block has a label, value, and limit. Blocks are read at sprint start and written at sprint end.",
-  "last_updated": "2026-06-15T21:43:23Z",
+  "last_updated": "2026-06-15T23:04:18Z",
   "blocks": {
     "persona": {
       "label": "persona",
@@ -40,7 +40,7 @@
     },
     "sprint_state": {
       "label": "sprint_state",
-      "value": "{\n  \"sprint\": 25,\n  \"date\": \"2026-06-15\",\n  \"status\": \"COMPLETE\",\n  \"repos\": {\n    \"ttruthdesk-platform\": {\"tests\": 2800, \"lint\": \"clean\", \"tsc\": \"clean\"},\n    \"cognitive-loop-framework\": {\"tests\": 121, \"lint\": \"clean\", \"tsc\": \"clean\"},\n    \"slm-infra-deploy\": {\"tests\": 15}\n  },\n  \"new_files\": [\n    \"server/questionDecomposer.ts\",\n    \"server/questionDecomposer.test.ts\",\n    \"demo-perplexity.ts\",\n    \"docs/sprint25-benchmark.md\"\n  ],\n  \"key_changes\": [\n    \"questionDecomposer: NL question to atomic SPO claims (heuristic + LLM fallback)\",\n    \"verifyClaimRoute: parallel PubMed routing with decomposed queries\",\n    \"demo-perplexity: end-to-end Perplexity partnership demo CLI\",\n    \"BioMCP benchmark: clear differentiation established\"\n  ],\n  \"next_sprint\": \"Sprint 26 \u2014 multi-source routing (PDB + ClinicalTrials.gov + CrossRef)\"\n}",
+      "value": "{\"sprint\": 26, \"date\": \"2026-06-15\", \"status\": \"COMPLETE\", \"repos\": {\"ttruthdesk-platform\": {\"tests\": 2835, \"lint\": \"clean\", \"tsc\": \"clean\"}, \"cognitive-loop-framework\": {\"tests\": 121, \"lint\": \"clean\", \"tsc\": \"clean\"}, \"slm-infra-deploy\": {\"tests\": 15}}, \"new_files\": [\"server/domainClassifier.ts\", \"server/domainRules.ts\", \"server/domainClassifier.test.ts\"], \"modified_files\": [\"server/questionRouter.ts\", \"server/verifyClaimRoute.ts\"], \"key_changes\": [\"domainClassifier: 15 domain rules mapping AtomicClaim to correct source adapter from 29 approved sources\", \"domainRules: extracted rule definitions (structural_biology, clinical_trial, pharmacology, genomics_genetics, food_safety, chemistry, preprint, financial_regulatory, legal, internet_standards, cybersecurity_standards, economics_macro, public_health, climate + fallback)\", \"questionRouter: wired classifyClaim into processQuestion \u2014 domainClassification in result\", \"verifyClaimRoute: classifyClaims wired into NL path \u2014 domainRouting field in response \u2014 apiVersion 1.3\"], \"api_version\": \"1.3\", \"next_sprint\": \"Sprint 27 \u2014 live source adapters for clinvar, clinicaltrials_gov, openfda, rcsb_pdb, world_bank\"}",
       "limit": 2000
     },
     "infrastructure_gaps": {

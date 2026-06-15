@@ -12,7 +12,13 @@ The goal of this project is not to write code. The goal is to build a **stateles
 
 We are not building a generic search engine. We are building a verification layer that sits between AI output and the user.
 
-- **Truth is external:** The system does not decide what is true. It routes claims to authoritative primary sources (PubMed, PDB, ClinicalTrials.gov, CrossRef) and returns their verdict.
+- **Truth is external:** The system does not decide what is true. It routes claims to authoritative primary sources and returns their verdict. The platform currently integrates a 29-source multi-domain verification network, including:
+  - **Biomedical / Life Sciences:** PubMed, Europe PMC, RCSB PDB, UniProt, ClinicalTrials.gov, ClinVar, Cochrane, bioRxiv, OpenFDA, PubChem, ChEMBL
+  - **Research / Academic:** arXiv, OpenAlex, Semantic Scholar, CrossRef, OpenCitations
+  - **Regulatory / Legal:** SEC EDGAR, EUR-Lex, CourtListener, IETF RFC, NIST, EFSA OpenFoodTox
+  - **Economics / Statistics:** World Bank, Eurostat, OECD, OWID, WHO
+  - **Climate:** IPCC
+  - **General:** Wikidata
 - **Provenance is mandatory:** Every verified claim must return a direct citation chain — paper title, PMID, and the exact supporting sentence.
 - **Narrow focus:** We prefer a narrow, highly accurate verification against a single source (e.g., protein data) over broad, ungrounded guesses.
 - **Stateless by default:** The system must verify against live sources. The corpus is a cache and a training substrate, not the source of truth.
@@ -59,33 +65,35 @@ Drift is the enemy of production software. These rules prevent it.
 
 ---
 
-## 4. Sprint 25 Build Plan: The Stateless Oracle Entry Point
+## 4. Sprint 26 Build Plan: Multi-Domain Source Routing
 
-**Context:** Perplexity.ai has confirmed that a stateless verification oracle with sentence-level provenance is highly desirable for their enterprise workflows. However, our current entry point requires a structured claim. To integrate with Perplexity Computer, we must accept natural language questions, decompose them into atomic claims, and verify them in real-time (sub-500ms target).
+**Context:** Sprint 25 successfully built `questionDecomposer.ts`, allowing natural language questions to be broken down into atomic SPO triples. However, currently all decomposed claims are hardcoded to route only to PubMed/EuropePMC. The platform already possesses 29 approved source adapters and 43 vertical implementations. To truly act as a general scientific and regulatory verification oracle, the system must intelligently route each decomposed claim to the correct primary source based on its domain.
 
-**Goal:** Build the Natural Language Decomposition Layer and benchmark latency against BioMCP.
+**Goal:** Wire the `questionDecomposer` output to the full 29-source registry router so every decomposed claim is dispatched to the correct adapter by domain.
 
-### Phase 1: BioMCP Benchmark & Latency Profiling
-- **Action:** Install and test the `biomcp-python` package.
-- **Action:** Profile the latency of our current `verifyClaimRoute.ts` PubMed query.
-- **Deliverable:** A benchmark report comparing our latency and entity resolution against BioMCP, identifying the exact bottleneck preventing sub-500ms responses.
+### Phase 1: AAIF Pre-Sprint Validation
+- **Action:** Read memory blocks, verify MCP live, check production stats, and audit the current source router state.
 
-### Phase 2: Natural Language Decomposition (SPO Extraction)
-- **Action:** Build `questionDecomposer.ts`.
-- **Logic:** Accept a natural language string. Use the existing LLM pipeline (via free tier APIs for seeding/testing) to extract atomic Subject-Predicate-Object (SPO) triples.
-- **Quality Gate:** Must accurately handle complex sentences (e.g., "Does aspirin reduce cardiovascular risk in patients over 70?") and return discrete verifiable claims.
+### Phase 2: Update Development Standards
+- **Action:** Reflect the full 29-source inventory in `DEVELOPMENT_STANDARDS.md` and document the Sprint 26 build plan (Completed).
 
-### Phase 3: Parallel Multi-Source Routing
-- **Action:** Upgrade `verifyClaimRoute.ts` to accept an array of decomposed claims.
-- **Logic:** Route each claim concurrently to the appropriate primary source adapter (PubMed, PDB, etc.) to minimize total request latency.
-- **Quality Gate:** Total roundtrip time for a multi-claim question must be aggressively optimized.
+### Phase 3: Build Domain Classifier (`domainClassifier.ts`)
+- **Action:** Build a classifier that takes an atomic SPO triple and maps it to the correct source adapter(s) from the 29 approved sources.
+- **Logic:** Use keyword heuristics, regex patterns, and LLM fallback to identify domain signals (e.g., "protein" -> RCSB PDB, "GDP" -> World Bank, "trial" -> ClinicalTrials.gov).
 
-### Phase 4: Integration Demo Preparation
-- **Action:** Create a self-contained script (`demo-perplexity.ts`) that simulates a Perplexity Computer workflow: Natural Language Question → Decomposition → Parallel Verification → Verdict + Provenance.
-- **Deliverable:** A working, sub-2-second demo ready to be shown to Perplexity's Head of Developer Platform.
+### Phase 4: Upgrade Question Router (`questionRouter.ts`)
+- **Action:** Wire `domainClassifier` into the routing pipeline.
+- **Logic:** Ensure that instead of defaulting to PubMed, the router queries the specific adapter returned by the classifier.
 
-### Phase 5: AAIF Discipline & Quality Gate
-- **Action:** Run `pnpm ci` on `ttruthdesk-platform`.
-- **Action:** Write Sprint 25 track files (`post_sprint_log.md`).
-- **Action:** Update `CURRENT_STATE.md` and Letta memory blocks.
+### Phase 5: Upgrade Verify Claim Route (`verifyClaimRoute.ts`)
+- **Action:** Update the verification pipeline to handle multi-source verdict aggregation.
+- **Logic:** If a question decomposes into multiple claims across different domains, aggregate the results into a cohesive final verdict with provenance from multiple distinct sources.
+
+### Phase 6: Ralph Loop & Quality Gate
+- **Action:** Write comprehensive Vitest tests for `domainClassifier.ts` and the upgraded router components.
+- **Quality Gate:** Ensure all tests pass, achieving 100% green on `pnpm ci` (typecheck, lint, test).
+
+### Phase 7: AAIF Discipline & Finalization
+- **Action:** Write Sprint 26 track files (`post_sprint_log.md`).
+- **Action:** Update Letta memory blocks.
 - **Action:** Commit and push all repositories.
