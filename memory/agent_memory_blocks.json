@@ -1,7 +1,7 @@
 {
   "schema_version": "letta-compatible-v1",
   "description": "Persistent agent memory blocks following Letta (formerly MemGPT) architecture. Each block has a label, value, and limit. Blocks are read at sprint start and written at sprint end.",
-  "last_updated": "2026-06-15T20:23:49Z",
+  "last_updated": "2026-06-15T21:43:23Z",
   "blocks": {
     "persona": {
       "label": "persona",
@@ -40,7 +40,7 @@
     },
     "sprint_state": {
       "label": "sprint_state",
-      "value": "{\n  \"current_sprint\": 24,\n  \"status\": \"complete\",\n  \"last_commit_ttruthdesk\": \"934bd20\",\n  \"last_commit_cognitive_loop\": \"ae00e6e\",\n  \"ci_state\": \"green\",\n  \"tests_ttruthdesk\": 2772,\n  \"tests_cognitive_loop\": 121,\n  \"tests_slm_infra\": 15,\n  \"domain_density\": {\"biology\": \"active\", \"medicine\": \"active\", \"chemistry\": \"active\", \"physics\": \"active\", \"climate\": \"active\"},\n  \"fixes_this_sprint\": [\"confidenceScore_real_value\", \"pubmed_relevance_filter\", \"memory_block_repair\", \"ci_gate_enforced\", \"lint_zero_errors\", \"tsc_zero_errors\", \"sprint_track_files_created\"],\n  \"next_sprint_25\": [\"dream_state_ast_indexer\", \"production_embeddings\", \"corpus_full_run_4029_claims\", \"opencitations_adapter\"]\n}",
+      "value": "{\n  \"sprint\": 25,\n  \"date\": \"2026-06-15\",\n  \"status\": \"COMPLETE\",\n  \"repos\": {\n    \"ttruthdesk-platform\": {\"tests\": 2800, \"lint\": \"clean\", \"tsc\": \"clean\"},\n    \"cognitive-loop-framework\": {\"tests\": 121, \"lint\": \"clean\", \"tsc\": \"clean\"},\n    \"slm-infra-deploy\": {\"tests\": 15}\n  },\n  \"new_files\": [\n    \"server/questionDecomposer.ts\",\n    \"server/questionDecomposer.test.ts\",\n    \"demo-perplexity.ts\",\n    \"docs/sprint25-benchmark.md\"\n  ],\n  \"key_changes\": [\n    \"questionDecomposer: NL question to atomic SPO claims (heuristic + LLM fallback)\",\n    \"verifyClaimRoute: parallel PubMed routing with decomposed queries\",\n    \"demo-perplexity: end-to-end Perplexity partnership demo CLI\",\n    \"BioMCP benchmark: clear differentiation established\"\n  ],\n  \"next_sprint\": \"Sprint 26 \u2014 multi-source routing (PDB + ClinicalTrials.gov + CrossRef)\"\n}",
       "limit": 2000
     },
     "infrastructure_gaps": {
