@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@ruvector/graph-node": "^2.0.4"
+  }
+}
