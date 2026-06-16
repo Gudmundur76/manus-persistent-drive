@@ -1,7 +1,7 @@
 {
   "schema_version": "letta-compatible-v1",
   "description": "Persistent agent memory blocks following Letta (formerly MemGPT) architecture. Each block has a label, value, and limit. Blocks are read at sprint start and written at sprint end.",
-  "last_updated": "2026-06-15T23:04:18Z",
+  "last_updated": "2026-06-16T00:54:00Z",
   "blocks": {
     "persona": {
       "label": "persona",
@@ -40,7 +40,7 @@
     },
     "sprint_state": {
       "label": "sprint_state",
-      "value": "{\"sprint\": 26, \"date\": \"2026-06-15\", \"status\": \"COMPLETE\", \"repos\": {\"ttruthdesk-platform\": {\"tests\": 2835, \"lint\": \"clean\", \"tsc\": \"clean\"}, \"cognitive-loop-framework\": {\"tests\": 121, \"lint\": \"clean\", \"tsc\": \"clean\"}, \"slm-infra-deploy\": {\"tests\": 15}}, \"new_files\": [\"server/domainClassifier.ts\", \"server/domainRules.ts\", \"server/domainClassifier.test.ts\"], \"modified_files\": [\"server/questionRouter.ts\", \"server/verifyClaimRoute.ts\"], \"key_changes\": [\"domainClassifier: 15 domain rules mapping AtomicClaim to correct source adapter from 29 approved sources\", \"domainRules: extracted rule definitions (structural_biology, clinical_trial, pharmacology, genomics_genetics, food_safety, chemistry, preprint, financial_regulatory, legal, internet_standards, cybersecurity_standards, economics_macro, public_health, climate + fallback)\", \"questionRouter: wired classifyClaim into processQuestion \u2014 domainClassification in result\", \"verifyClaimRoute: classifyClaims wired into NL path \u2014 domainRouting field in response \u2014 apiVersion 1.3\"], \"api_version\": \"1.3\", \"next_sprint\": \"Sprint 27 \u2014 live source adapters for clinvar, clinicaltrials_gov, openfda, rcsb_pdb, world_bank\"}",
+      "value": "{\n  \"sprint\": 27,\n  \"status\": \"COMPLETE\",\n  \"goal\": \"Agent orchestrator + NCBI adapter + Agent UI + biology query fix\",\n  \"commit\": \"fc868b6\",\n  \"repos\": {\n    \"ttruthdesk-platform\": {\n      \"tests\": 2855,\n      \"test_files\": 247,\n      \"typecheck\": \"clean\",\n      \"lint\": \"clean\"\n    }\n  },\n  \"new_files\": [\n    \"server/agentOrchestrator.ts\",\n    \"server/agentOrchestrator.test.ts\",\n    \"server/ncbiAdapter.ts\",\n    \"server/ncbiAdapter.test.ts\",\n    \"client/src/pages/Agent.tsx\"\n  ],\n  \"endpoints_added\": [\"POST /api/public/agent\"],\n  \"next_sprint\": \"Sprint 28: latency benchmark + response caching targeting <500ms\"\n}",
       "limit": 2000
     },
     "infrastructure_gaps": {
