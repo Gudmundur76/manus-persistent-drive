@@ -788,3 +788,34 @@ Both files committed to `protein-truth-desk` at commit `771406f`. Every future a
 - AAIF toolchain (AGENTS.md, agentgateway, MCP) adopted as project standards
 - Spec Kit loop engineering adopted as sprint discipline
 
+
+---
+
+## Sprint 29 Brief — Full-Adapter Citation Search Engine (2026-06-16)
+
+**Status:** READY TO BUILD — spec written, not yet implemented.
+**Full spec:** `sprints/sprint-29-brief.md`
+
+### The problem
+`/api/citation-search/stream` is live on `ttruthdesk.claims` but not committed to the repo. It only queries 6 of 42 registered adapters. The domain classifier and question decomposer exist but are not wired into the search pipeline.
+
+### The goal
+Build `server/citationSearchRoute.ts` — a properly committed, tested route that:
+1. Decomposes queries via `questionDecomposer.ts` → AtomicClaim[]
+2. Classifies claims via `domainClassifier.ts` → SourceRoute[]
+3. Queries all relevant adapters in parallel via Promise.allSettled()
+4. Synthesises a verdict and streams 4 SSE events in the exact shape the frontend expects
+5. Calls `triggerAutonomousIngest()` in background to grow the corpus
+
+### Why this matters
+With all 42 adapters wired, citation.is becomes the only system that can verify a scientific claim against the full breadth of authoritative sources simultaneously — PubMed, OpenAlex, CrossRef, Cochrane, NOAA, IPCC, FRED, IMF, EUR-Lex, ClinVar, PubChem, and 31 more — in a single query, with a unified verdict and confidence score.
+
+### Product vision
+citation.is is the scientific grounding layer for the internet. The same infrastructure role that DNS plays for domains and CrossRef plays for DOIs — but for scientific claims. Sprint 29 is the step that makes this true across all domains.
+
+### Definition of done
+- `server/citationSearchRoute.ts` with ≥12 tests, registered in `index.ts`
+- All 2,855+ tests green, TSC clean, ESLint clean
+- Live at `ttruthdesk.claims/api/citation-search/stream` with correct SSE shape
+- `citation.is` homepage HeroSearch working end-to-end in production
+- Memory repo updated with sprint result
