@@ -687,3 +687,85 @@ All 5 phases delivered in one sprint with strict Ralph Wiggum TDD loop.
 
 ### Completion Promise
 "Sprint 0 complete: rate-limit persisted, verdict flips visible, dream loop gated, embeddings backfillable."
+
+---
+
+## Session: 2026-06-16 — Phase 133 citation.is Perplexity-Style Search Engine
+
+### Context
+Picked up after Sprint 20 + pipeline audit fixes. Goal: build citation.is Perplexity-style search into ttruthdesk-platform and log everything to memory repo.
+
+### Commits merged since last memory log (ttruthdesk-platform)
+
+- Sprint 0 (2026-06-14): Persistent rate limiter (DB-backed), verdict flip dispatch, dream safety gate (AUTO_PROMOTE_THRESHOLD=0.75), embedding schema + backfill endpoint
+- Sprint 0 fix: Remove in-memory Maps, move backfill to /api/scheduled/
+- citations.forClaim + /api/public/stats endpoint
+- Sprint 1: Training flywheel, reactive cascades, self-build loop + 4 autonomous repair commits
+- Sprint 2: Phase 115 citation graph scoring in verdict pipeline
+- Sprint 3: Phase 116 selfCitationFraction + Phase 117 contradiction API
+- Public REST endpoints for verticals/leaderboard/contradictions, single-claim ID fix, verdictRationale prompt sanitisation
+- Sprint 4: Phase 118/119/120 — claim history, provenance, batch verify endpoints
+- Sprint 5: Phase 121 verified complete; migration runbook + OpenAIRE registration doc
+- Sprint 6: Third-pass audit fixes — external routes, claims.json, RSS, NCBI, OpenAPI
+- Sprint 7: Phase 132 — SIA harness test expansion + training module wiring + stale backlog cleanup
+- MCP SSE flushHeaders, NCBI organism routing, claim deduplication, phase115 test
+- Pricing page + billing.requestAccess tRPC procedure
+- Sprint 11: citation.is MCP branding + @citation-is/mcp-server package
+- AGENTS.md + agentgateway proxy config
+- Sprint 13: Wire SLM distillation pipeline into autonomous ingest loop
+- Sprint 14: Domain-ingest scheduler + status/domains endpoint; register domain-ingest-6h
+- pnpm config migration to pnpm-workspace.yaml; merge sprints 11-15
+- SLM training progress to /api/public/status/domains
+- Wire AAIF toolchain as mandatory pre-sprint validation
+- manually_reviewed filter to claims endpoint
+- Sprint 20 Files 1-4: verify_claim pipeline fix, domain expansion signals, entity resolve endpoint, MCP listing plan
+- Sprint 21: SPO triple, Crossref retraction, NOAA+FRED adapters
+- Merge sprints 16-21; pipeline audit fixes (verdictMethod enum, confidence thresholds, test mocks)
+
+### Phase 133: citation.is Perplexity-Style Search Engine COMPLETE
+
+Commit: 6653bf9 — 2026-06-16
+Checkpoint: manus-webdev://6653bf9c
+Test suite: 2761/2761 GREEN, TSC clean, ESLint clean
+
+Backend — server/citationSearchRoute.ts:
+- GET /api/citation-search/stream?q=<query> SSE endpoint
+- Stage 1 (stage:decompose): LLM extracts primary verifiable claim
+- Stage 2 (stage:evidence): parallel fan-out to 6 adapters (OpenAlex, Semantic Scholar, CrossRef, Europe PMC, Cochrane, PubChem)
+- Stage 3 (stage:answer): LLM synthesises cited answer + verdict
+- final event: { query, claim, answer, verdict, confidence, sources[], adapterCount }
+- Rate limit: 20 req/hr per IP; Bearer API key holders exempt
+
+Frontend — client/src/pages/CitationSearch.tsx:
+- Route: /citation-search
+- Dark Perplexity-style UI
+- Landing state with 5 example queries
+- Header search bar for follow-up questions
+- Three-step stage progress indicator
+- Colour-coded verdict panel (emerald/amber/red/grey)
+- Source cards (adapter, title, journal, year, confidence, link)
+- citation.is added to DashboardLayout sidebar (BookOpen icon, position 3)
+
+Tests — server/citationSearchRoute.test.ts:
+- 12 Vitest tests: rate limiter (5) + input validation (7), all passing
+
+### Strategic Decision: citation.is as Standalone Frontend
+
+Build citation.is as a separate public-facing frontend (React + Vite, no tRPC, no auth) calling ttruthdesk.claims API. Mirrors Gudmundur76/citation-desk repo pattern.
+
+Handoff for citation-desk build:
+- Endpoint: GET https://ttruthdesk.claims/api/citation-search/stream?q=<query>
+- SSE stages: stage:decompose, stage:evidence, stage:answer, final
+- Design: clean white/light academic — Inter font, sharp typography, subtle source card borders
+- No auth required; rate limit 20/hr enforced by backend
+- Bind citation.is domain after publishing
+
+### Current State
+
+| Component | Status | Commit |
+|---|---|---|
+| ttruthdesk-platform | GREEN 2761/2761 | 6653bf9 |
+| citation-desk (standalone) | Build in progress | 518dff9 |
+| manus-persistent-drive | Updated | this commit |
+
+Next: Build citation-desk standalone frontend, bind citation.is domain, Sprint 22 adapter expansion.
