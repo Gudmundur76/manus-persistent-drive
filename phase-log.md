@@ -769,3 +769,22 @@ Handoff for citation-desk build:
 | manus-persistent-drive | Updated | this commit |
 
 Next: Build citation-desk standalone frontend, bind citation.is domain, Sprint 22 adapter expansion.
+
+---
+
+## Sprint 133 — Addendum: Governing Constitution (16 Jun 2026)
+
+**CLAUDE.md** updated — citation.is governing constitution prepended as Section 0. Covers: product identity, four non-negotiable principles, domain architecture, out-of-scope list, finish line definition, AAIF standards (AGENTS.md, MCP, agentgateway), and Spec Kit loop engineering rules.
+
+**AGENTS.md** updated — AAIF-standard header added. Covers: product identity table, SSE event shape for `/api/citation-search/stream`, Spec Kit loop summary, and in-scope focus statement.
+
+Both files committed to `protein-truth-desk` at commit `771406f`. Every future agent session reading these files will have the full governing context without needing to re-read the PDF or the memory repo first.
+
+**Key decisions logged:**
+- citation.is is the product; ttruthdesk is the internal engine name
+- ttruthdesk.claims domain to be retired over time in favour of api.citation.is
+- notus.is is a separate frontend calling the same backend — not a merge
+- Notus, Lagasafn, fishing vertical, new SLM runs are all out of scope until citation.is ships
+- AAIF toolchain (AGENTS.md, agentgateway, MCP) adopted as project standards
+- Spec Kit loop engineering adopted as sprint discipline
+
