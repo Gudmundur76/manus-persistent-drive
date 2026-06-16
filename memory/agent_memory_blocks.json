@@ -1,7 +1,7 @@
 {
   "schema_version": "letta-compatible-v1",
   "description": "Persistent agent memory blocks following Letta (formerly MemGPT) architecture. Each block has a label, value, and limit. Blocks are read at sprint start and written at sprint end.",
-  "last_updated": "2026-06-16T00:54:00Z",
+  "last_updated": "2026-06-16T01:22:57Z",
   "blocks": {
     "persona": {
       "label": "persona",
@@ -40,7 +40,7 @@
     },
     "sprint_state": {
       "label": "sprint_state",
-      "value": "{\n  \"sprint\": 27,\n  \"status\": \"COMPLETE\",\n  \"goal\": \"Agent orchestrator + NCBI adapter + Agent UI + biology query fix\",\n  \"commit\": \"fc868b6\",\n  \"repos\": {\n    \"ttruthdesk-platform\": {\n      \"tests\": 2855,\n      \"test_files\": 247,\n      \"typecheck\": \"clean\",\n      \"lint\": \"clean\"\n    }\n  },\n  \"new_files\": [\n    \"server/agentOrchestrator.ts\",\n    \"server/agentOrchestrator.test.ts\",\n    \"server/ncbiAdapter.ts\",\n    \"server/ncbiAdapter.test.ts\",\n    \"client/src/pages/Agent.tsx\"\n  ],\n  \"endpoints_added\": [\"POST /api/public/agent\"],\n  \"next_sprint\": \"Sprint 28: latency benchmark + response caching targeting <500ms\"\n}",
+      "value": "{\"sprint\": 28, \"goal\": \"Code review fixes: rate limiting, batched NCBI efetch, LRU cache, PDB protein name extraction, input validation\", \"last_commit\": \"6130a57\", \"tests_passing\": 2855, \"production_status\": \"live\", \"corpus_claims\": 4165}",
       "limit": 2000
     },
     "infrastructure_gaps": {
