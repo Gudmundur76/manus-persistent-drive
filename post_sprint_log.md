@@ -197,3 +197,25 @@ citation-desk main:
 - TypeScript: 0 errors (both repos)
 - Tests: 3,022 (backend) + 35 (frontend) = 3,057 total passing
 - All coverage thresholds met
+
+---
+
+## Full Push + CI Hardening (2026-06-17 — end of Phase 134)
+
+### All repos fully pushed to GitHub
+
+| Repo | HEAD | All branches on origin |
+|------|------|------------------------|
+| `ttruthdesk-platform` | `2c4a914` | ✅ |
+| `citation-desk` | `f988892` | ✅ |
+| `manus-persistent-drive` | this commit | ✅ |
+
+### ttruthdesk-platform branches on origin
+`main`, `sprint-29` through `sprint-38`, `chore-ci-hardening` — all present.
+
+### CI hardening — what was added
+- `.husky/pre-push`: runs `pnpm check && pnpm lint` on every push (< 15s). Blocks push if either fails.
+- `scripts/ci-local.sh`: full Quality Gate simulation. `pnpm ci:local` (full) / `pnpm ci:local:fast` (skip coverage).
+- `package.json`: `ci:local` and `ci:local:fast` scripts added.
+- Root cause of CI failure: `lint-staged` only lints files in current commit; unused variable from earlier commit was invisible. Pre-push hook now lints full codebase.
+- CI run `27696323430`: ✅ Quality Gate passing after hardening.

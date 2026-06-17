@@ -65,12 +65,17 @@ Phase C19 complete: in-place hero citation search shipped to citation.is. The ho
 - **Role:** Core engine, API provider, autonomous ingestion loop, citation search, and live query router.
 - **Repo:** `Gudmundur76/ttruthdesk-platform`
 - **Production URL:** https://ttruthdesk.claims (internal engine — to be retired in favour of api.citation.is)
-- **Current State:** GREEN — 2,855 tests passing (Sprint 28). TSC clean.
-- **Last Known Commit:** `6653bf9` (Sprint 28 — citation search route deployed)
+- **Current State:** GREEN — 3,022 tests passing (Sprint 38). TSC clean. CI ✅
+- **Last Known Commit:** `2c4a914` (CI hardening — pre-push lint gate + ci:local script)
 
-**Sprint 38 (latest — 2026-06-17):**
+**CI Hardening (latest — 2026-06-17):**
+- `pre-push` Husky hook: TSC + full ESLint on every push (< 15s)
+- `scripts/ci-local.sh`: local Quality Gate simulation (`pnpm ci:local` / `pnpm ci:local:fast`)
+- Commit: `2c4a914` — merged to main, CI ✅
+
+**Sprint 38 (2026-06-17):**
 - E2E integration tests for adapter→classifier→synthesizer chain (22 new tests)
-- Branch: `sprint-38-e2e-integration` — ready to merge
+- Branch: `sprint-38-e2e-integration` — merged to main
 
 **Sprint 37 (2026-06-17):**
 - IEA, IRENA, USGS adapters (energy + earth_science domains)
@@ -171,9 +176,9 @@ Phase C19 complete: in-place hero citation search shipped to citation.is. The ho
 
 | Repo | Purpose | Last Push |
 |---|---|---|
-| `Gudmundur76/citation-desk` | Frontend codebase | Phase C19 — d10a794 |
-| `Gudmundur76/ttruthdesk-platform` | Backend codebase | Sprint 28 — 6653bf9 |
-| `Gudmundur76/manus-persistent-drive` | Session state, phase log, memory | This update — 2026-06-16 |
+| `Gudmundur76/citation-desk` | Frontend codebase | Sprint 39 — f988892 |
+| `Gudmundur76/ttruthdesk-platform` | Backend codebase | CI hardening — 2c4a914 |
+| `Gudmundur76/manus-persistent-drive` | Session state, phase log, memory | Phase 134 complete — 2026-06-17 |
 | `Gudmundur76/memorydesk` | Cross-project AI memory layer | Not updated this session |
 
 ---
