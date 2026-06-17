@@ -252,3 +252,4 @@ Every paper ingested by the discovery loop was extracted using a structural biol
 1. Apply DB migration `0049` to production (`ALTER TABLE claims MODIFY COLUMN claimType varchar(64) NOT NULL`)
 2. Run `POST /api/admin/backfill-domain-claims` against production to re-extract all existing 0-claim documents with correct domain prompts
 3. Monitor next discovery loop run — should produce real claims for neuroscience/economics/energy papers
+---COCHRANE FIX MERGED TO MAIN (7688d37) — CI green---

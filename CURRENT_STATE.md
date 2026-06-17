@@ -29,7 +29,7 @@ The backend (`ttruthdesk-platform`) and frontend (`citation-desk`) are healthy, 
 Phase C19 complete: in-place hero citation search shipped to citation.is. The homepage now streams live verified answers directly from the hero panel. Manus checkpoint `8b259ceb`. GitHub mirror at `d10a794`. CI fully green.
 
 **Overall Product Status:** GREEN.
-- Backend: **3,054 tests passing (Sprint 40)**. TSC clean. 61 adapters. Sprints 32–40 merged to main (`0a908ce`). CI ✅ green.
+- Backend: **3,054 tests passing (Sprint 40)**. TSC clean. 61 adapters. Sprints 32–40 merged to main (`7688d37`). CI ✅ green.
 - Frontend: **35/35 tests passing (Sprint 39 / Phase C20)**. TSC clean. Published at citation.is (`f988892`).
 - Live corpus: 4,165 claims, 856 verified, 291 source documents.
 
