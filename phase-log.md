@@ -852,3 +852,18 @@ n8n was formally removed from the stack. Pipedream covers all automation needs w
 
 Files changed: `server/_core/index.ts` (keep-warm handler), `scripts/start-goose-acp.sh` (new), `MANUS_PROJECT_INSTRUCTIONS.md` (new), `~/.config/goose/config.yaml` (sandbox-local).
 
+
+---
+
+## Phase 134 — CI Fixes + CRON_SECRET + Sprint 40 Sync (17 Jun 2026)
+
+**GitHub commits (ttruthdesk-platform main):** CI quality gate fix (cyclomatic complexity 29→18), memory leak fix (rateBuckets cleanup interval), `641f2b7` CRON_SECRET middleware, `328ef05` CRON_SECRET env var.
+
+**Manus internal repo (protein-truth-desk S3):** `a3872df` CRON_SECRET middleware, `d1d657e` domainIngestJobHandler fix, `1b467f2` llm_provider_quality camelCase SQL fix, `b041f8d` Sprint 40 sync.
+
+**DB:** `ALTER TABLE claims MODIFY COLUMN claimType varchar(64)` applied. 74 new domain-aware claims backfilled.
+
+**CRITICAL publish command (use when webdev_save_checkpoint fails):**
+`curl -s -X POST "https://api.manus.ai/v2/website.publish" -H "x-manus-api-key: $MANUS_API_KEY" -H "Content-Type: application/json" -d '{"website_id":"5R5rZPYgTj2s3EMJSc7MVm","visibility":"public"}'`
+
+website_id=5R5rZPYgTj2s3EMJSc7MVm | Manus Project ID=CAGYiDGiLfcx6Ssbj3njdD | Live=6653bf9c (Sprint 40 NOT deployed yet)
