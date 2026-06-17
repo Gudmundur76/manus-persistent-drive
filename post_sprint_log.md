@@ -139,3 +139,61 @@ All three branches merge cleanly — verified in sprint-38 branch which already 
 | Coverage branches | ✅ 72.73% ≥ 70% threshold |
 | Coverage functions | ✅ 73.04% ≥ 71% threshold |
 | Coverage lines | ✅ 60.09% ≥ 58% threshold |
+
+---
+
+## Sprint 39 — Frontend Domain Wiring (Phase C20)
+
+**Repo:** `citation-desk`  
+**Branch:** `sprint-39-energy-frontend` → merged to `main`  
+**Commit:** `f988892`  
+**Tests:** 35 passing / 0 failing  
+**TypeScript:** 0 errors
+
+### What was built
+
+**1. `client/src/lib/utils.ts` — `domainLabel` map expanded**
+
+Added display labels for all Sprint 32–37 domains:
+
+| Domain key | Display label |
+|---|---|
+| `food_safety` | Food Safety |
+| `economics_macro` | Macroeconomics |
+| `legal` | Law & Regulation |
+| `molecular_biology` | Molecular Biology |
+| `social_science` | Social Science |
+| `energy` | Energy |
+| `earth_science` | Earth Science |
+
+The existing fallback (`domain.replace(/_/g, ' ').replace(/\b\w/g, ...)`) already handled unknown domains gracefully, but explicit entries ensure correct capitalisation and human-friendly names.
+
+**2. `client/src/pages/SearchPage.tsx` — DOMAINS filter list expanded**
+
+The domain filter pill row in the search UI now includes all 12 domains:
+`structural_biology`, `salmon_biotech`, `genomics`, `clinical_trials`, `nutrition`, `food_safety`, `economics_macro`, `legal`, `molecular_biology`, `social_science`, `energy`, `earth_science`
+
+Users can now filter search results by energy or earth science domain directly from the search filter panel.
+
+**3. `client/src/pages/CitationHome.tsx` — hero example queries expanded**
+
+Added 3 new example queries to the hero search rotation (total: 6, rotates every 10 seconds):
+- `Did global renewable energy capacity exceed 3 terawatts in 2023?` → routes to IEA adapter
+- `What was the magnitude of the 2023 Turkey-Syria earthquake?` → routes to USGS adapter
+- `Does creatine supplementation improve athletic performance?` → routes to sports nutrition adapter
+
+### Merge order completed this session
+
+```
+ttruthdesk-platform main:
+  65d39de = sprint-36 + sprint-37 + sprint-38 merged
+
+citation-desk main:
+  f988892 = sprint-39 (energy/earth_science frontend wiring)
+```
+
+### Quality gate
+
+- TypeScript: 0 errors (both repos)
+- Tests: 3,022 (backend) + 35 (frontend) = 3,057 total passing
+- All coverage thresholds met

@@ -29,8 +29,8 @@ The backend (`ttruthdesk-platform`) and frontend (`citation-desk`) are healthy, 
 Phase C19 complete: in-place hero citation search shipped to citation.is. The homepage now streams live verified answers directly from the hero panel. Manus checkpoint `8b259ceb`. GitHub mirror at `d10a794`. CI fully green.
 
 **Overall Product Status:** GREEN.
-- Backend: **3,022 tests passing (Sprint 38)**. TSC clean. 61 adapters. Sprints 32–38 complete.
-- Frontend: 35/35 tests passing (Phase C19). TSC clean. Published at citation.is.
+- Backend: **3,022 tests passing (Sprint 38)**. TSC clean. 61 adapters. Sprints 32–38 merged to main (`65d39de`).
+- Frontend: **35/35 tests passing (Sprint 39 / Phase C20)**. TSC clean. Published at citation.is (`f988892`).
 - Live corpus: 4,165 claims, 856 verified, 291 source documents.
 
 ---
@@ -120,16 +120,13 @@ Phase C19 complete: in-place hero citation search shipped to citation.is. The ho
 ### Phase C10–C19 (citation-desk) ✅ COMPLETE
 (v2 proxy, analytics, agent headers, registry, search, claim detail, verticals, developer hub, RAG guide, in-place hero search)
 
-### Sprints 29–38 ✅ COMPLETE (2026-06-17)
-(Citation search SSE, Sprint 32–35 adapter merges, Sprint 36 coverage push, Sprint 37 energy/earth_science adapters, Sprint 38 E2E integration tests)
+### Sprints 29–39 / Phase C20 ✅ COMPLETE (2026-06-17)
+(Citation search SSE, Sprint 32–35 adapter merges, Sprint 36 coverage push, Sprint 37 energy/earth_science adapters, Sprint 38 E2E integration tests, Sprint 39 frontend domain wiring)
 
-### Next: Sprint 39 / Phase C20
-- **Merge sprint-36 → main** (PR ready)
-- **Merge sprint-37 → main** (PR ready, rebase after #36)
-- **Merge sprint-38 → main** (PR ready, rebase after #37)
-- Wire new energy/earth_science adapters into citation.is frontend search UI
-- Ensure IEA/USGS citations surface in SSE stream for energy/geology queries
-- Update `/developers` page to lead with MCP + API capabilities
+### Next: Sprint 40 / Phase C21
+- E2E smoke test on staging: full adapter → classifier → synthesizer → SSE stream against live ttruthdesk.claims API
+- Update `/developers` page to lead with MCP + API capabilities (remove data count claims)
+- Update all meta descriptions to infrastructure framing
 - Consider: `api.citation.is` subdomain routing to ttruthdesk.claims
 - Consider: notus.is as separate frontend calling same backend
 
