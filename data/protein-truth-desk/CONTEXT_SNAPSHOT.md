@@ -1,8 +1,8 @@
 # CONTEXT_SNAPSHOT.md — Full Project State
 
-> **Generated:** 2026-06-15T19:11:39.803Z
-> **Branch:** main
-> **Last commit:** [33mb6c3c40[m fix(ingest): replace journal filters with MeSH terms for 10x PubMed yield
+> **Generated:** 2026-06-17T03:42:55.092Z
+> **Branch:** sprint-35-social-science
+> **Last commit:** [33mdbc675d[m fix(ci): fix economics route ordering and APA ISSN typo
 > **READ THIS FIRST** at the start of every session.
 
 ---
@@ -124,6 +124,7 @@ Router file: `server/routers.ts`
 - `server/adminAnalytics.ts`
 - `server/agentFeedback.ts`
 - `server/agentIngestionEndpoint.ts`
+- `server/agentOrchestrator.ts`
 - `server/alertDispatcher.ts`
 - `server/analysisPipeline.ts`
 - `server/answerRoute.ts`
@@ -161,7 +162,9 @@ Router file: `server/routers.ts`
 - `server/discoveryAgent.ts`
 - `server/discoveryEngine.ts`
 - `server/discoveryLoopJob.ts`
+- `server/domainClassifier.ts`
 - `server/domainIngestScheduler.ts`
+- `server/domainRules.ts`
 - `server/dreamStagingRoute.ts`
 - `server/embedRoutes.ts`
 - `server/embedWidgetRoute.ts`
@@ -190,6 +193,7 @@ Router file: `server/routers.ts`
 - `server/micronDeploy.ts`
 - `server/misrepresentationClassifier.ts`
 - `server/monitoringJob.ts`
+- `server/ncbiAdapter.ts`
 - `server/openCitationsEnricher.ts`
 - `server/openfdaAdapter.ts`
 - `server/orchestratorTickJob.ts`
@@ -206,6 +210,7 @@ Router file: `server/routers.ts`
 - `server/pubmedIngestJob.ts`
 - `server/qualityPassJob.ts`
 - `server/qualityScorerJob.ts`
+- `server/questionDecomposer.ts`
 - `server/questionRouter.ts`
 - `server/reEvaluationEngine.ts`
 - `server/reportGenerator.ts`
@@ -254,6 +259,7 @@ Router file: `server/routers.ts`
 - `client/src/pages/AdminCrons.tsx`
 - `client/src/pages/AdminHarness.tsx`
 - `client/src/pages/AdminVerticals.tsx`
+- `client/src/pages/Agent.tsx`
 - `client/src/pages/AlertSettings.tsx`
 - `client/src/pages/ApiDocs.tsx`
 - `client/src/pages/ApiKeys.tsx`
@@ -304,7 +310,11 @@ Routes registered in: `client/src/App.tsx`
 ## ⏱️ Heartbeat Jobs (Scheduled)
 
 ```
-unknown
+"name": "citation-keepalive",
+      "name": "source-version-agent",
+      "name": "citation-is-ingestion",
+      "name": "citation-is-warmup",
+      "name": "claim-digest-hourly",
 ```
 
 Scheduled endpoints in: `server/_core/index.ts` (search for `/api/scheduled/`)
@@ -345,14 +355,14 @@ clean
 
 **Tests:**
 ```
-Start at  19:11:41
-   Duration  26.77s (transform 5.60s, setup 0ms, collect 30.75s, tests 36.07s, environment 59ms, prepare 21.08s)
+Start at  03:42:56
+   Duration  28.45s (transform 5.99s, setup 0ms, collect 32.02s, tests 39.80s, environment 68ms, prepare 22.30s)
 ```
 
 **Lint:**
 ```
-ESLint found too many warnings (maximum: 0).
- ELIFECYCLE  Command failed with exit code 1.
+> protein-truth-desk@1.0.0 lint /home/ubuntu/ttruthdesk-platform
+> eslint . --ext .ts,.tsx --max-warnings 0
 ```
 
 **Coverage thresholds:**
@@ -373,25 +383,21 @@ unknown
 ## 📝 Recent Git History
 
 ```
-[33mb6c3c40[m fix(ingest): replace journal filters with MeSH terms for 10x PubMed yield
-[33mfbc2d37[m feat(sprint22): rss feed, imf adapter, fix verticalDomain ts error
-[33mf9a2a87[m docs(docs): OpenCitations export, AgentStack guide, Perplexity outreach
-[33m27c3fef[m feat(sprint-21): SPO triple, Crossref retraction, NOAA+FRED adapters
-[33mced06a8[m docs(sprint20): File 4 — MCP listing plan + Crossref/Scite integration spec
-[33m8864347[m feat(api): Sprint 20 File 3 — entity resolve endpoint + developer asks documentation
-[33m7c26356[m feat(pipeline): Sprint 20 File 2 — domain expansion signals for medicine, climate, economics, law
-[33m2f23fb7[m feat(sprint20): fix verify_claim pipeline, search_claims, contradictions, corpus-growth
-[33mbbd553b[m feat(api): add manually_reviewed filter to claims endpoint
-[33m36e381c[m docs(agents): wire AAIF toolchain as mandatory pre-sprint validation
+[33mdbc675d[m fix(ci): fix economics route ordering and APA ISSN typo
+[33ma9e73b2[m fix(who_iris): reduce lookupEvidence complexity below 20 by extracting helpers
+[33m2d92f29[m fix: route ordering violations + SOURCE_WHITELIST entries for sprints 30-35
+[33m5091617[m feat(sprint-35): social science adapters — Campbell, APA PsycArticles, SSRN + 3 new domain rules (58 total, 21 new tests)
+[33m642f39e[m feat(sprint-34): molecular biology adapters — AlphaFold, NIST Chemistry + domain rules (55 total, 16 new tests)
+[33m6799446[m feat(sprint-33): economics/law adapters — BIS Statistics, US Code + domain rules (53 total, 14 new tests)
+[33mf9ccb42[m fix(sprint-32): add usda_fooddata/codex/noaa/eea/nasa_earthdata/epa/fred/imf to SourceId, wire usda_fooddata+codex into food_safety domain rule, add index.ts imports for sprints 30-32
+[33m5a8d090[m feat(sprint-32): nutrition/food-safety adapters — USDA FoodData Central, CODEX Alimentarius + nutrition/food_safety domain rules (51 total, 14 new tests)
+[33m508f68a[m feat(sprint-31): climate/environment adapters — NASA Earthdata, EEA, EPA + environmental_science domain rule (49 total, 14 new tests)
+[33md1840f5[m feat(sprint-30): biomedical adapters — openfda_adverse, NICE, WHO IRIS, EMBASE + domain rules
 ```
 
 **Uncommitted changes:**
 ```
-[32mM[m  CONTEXT_SNAPSHOT.md
-[32mM[m  server/_core/env.ts
-[32mA[m  server/verdictWebhookRoute.test.ts
-[32mA[m  server/verdictWebhookRoute.ts
-[32mM[m  server/verifyClaimRoute.ts
+[31mM[m CONTEXT_SNAPSHOT.md
 ```
 
 ---
