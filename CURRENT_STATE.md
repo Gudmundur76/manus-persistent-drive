@@ -1,6 +1,6 @@
 # Current State
 
-*Last updated: Phase C19 complete — 2026-06-16*
+*Last updated: Phase 134 complete — 2026-06-17 | Phase C19 also complete — 2026-06-16*
 
 ## 0. Product Definition
 
@@ -166,3 +166,18 @@ Phase C19 complete: in-place hero citation search shipped to citation.is. The ho
 5. **Ralph Wiggum Loop:** All TDD feature development uses the Ralph loop pattern (write failing test → fix → green → commit).
 6. **citation.is is the product name.** ttruthdesk is the internal engine. ttruthdesk.claims domain to be retired in favour of api.citation.is over time.
 7. **Out of scope until citation.is is fully shipped:** notus.is merge, Lagasafn, fishing vertical, new SLM runs.
+
+---
+
+## Phase 134 Agent Environment (17 Jun 2026)
+
+| Component | Detail |
+|---|---|
+| Keep-warm cron | `keep-warm-5min` (task_uid: `nhXNQ4NMg8XW2BctURkjvt`) — every 5 min, `/api/scheduled/keep-warm` |
+| Goose ACP server | port 3284, daemon, `http://localhost:3284/health` → `ok` |
+| ttruthdesk MCP | HTTP extension at `https://ttruthdesk.claims/api/mcp` |
+| Goose config | `~/.config/goose/config.yaml` — openrouter / gpt-4o-mini |
+| Startup script | `protein-truth-desk/scripts/start-goose-acp.sh` |
+| System prompt | `protein-truth-desk/MANUS_PROJECT_INSTRUCTIONS.md` — paste into Settings → Project Instructions |
+| n8n | Removed from stack — Pipedream covers all automation |
+

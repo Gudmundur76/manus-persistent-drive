@@ -840,3 +840,15 @@ Complete 7-sprint roadmap to bring citation.is from 42 to 58 adapters, covering 
 **Acceptance criterion for all new sources:** Authoritative, structured, primary-source evidence accessible via queryable REST API. No secondary aggregators, no news sources, no synthesisers.
 
 **Known gap fixed in Sprint 30:** `openfda` (adverse events / FAERS) is declared as a SourceId in domainClassifier.ts but has no adapter file. Only `openfda_labels` (drug labels) is implemented.
+
+## Phase 134 — Always-On Governed Agent Environment (17 Jun 2026)
+
+**Session type:** Infrastructure / agent environment setup
+**Gate:** Keep-warm cron live | Goose ACP server live | System prompt written | All services verified
+
+Phase 134 built the always-on governed agent environment for citation.is. Three components were delivered: a keep-warm heartbeat cron (`keep-warm-5min`, task_uid `nhXNQ4NMg8XW2BctURkjvt`) firing every 5 minutes at `/api/scheduled/keep-warm` to prevent sandbox hibernation; goose 1.37.0 wired as an ACP HTTP server on port 3284 with the ttruthdesk MCP registered as an HTTP extension at `https://ttruthdesk.claims/api/mcp`; and a Manus project instructions system prompt written to `protein-truth-desk/MANUS_PROJECT_INSTRUCTIONS.md` for pasting into Settings → Project Instructions.
+
+n8n was formally removed from the stack. Pipedream covers all automation needs without a self-hosted server. The stack is now: Pipedream (automation), Goose (agent orchestration), ttruthdesk MCP (truth layer), Spec Kit (development discipline), AAIF standards (AGENTS.md, MCP, ACP), Notus/Cloudflare (long-term runtime post-launch).
+
+Files changed: `server/_core/index.ts` (keep-warm handler), `scripts/start-goose-acp.sh` (new), `MANUS_PROJECT_INSTRUCTIONS.md` (new), `~/.config/goose/config.yaml` (sandbox-local).
+
