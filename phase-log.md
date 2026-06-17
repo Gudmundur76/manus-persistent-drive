@@ -789,56 +789,54 @@ Both files committed to `protein-truth-desk` at commit `771406f`. Every future a
 - Spec Kit loop engineering adopted as sprint discipline
 
 
-## Phase 134 — Always-On Governed Agent Environment (17 Jun 2026)
+---
 
-**Session type:** Infrastructure / agent environment setup
-**Gate:** Keep-warm cron live | Goose ACP server live | System prompt written | All services verified
+## Sprint 29 Brief — Full-Adapter Citation Search Engine (2026-06-16)
 
-### What was built
+**Status:** READY TO BUILD — spec written, not yet implemented.
+**Full spec:** `sprints/sprint-29-brief.md`
 
-**1. Keep-warm heartbeat cron**
-- Created `keep-warm-5min` heartbeat job (task_uid: `nhXNQ4NMg8XW2BctURkjvt`)
-- Cron expression: `0 */5 * * * *` (every 5 minutes, UTC)
-- Callback path: `/api/scheduled/keep-warm`
-- Handler added to `server/_core/index.ts` — returns `{ok: true, ts, service: "ttruthdesk"}`
-- Purpose: prevents sandbox hibernation, keeps goose ACP server responsive, confirms server health
-- Status: enabled, live on Manus platform
+### The problem
+`/api/citation-search/stream` is live on `ttruthdesk.claims` but not committed to the repo. It only queries 6 of 42 registered adapters. The domain classifier and question decomposer exist but are not wired into the search pipeline.
 
-**2. Goose 1.37.0 ACP service**
-- Config written to `~/.config/goose/config.yaml`
-- ttruthdesk MCP registered as HTTP extension: `https://ttruthdesk.claims/api/mcp`
-- Extension type: `http` (streamable HTTP MCP)
-- Provider: openrouter / openai/gpt-4o-mini
-- Startup script: `protein-truth-desk/scripts/start-goose-acp.sh`
-- ACP server running on port 3284 (daemon mode)
-- Health check: `curl http://localhost:3284/health` → `ok`
-- PID file: `/tmp/goose-acp.pid`
+### The goal
+Build `server/citationSearchRoute.ts` — a properly committed, tested route that:
+1. Decomposes queries via `questionDecomposer.ts` → AtomicClaim[]
+2. Classifies claims via `domainClassifier.ts` → SourceRoute[]
+3. Queries all relevant adapters in parallel via Promise.allSettled()
+4. Synthesises a verdict and streams 4 SSE events in the exact shape the frontend expects
+5. Calls `triggerAutonomousIngest()` in background to grow the corpus
 
-**3. Manus project instructions system prompt**
-- Written to `protein-truth-desk/MANUS_PROJECT_INSTRUCTIONS.md`
-- Covers: identity, 5 non-negotiable principles, domain architecture, agent stack, session start checklist, development loop, out-of-scope list, stack, keep-warm reference
-- Ready to paste into Settings → Project Instructions in Manus Management UI
+### Why this matters
+With all 42 adapters wired, citation.is becomes the only system that can verify a scientific claim against the full breadth of authoritative sources simultaneously — PubMed, OpenAlex, CrossRef, Cochrane, NOAA, IPCC, FRED, IMF, EUR-Lex, ClinVar, PubChem, and 31 more — in a single query, with a unified verdict and confidence score.
 
-**4. Stack confirmed (no n8n)**
-- Pipedream: external automation and integrations
-- Goose: agent orchestration (ACP server)
-- ttruthdesk MCP: truth/verification layer
-- Spec Kit: development discipline
-- AAIF standards: AGENTS.md, MCP, ACP
-- Notus (Cloudflare): long-term agent runtime post-citation.is launch
+### Product vision
+citation.is is the scientific grounding layer for the internet. The same infrastructure role that DNS plays for domains and CrossRef plays for DOIs — but for scientific claims. Sprint 29 is the step that makes this true across all domains.
 
-### Architectural decisions
-- n8n removed from stack — Pipedream covers all automation needs without a self-hosted server
-- Goose ACP server is the agent orchestration layer; Manus is the build/deploy layer
-- Keep-warm cron ensures no cold starts for citation.is users or Pipedream automation triggers
-- The system prompt in Manus project instructions is the governing layer for every session
+### Definition of done
+- `server/citationSearchRoute.ts` with ≥12 tests, registered in `index.ts`
+- All 2,855+ tests green, TSC clean, ESLint clean
+- Live at `ttruthdesk.claims/api/citation-search/stream` with correct SSE shape
+- `citation.is` homepage HeroSearch working end-to-end in production
+- Memory repo updated with sprint result
 
-### Files changed
-- `server/_core/index.ts` — keep-warm handler added at `/api/scheduled/keep-warm`
-- `scripts/start-goose-acp.sh` — goose ACP startup script (new)
-- `MANUS_PROJECT_INSTRUCTIONS.md` — Manus project instructions system prompt (new)
-- `~/.config/goose/config.yaml` — goose config with ttruthdesk MCP extension (new, sandbox-local)
+---
 
-### Next phase
-Phase 135: citation.is public launch preparation — polish the search UI, add the citation.is domain, and prepare the public announcement.
+## Source Coverage Roadmap Written (2026-06-17)
 
+**File:** `sprints/source-coverage-roadmap.md`
+
+Complete 7-sprint roadmap to bring citation.is from 42 to 58 adapters, covering every major authoritative primary-source database across all domains.
+
+**Sprint sequence:**
+- Sprint 29: Wire all 42 existing adapters into citationSearchRoute.ts (READY TO BUILD)
+- Sprint 30: Biomedical depth — OpenFDA adverse events, NICE, WHO IRIS, EMBASE (46 total)
+- Sprint 31: Climate/environment — NASA Earthdata, EEA, EPA (49 total)
+- Sprint 32: Nutrition/food safety — USDA FoodData, CODEX Alimentarius (51 total)
+- Sprint 33: Economics/law — BIS Statistics, US Code/Congress.gov (53 total)
+- Sprint 34: Molecular biology — AlphaFold, NIST Chemistry WebBook (55 total)
+- Sprint 35: Social science — Campbell Collaboration, APA PsycArticles, SSRN (58 total)
+
+**Acceptance criterion for all new sources:** Authoritative, structured, primary-source evidence accessible via queryable REST API. No secondary aggregators, no news sources, no synthesisers.
+
+**Known gap fixed in Sprint 30:** `openfda` (adverse events / FAERS) is declared as a SourceId in domainClassifier.ts but has no adapter file. Only `openfda_labels` (drug labels) is implemented.

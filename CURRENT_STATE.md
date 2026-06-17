@@ -1,96 +1,115 @@
-# citation.is & ttruthdesk.claims — Coordinated Product Status
-*Last updated: Phase 134 complete — 2026-06-17*
+# Current State
+
+*Last updated: Phase C19 complete — 2026-06-16*
+
+## 0. Product Definition
+
+**citation.is** is the public verification and search infrastructure for scientific claims.
+
+It does two things:
+
+**1. Verification (API primitive):** Send any scientific claim programmatically and receive a structured verdict — Supported, Refuted, Ambiguous, or Insufficient Evidence — with a confidence score, evidence provenance from peer-reviewed sources (PubMed, OpenAlex, CrossRef, Cochrane, and others), and contradiction flags. This is the infrastructure layer for AI agents, RAG pipelines, and developer tools that need to ground outputs in the scientific record.
+
+**2. Live search (user-facing):** Ask any scientific question in natural language and receive a streamed, sourced answer — decomposed into sub-claims, verified against the literature, and returned with a verdict, confidence score, and direct links to source documents. This is the Perplexity-style surface that makes the same verification engine accessible to anyone without an API key.
+
+Both capabilities draw from the same backend engine (`ttruthdesk.claims`) and the same corpus of 4,165 verified claims across 291 source documents.
+
+**One-line definition:**
+> citation.is is the verification and search infrastructure for scientific claims — a structured API for AI agents, and a live search engine for anyone who needs sourced answers from the scientific record.
+
+**What it is not:** A consumer product, a social layer, a content generator, or a replacement for researchers. It is a primitive — a building block that other systems call.
+
+---
 
 ## 1. Executive Summary
 
 The platform is operating as a **single coordinated product build**.
-The backend (`ttruthdesk-platform`) and frontend (`citation-desk`) are healthy, fully tested, and stable.
-Sprint 20 complete: all 5 Perplexity.ai documents executed. 6 commits across 2 repos. PR #8116 opened to punkpeye/awesome-mcp-servers.
+The backend (`ttruthdesk-platform`) and frontend (`citation-desk`) are healthy, fully tested, stable, and **live in production**.
 
-**Overall Product Status:** GREEN. 2,761/2,761 tests passing. TSC clean.
-The platform now covers 30+ research domains with 4,000+ verified claims. The MCP server exposes 12 tools. The discovery loop ingests claims across medicine, climate, economics, law, and structural biology.
+Phase C19 complete: in-place hero citation search shipped to citation.is. The homepage now streams live verified answers directly from the hero panel. Manus checkpoint `8b259ceb`. GitHub mirror at `d10a794`. CI fully green.
 
-**Phase 134 complete:** Always-on governed agent environment is live. Keep-warm cron (every 5 min), goose ACP server on port 3284 with ttruthdesk MCP registered, and Manus project instructions system prompt written.
+**Overall Product Status:** GREEN.
+- Backend: 2,855 tests passing (Sprint 28). TSC clean.
+- Frontend: 35/35 tests passing (Phase C19). TSC clean. Published at citation.is.
+- Live corpus: 4,165 claims, 856 verified, 291 source documents.
+
+---
 
 ## 2. Component Status
 
 ### 2.1 Primary Build: `citation-desk` (Frontend)
-- **Role:** Public product surface, developer documentation, and MCP discovery layer.
+- **Role:** Public product surface, developer documentation, live search, and MCP discovery layer.
 - **Repo:** `Gudmundur76/citation-desk`
-- **Current State:** Green (Tests: 27/27 passing, TSC: clean).
-- **Recent Work (Sprint 20):**
-  - Fixed em-dash encoding bug in "Needs Expert Review" label
-  - Changed "97 Supported" stat label to "Supported Claims" (was misleading as percentage)
-  - Wired loop animation cards to live `/api/public/corpus-growth` endpoint
-  - Updated FAQPage JSON-LD: 8 Q&A pairs, 12 MCP tools, 30+ domains, correct MCP endpoint
-  - Updated Organization JSON-LD: `alternateName`, `foundingDate`, `knowsAbout`, `contactPoint`, `sameAs`, `hasOfferCatalog`
-  - Updated static shell for PerplexityBot: 4,000+ claims, 30+ domains, Medicine/Climate/Economics/Law verticals
-  - Fixed MCP endpoint reference: `/mcp` → `https://ttruthdesk.claims/api/mcp`
-- **Last Commit:** `518dff9` — feat(seo): Sprint 20 File 5 — FAQPage + Organization JSON-LD + PerplexityBot optimization
-- **Next Action:** Sprint 21 (add SPO triple to verify_claim response; add `sameAs` LinkedIn + X to Organization schema)
+- **Production URL:** https://citation.is (also www.citation.is)
+- **Current State:** GREEN — 35/35 tests passing, TSC clean, published.
+- **Manus Checkpoint:** `8b259ceb` (Phase C19)
+- **Last Mirror Commit:** `d10a794` — fix(CI): add missing page files Loop, Sources, Compare, Contact
+
+**Phase C19 (2026-06-16):**
+- Replaced static `ApiDemo` component in hero with live `HeroSearch` component
+- Idle state: dark terminal panel with static demo response + search bar + 3 example queries
+- Active state: SSE streaming with 3-stage progress (decompose → evidence → answer), colour-coded verdict panel (emerald/amber/red/grey), source cards with DOI links
+- Added `GET /api/citation-search/stream` SSE proxy route in `externalProxy.ts` forwarding to `ttruthdesk.claims`
+- CI fixed: 4 missing page files (Loop, Sources, Compare, Contact) added to mirror repo
+
+**Phase C18 (2026-06-16):**
+- Synced 9 commits from GitHub mirror: DevelopersRag page, /developers/rag route, Sprint 15 updates
+
+**Phases C10–C17 (prior sessions):**
+- v2 REST proxy endpoints (history, provenance, batch verify)
+- Analytics keepalive cron, 7-verdict taxonomy, developer hub, RAG integration guide
+- Agent headers middleware (Markdown content negotiation, Link headers, API catalog)
+- Registry proxy, claim detail, search, verticals, entity pages
 
 ### 2.2 Platform Backend: `ttruthdesk-platform`
-- **Role:** Core engine, API provider, autonomous ingestion loop, and live query router.
+- **Role:** Core engine, API provider, autonomous ingestion loop, citation search, and live query router.
 - **Repo:** `Gudmundur76/ttruthdesk-platform`
-- **Current State:** Green (Tests: 2719/2719 passing, TSC: clean, ESLint: clean).
-- **Recent Work (Sprint 20):**
-  - Fixed `verify_claim` confidence scoring: per-item keyword-overlap scoring (was flat 0.1 for all items)
-  - Fixed `search_claims`: `min_confidence` filter moved into DB query; `total` now returns filtered count
-  - Added `getContradictionsForClaim()` to `db.ts`; `verify_claim` now returns `contradictions[]` field
-  - Added `/api/public/corpus-growth` endpoint (wired to `getCorpusGrowthStats()`)
-  - Added 60+ domain signals to `CLAIM_SIGNALS` for medicine, climate, economics, law
-  - Added `GET /api/v2/entities/resolve?name=&type=` endpoint for entity resolution
-  - Added `docs/mcp-listing.md` — mcpservers.org + glama.ai submission details
-  - Added `docs/crossref-scite-integration.md` — 4-phase Crossref + Scite integration plan
-- **Last Commit:** `ced06a8` — docs(sprint20): File 4 — MCP listing plan + Crossref/Scite integration spec
-- **Next Action:** Sprint 21 (implement Crossref DOI retraction detection; add NOAA + FRED adapters; add SPO triple to verify_claim response)
+- **Production URL:** https://ttruthdesk.claims (internal engine — to be retired in favour of api.citation.is)
+- **Current State:** GREEN — 2,855 tests passing (Sprint 28). TSC clean.
+- **Last Known Commit:** `6653bf9` (Sprint 28 — citation search route deployed)
+
+**Sprint 28 (latest):**
+- `GET /api/citation-search/stream` SSE endpoint — live and verified
+- Rate limiting, batched NCBI efetch, LRU cache, PDB protein name extraction, input validation
+
+**Sprint 27:**
+- questionDecomposer.ts, Perplexity demo CLI, 2,800 tests
+
+**Sprint 26:**
+- domainClassifier.ts, contradiction API, claim history/provenance/batch verify
+
+**Sprint 25:**
+- SLM distillation pipeline, domain-ingest scheduler, MCP branding
+
+**Sprints 21–24:**
+- SPO triple, Crossref retraction, NOAA + FRED adapters, RuVector graph memory, confidenceScore null fix, PubMed relevance fix
 
 ### 2.3 Framework / R&D: `cognitive-loop-framework`
 - **Role:** Autonomous verification logic and SLM distillation pipelines.
-- **Current State:** Green (Tests: 68/68 passing).
+- **Current State:** Green (last known: 68+ tests passing).
 - **Next Action:** Monitor domain density growth; trigger first SLM training run at 50+ pairs/domain.
+
+---
 
 ## 3. Strategic Roadmap
 
-### Sprint 11: MCP Server ✅ COMPLETE
-### Sprint 12: Live Routing & Autonomous Ingestion ✅ COMPLETE
-### Sprint 13: SLM Distillation ✅ COMPLETE
-### Sprint 14: Claim Coverage Growth ✅ COMPLETE
-### Sprint 15: CI Fix & Scheduled Task ✅ COMPLETE
-### Sprint 16: Domain Ingest Probe ✅ COMPLETE
-### Sprint 17: SLM Progress Widget ✅ COMPLETE
-### Sprint 18: AAIF Toolchain Integration ✅ COMPLETE
-### Sprint 19: manually_reviewed filter + RAG page ✅ COMPLETE
+### Sprints 11–20 ✅ COMPLETE
+(MCP server, live routing, SLM distillation, claim coverage growth, CI, domain ingest, AAIF toolchain, RAG page, Perplexity 5-document execution)
 
-### Sprint 20: Perplexity 5-Document Execution ✅ COMPLETE
-- File 1: Fixed verify_claim pipeline (confidence scoring, search_claims, contradictions, corpus-growth)
-- File 2: Added 60+ domain signals for medicine, climate, economics, law
-- File 3: Validated all 6 developer asks; added entity resolve endpoint
-- File 4: MCP listing docs + Crossref/Scite integration plan; PR #8116 to awesome-mcp-servers
-- File 5: FAQPage + Organization JSON-LD + PerplexityBot optimization
+### Sprints 21–28 ✅ COMPLETE
+(SPO triple, Crossref retraction, NOAA/FRED adapters, RuVector graph memory, confidenceScore fix, PubMed relevance, questionDecomposer, citation search SSE endpoint)
 
-### Sprint 21: Critical Gaps from Gap Analysis (Next)
-- **Goal:** Close the 5 critical gaps identified in the Sprint 20 gap analysis.
-- **Scope:**
-  1. Add SPO triple to `verify_claim` response (Perplexity's #1 ask)
-  2. Implement Crossref DOI retraction detection (Phase 1 of crossref-scite-integration.md)
-  3. Add NOAA adapter (complete climate domain)
-  4. Add FRED adapter (complete economics domain)
-  5. Test citation.is visibility in Perplexity ("What is citation.is?")
-  6. Submit metadata to OpenCitations
-  7. Add `sameAs` LinkedIn + X to Organization schema
+### Phase C10–C19 (citation-desk) ✅ COMPLETE
+(v2 proxy, analytics, agent headers, registry, search, claim detail, verticals, developer hub, RAG guide, in-place hero search)
 
-## 3b. Phase 134 — Agent Environment (17 Jun 2026)
+### Next: Phase C20 / Sprint 29
+- Verify citation search end-to-end in production at citation.is
+- Update `/developers` page to lead with MCP + API capabilities (remove data count claims)
+- Update all meta descriptions to infrastructure framing
+- Consider: `api.citation.is` subdomain routing to ttruthdesk.claims
+- Consider: notus.is as separate frontend calling same backend
 
-| Component | Detail |
-|---|---|
-| Keep-warm cron | `keep-warm-5min` (task_uid: `nhXNQ4NMg8XW2BctURkjvt`) — every 5 min, `/api/scheduled/keep-warm` |
-| Goose ACP server | port 3284, daemon, `http://localhost:3284/health` → `ok` |
-| ttruthdesk MCP | HTTP extension at `https://ttruthdesk.claims/api/mcp` |
-| Goose config | `~/.config/goose/config.yaml` — openrouter / gpt-4o-mini |
-| Startup script | `protein-truth-desk/scripts/start-goose-acp.sh` |
-| System prompt | `protein-truth-desk/MANUS_PROJECT_INSTRUCTIONS.md` — paste into Settings → Project Instructions |
-| n8n | **Removed from stack** — Pipedream covers all automation |
+---
 
 ## 4. Active Developer Tools (Sandbox)
 
@@ -101,27 +120,49 @@ The platform now covers 30+ research domains with 4,000+ verified claims. The MC
 | MCP Python SDK | latest | Python agent integration | INSTALLED |
 | langchain-mcp-adapters | latest | LangChain/LlamaIndex integration | INSTALLED |
 
+---
+
 ## 5. MCP Server Status
 
-- **Endpoint:** `https://ttruthdesk.claims/api/mcp`
+- **Endpoint:** `https://ttruthdesk.claims/mcp` (also `/api/mcp`)
 - **Discovery:** `https://ttruthdesk.claims/.well-known/mcp.json`
 - **Tools:** 12 (verify_claim, search_claims, get_claim, get_provenance, verify_claims_batch, find_similar, get_entity_claims, get_domain_stats, get_contradictions, list_verticals, get_corpus_stats, entity_resolve)
 - **Anonymous rate limit:** 10 req/hr per IP per tool
 - **awesome-mcp-servers PR:** https://github.com/punkpeye/awesome-mcp-servers/pull/8116
 
-## 6. Persistent Memory Repos
+---
+
+## 6. Citation Search SSE Endpoint
+
+- **Endpoint:** `GET https://ttruthdesk.claims/api/citation-search/stream?q=<query>`
+- **Proxy:** `GET https://citation.is/api/citation-search/stream?q=<query>` (same, via Manus proxy)
+- **Rate limit:** 20 req/hr per IP (enforced by backend)
+- **Auth:** None required
+- **SSE event shape:**
+  - `stage:decompose` → `{ stage, label, question, claims[], primaryClaim }`
+  - `stage:evidence` → `{ stage, label, sourcesFound, totalAdapters, sources[] }`
+  - `stage:answer` → `{ stage, label, verdict, confidence, answerLength }`
+  - `final` → `{ ok, question, primaryClaim, answer, verdict, confidence, sources[] }`
+
+---
+
+## 7. Persistent Memory Repos
 
 | Repo | Purpose | Last Push |
 |---|---|---|
-| `Gudmundur76/citation-desk` | Frontend codebase | Sprint 20 — 518dff9 |
-| `Gudmundur76/ttruthdesk-platform` | Backend codebase | Sprint 20 — ced06a8 |
-| `Gudmundur76/manus-persistent-drive` | Session state, phase log, memory | Sprint 19 — 12bba8f (updating now) |
-| `Gudmundur76/memorydesk` | Cross-project AI memory layer | Not updated this sprint |
+| `Gudmundur76/citation-desk` | Frontend codebase | Phase C19 — d10a794 |
+| `Gudmundur76/ttruthdesk-platform` | Backend codebase | Sprint 28 — 6653bf9 |
+| `Gudmundur76/manus-persistent-drive` | Session state, phase log, memory | This update — 2026-06-16 |
+| `Gudmundur76/memorydesk` | Cross-project AI memory layer | Not updated this session |
 
-## 7. Operational Rules
+---
+
+## 8. Operational Rules
 
 1. **One Build:** We treat this as a single coordinated product.
 2. **AI Co-development:** We formally ask enterprise AI systems (Perplexity, Claude) what they need before building, and we build exactly what they specify.
 3. **Always Green:** We do not leave the session until the active repo passes `pnpm check` and `vitest`.
 4. **Memory Sync:** Every sprint MUST end with: (a) update CURRENT_STATE.md, (b) append to compounding_log.md, (c) update agent_memory_blocks.json, (d) run goose verification, (e) push manus-persistent-drive.
 5. **Ralph Wiggum Loop:** All TDD feature development uses the Ralph loop pattern (write failing test → fix → green → commit).
+6. **citation.is is the product name.** ttruthdesk is the internal engine. ttruthdesk.claims domain to be retired in favour of api.citation.is over time.
+7. **Out of scope until citation.is is fully shipped:** notus.is merge, Lagasafn, fishing vertical, new SLM runs.
