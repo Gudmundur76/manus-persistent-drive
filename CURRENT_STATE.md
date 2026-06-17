@@ -1,6 +1,6 @@
 # Current State
 
-*Last updated: Phase 134 complete — 2026-06-17 | Phase C19 also complete — 2026-06-16*
+*Last updated: Phase 134 / Sprint 40 complete — 2026-06-17*
 
 ## 0. Product Definition
 
@@ -29,9 +29,12 @@ The backend (`ttruthdesk-platform`) and frontend (`citation-desk`) are healthy, 
 Phase C19 complete: in-place hero citation search shipped to citation.is. The homepage now streams live verified answers directly from the hero panel. Manus checkpoint `8b259ceb`. GitHub mirror at `d10a794`. CI fully green.
 
 **Overall Product Status:** GREEN.
-- Backend: **3,022 tests passing (Sprint 38)**. TSC clean. 61 adapters. Sprints 32–38 merged to main (`65d39de`).
+- Backend: **3,054 tests passing (Sprint 40)**. TSC clean. 61 adapters. Sprints 32–40 merged to main (`0a908ce`). CI ✅ green.
 - Frontend: **35/35 tests passing (Sprint 39 / Phase C20)**. TSC clean. Published at citation.is (`f988892`).
 - Live corpus: 4,165 claims, 856 verified, 291 source documents.
+
+**Sprint 40 — Domain-Aware Claim Extraction (CRITICAL FIX):**
+Root cause resolved: all papers were being extracted as `structural_biology` regardless of domain, producing 0 claims for neuroscience, economics, energy, etc. Fix: `domainClaimExtractor.ts` (per-domain prompts for all 12 domains), `domainInference.ts` (pattern-based domain classifier), `claimExtractor.ts` (domain-routed), `analysisPipeline.ts` (passes domain, zero-claim guard on notifications), `discoveryLoopJob.ts` (infers domain from paper text). Schema migration: `claimType` ENUM → `varchar(64)`. Backfill endpoint: `POST /api/admin/backfill-domain-claims`.
 
 ---
 

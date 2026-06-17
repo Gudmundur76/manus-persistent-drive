@@ -219,3 +219,36 @@ citation-desk main:
 - `package.json`: `ci:local` and `ci:local:fast` scripts added.
 - Root cause of CI failure: `lint-staged` only lints files in current commit; unused variable from earlier commit was invisible. Pre-push hook now lints full codebase.
 - CI run `27696323430`: ✅ Quality Gate passing after hardening.
+
+---
+
+## Sprint 40 — Domain-Aware Claim Extraction (2026-06-17) — CRITICAL FIX
+
+**Branch:** `sprint-40-domain-aware-extraction` → merged to `main` (`0a908ce`)  
+**CI:** ✅ success (run 27721890984)  
+**Tests:** 3,054 passing (+32)  
+**TypeScript:** 0 errors · ESLint: 0 warnings
+
+### Root Cause
+Every paper ingested by the discovery loop was extracted using a structural biology prompt regardless of domain. Papers on neuroscience, economics, pharmacology, energy, etc. returned 0 claims because the extractor asked for PDB IDs and protein structures that do not exist in those papers. This produced spurious "Claims: 0" audit report email notifications and meant the corpus was effectively empty for 11 of 12 domains.
+
+### What Was Built
+
+| File | Change |
+|------|--------|
+| `server/domainClaimExtractor.ts` | New — per-domain extraction configs with system prompts and claim type vocabularies for all 12 domain labels |
+| `server/domainInference.ts` | New — `inferDomainFromText()` pattern-based classifier using DOMAIN_RULES with broad-domain penalty |
+| `server/claimExtractor.ts` | Rewritten — accepts `domain` param, routes to per-domain config; `claimType` is now `string` |
+| `server/analysisPipeline.ts` | Fetches `document.verticalDomain` before extraction; zero-claim guard on `notifyOwner()` |
+| `server/discoveryLoopJob.ts` | Infers domain from paper text via `inferDomainFromText()` instead of hardcoding `structural_biology` |
+| `server/backfillDomainClaimsRoute.ts` | New — `POST /api/admin/backfill-domain-claims` to re-extract existing 0-claim documents |
+| `server/_core/index.ts` | Registered backfill route |
+| `drizzle/schema.ts` | `claimType` changed from `mysqlEnum(7 values)` to `varchar(64)` |
+| `drizzle/0049_sprint40_domain_aware_claims.sql` | Migration: ENUM → varchar(64) |
+| `server/domainRules.ts` | Tightened `financial_regulatory` (bare `share` false positive); expanded `pharmacology` (IC50, kinase inhibitor) |
+| `server/sprint40.test.ts` | 32 new tests covering domain extraction, inference, and routing |
+
+### Next Action
+1. Apply DB migration `0049` to production (`ALTER TABLE claims MODIFY COLUMN claimType varchar(64) NOT NULL`)
+2. Run `POST /api/admin/backfill-domain-claims` against production to re-extract all existing 0-claim documents with correct domain prompts
+3. Monitor next discovery loop run — should produce real claims for neuroscience/economics/energy papers
