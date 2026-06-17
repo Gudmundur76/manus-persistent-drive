@@ -788,3 +788,57 @@ Both files committed to `protein-truth-desk` at commit `771406f`. Every future a
 - AAIF toolchain (AGENTS.md, agentgateway, MCP) adopted as project standards
 - Spec Kit loop engineering adopted as sprint discipline
 
+
+## Phase 134 — Always-On Governed Agent Environment (17 Jun 2026)
+
+**Session type:** Infrastructure / agent environment setup
+**Gate:** Keep-warm cron live | Goose ACP server live | System prompt written | All services verified
+
+### What was built
+
+**1. Keep-warm heartbeat cron**
+- Created `keep-warm-5min` heartbeat job (task_uid: `nhXNQ4NMg8XW2BctURkjvt`)
+- Cron expression: `0 */5 * * * *` (every 5 minutes, UTC)
+- Callback path: `/api/scheduled/keep-warm`
+- Handler added to `server/_core/index.ts` — returns `{ok: true, ts, service: "ttruthdesk"}`
+- Purpose: prevents sandbox hibernation, keeps goose ACP server responsive, confirms server health
+- Status: enabled, live on Manus platform
+
+**2. Goose 1.37.0 ACP service**
+- Config written to `~/.config/goose/config.yaml`
+- ttruthdesk MCP registered as HTTP extension: `https://ttruthdesk.claims/api/mcp`
+- Extension type: `http` (streamable HTTP MCP)
+- Provider: openrouter / openai/gpt-4o-mini
+- Startup script: `protein-truth-desk/scripts/start-goose-acp.sh`
+- ACP server running on port 3284 (daemon mode)
+- Health check: `curl http://localhost:3284/health` → `ok`
+- PID file: `/tmp/goose-acp.pid`
+
+**3. Manus project instructions system prompt**
+- Written to `protein-truth-desk/MANUS_PROJECT_INSTRUCTIONS.md`
+- Covers: identity, 5 non-negotiable principles, domain architecture, agent stack, session start checklist, development loop, out-of-scope list, stack, keep-warm reference
+- Ready to paste into Settings → Project Instructions in Manus Management UI
+
+**4. Stack confirmed (no n8n)**
+- Pipedream: external automation and integrations
+- Goose: agent orchestration (ACP server)
+- ttruthdesk MCP: truth/verification layer
+- Spec Kit: development discipline
+- AAIF standards: AGENTS.md, MCP, ACP
+- Notus (Cloudflare): long-term agent runtime post-citation.is launch
+
+### Architectural decisions
+- n8n removed from stack — Pipedream covers all automation needs without a self-hosted server
+- Goose ACP server is the agent orchestration layer; Manus is the build/deploy layer
+- Keep-warm cron ensures no cold starts for citation.is users or Pipedream automation triggers
+- The system prompt in Manus project instructions is the governing layer for every session
+
+### Files changed
+- `server/_core/index.ts` — keep-warm handler added at `/api/scheduled/keep-warm`
+- `scripts/start-goose-acp.sh` — goose ACP startup script (new)
+- `MANUS_PROJECT_INSTRUCTIONS.md` — Manus project instructions system prompt (new)
+- `~/.config/goose/config.yaml` — goose config with ttruthdesk MCP extension (new, sandbox-local)
+
+### Next phase
+Phase 135: citation.is public launch preparation — polish the search UI, add the citation.is domain, and prepare the public announcement.
+

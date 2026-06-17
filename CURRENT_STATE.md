@@ -1,6 +1,5 @@
 # citation.is & ttruthdesk.claims — Coordinated Product Status
-
-*Last updated: Sprint 20 complete — 2026-06-15*
+*Last updated: Phase 134 complete — 2026-06-17*
 
 ## 1. Executive Summary
 
@@ -8,8 +7,10 @@ The platform is operating as a **single coordinated product build**.
 The backend (`ttruthdesk-platform`) and frontend (`citation-desk`) are healthy, fully tested, and stable.
 Sprint 20 complete: all 5 Perplexity.ai documents executed. 6 commits across 2 repos. PR #8116 opened to punkpeye/awesome-mcp-servers.
 
-**Overall Product Status:** GREEN. 2,719/2,719 tests passing. TSC clean. ESLint clean.
+**Overall Product Status:** GREEN. 2,761/2,761 tests passing. TSC clean.
 The platform now covers 30+ research domains with 4,000+ verified claims. The MCP server exposes 12 tools. The discovery loop ingests claims across medicine, climate, economics, law, and structural biology.
+
+**Phase 134 complete:** Always-on governed agent environment is live. Keep-warm cron (every 5 min), goose ACP server on port 3284 with ttruthdesk MCP registered, and Manus project instructions system prompt written.
 
 ## 2. Component Status
 
@@ -78,6 +79,18 @@ The platform now covers 30+ research domains with 4,000+ verified claims. The MC
   5. Test citation.is visibility in Perplexity ("What is citation.is?")
   6. Submit metadata to OpenCitations
   7. Add `sameAs` LinkedIn + X to Organization schema
+
+## 3b. Phase 134 — Agent Environment (17 Jun 2026)
+
+| Component | Detail |
+|---|---|
+| Keep-warm cron | `keep-warm-5min` (task_uid: `nhXNQ4NMg8XW2BctURkjvt`) — every 5 min, `/api/scheduled/keep-warm` |
+| Goose ACP server | port 3284, daemon, `http://localhost:3284/health` → `ok` |
+| ttruthdesk MCP | HTTP extension at `https://ttruthdesk.claims/api/mcp` |
+| Goose config | `~/.config/goose/config.yaml` — openrouter / gpt-4o-mini |
+| Startup script | `protein-truth-desk/scripts/start-goose-acp.sh` |
+| System prompt | `protein-truth-desk/MANUS_PROJECT_INSTRUCTIONS.md` — paste into Settings → Project Instructions |
+| n8n | **Removed from stack** — Pipedream covers all automation |
 
 ## 4. Active Developer Tools (Sandbox)
 
