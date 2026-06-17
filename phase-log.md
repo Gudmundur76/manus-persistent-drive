@@ -819,3 +819,24 @@ citation.is is the scientific grounding layer for the internet. The same infrast
 - Live at `ttruthdesk.claims/api/citation-search/stream` with correct SSE shape
 - `citation.is` homepage HeroSearch working end-to-end in production
 - Memory repo updated with sprint result
+
+---
+
+## Source Coverage Roadmap Written (2026-06-17)
+
+**File:** `sprints/source-coverage-roadmap.md`
+
+Complete 7-sprint roadmap to bring citation.is from 42 to 58 adapters, covering every major authoritative primary-source database across all domains.
+
+**Sprint sequence:**
+- Sprint 29: Wire all 42 existing adapters into citationSearchRoute.ts (READY TO BUILD)
+- Sprint 30: Biomedical depth — OpenFDA adverse events, NICE, WHO IRIS, EMBASE (46 total)
+- Sprint 31: Climate/environment — NASA Earthdata, EEA, EPA (49 total)
+- Sprint 32: Nutrition/food safety — USDA FoodData, CODEX Alimentarius (51 total)
+- Sprint 33: Economics/law — BIS Statistics, US Code/Congress.gov (53 total)
+- Sprint 34: Molecular biology — AlphaFold, NIST Chemistry WebBook (55 total)
+- Sprint 35: Social science — Campbell Collaboration, APA PsycArticles, SSRN (58 total)
+
+**Acceptance criterion for all new sources:** Authoritative, structured, primary-source evidence accessible via queryable REST API. No secondary aggregators, no news sources, no synthesisers.
+
+**Known gap fixed in Sprint 30:** `openfda` (adverse events / FAERS) is declared as a SourceId in domainClassifier.ts but has no adapter file. Only `openfda_labels` (drug labels) is implemented.
