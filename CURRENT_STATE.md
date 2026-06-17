@@ -29,7 +29,7 @@ The backend (`ttruthdesk-platform`) and frontend (`citation-desk`) are healthy, 
 Phase C19 complete: in-place hero citation search shipped to citation.is. The homepage now streams live verified answers directly from the hero panel. Manus checkpoint `8b259ceb`. GitHub mirror at `d10a794`. CI fully green.
 
 **Overall Product Status:** GREEN.
-- Backend: 2,855 tests passing (Sprint 28). TSC clean.
+- Backend: **3,022 tests passing (Sprint 38)**. TSC clean. 61 adapters. Sprints 32–38 complete.
 - Frontend: 35/35 tests passing (Phase C19). TSC clean. Published at citation.is.
 - Live corpus: 4,165 claims, 856 verified, 291 source documents.
 
@@ -68,7 +68,25 @@ Phase C19 complete: in-place hero citation search shipped to citation.is. The ho
 - **Current State:** GREEN — 2,855 tests passing (Sprint 28). TSC clean.
 - **Last Known Commit:** `6653bf9` (Sprint 28 — citation search route deployed)
 
-**Sprint 28 (latest):**
+**Sprint 38 (latest — 2026-06-17):**
+- E2E integration tests for adapter→classifier→synthesizer chain (22 new tests)
+- Branch: `sprint-38-e2e-integration` — ready to merge
+
+**Sprint 37 (2026-06-17):**
+- IEA, IRENA, USGS adapters (energy + earth_science domains)
+- 2 new domain rules, 3 new SourceIds, 30 new tests
+- Branch: `sprint-37-energy-engineering` — ready to merge
+
+**Sprint 36 (2026-06-17):**
+- Coverage thresholds raised to match actuals (58/70/71/58)
+- 18 new tests for world_bank, wikidata, alphafold uncovered paths
+- Branch: `sprint-36-coverage-push` — ready to merge
+
+**Sprints 32–35 (2026-06-17):**
+- Merged into main: nutrition/food-safety, economics/law, molecular biology, social science adapters
+- Main at `a87ef30` — 2,982 tests passing
+
+**Sprint 28 (prior):**
 - `GET /api/citation-search/stream` SSE endpoint — live and verified
 - Rate limiting, batched NCBI efetch, LRU cache, PDB protein name extraction, input validation
 
@@ -102,10 +120,16 @@ Phase C19 complete: in-place hero citation search shipped to citation.is. The ho
 ### Phase C10–C19 (citation-desk) ✅ COMPLETE
 (v2 proxy, analytics, agent headers, registry, search, claim detail, verticals, developer hub, RAG guide, in-place hero search)
 
-### Next: Phase C20 / Sprint 29
-- Verify citation search end-to-end in production at citation.is
-- Update `/developers` page to lead with MCP + API capabilities (remove data count claims)
-- Update all meta descriptions to infrastructure framing
+### Sprints 29–38 ✅ COMPLETE (2026-06-17)
+(Citation search SSE, Sprint 32–35 adapter merges, Sprint 36 coverage push, Sprint 37 energy/earth_science adapters, Sprint 38 E2E integration tests)
+
+### Next: Sprint 39 / Phase C20
+- **Merge sprint-36 → main** (PR ready)
+- **Merge sprint-37 → main** (PR ready, rebase after #36)
+- **Merge sprint-38 → main** (PR ready, rebase after #37)
+- Wire new energy/earth_science adapters into citation.is frontend search UI
+- Ensure IEA/USGS citations surface in SSE stream for energy/geology queries
+- Update `/developers` page to lead with MCP + API capabilities
 - Consider: `api.citation.is` subdomain routing to ttruthdesk.claims
 - Consider: notus.is as separate frontend calling same backend
 
