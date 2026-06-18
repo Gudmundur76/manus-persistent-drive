@@ -925,3 +925,18 @@ Key facts:
 - GitHub commit: 147a543 (Sprint 40)
 - DB tables: 57 (all migrations 0000-0049 applied)
 - CI: 3,081 tests green, 0 TS errors, 0 ESLint warnings
+
+## Phase 136 — 2026-06-18
+### DB Migration + Batch Re-Verification
+- Migrated production DB from old project (5R5rZPYgTj2s3EMJSc7MVm) to new project (protein-desk-k2qhayqr)
+- 63 tables migrated, 0 failures (dream_sessions skipped — incompatible schema, 2 rows)
+- Fixed citationGraphEnriched column name mismatch (DB had citation_graph_enriched, renamed to citationGraphEnriched)
+- Expanded verdictMethod ENUM to include batch_reverify and llm_ingest
+- Ran full batch re-verification for all 323 documents through Sprint 40 pipeline
+- Claims: 4,311 → 4,676 total | 548 supported | 772 ambiguous | 27 contradicted
+- New verdict categories active: Ambiguous, Contradicted (not present in old engine)
+- LLM rate limit hit after 323-doc burst — pipeline retrying automatically
+- Checkpoint: 35816161 (Phase 136)
+- Domain ttruthdesk.claims: needs transfer from old project to new (protein-desk-k2qhayqr.manus.space)
+- MANUS_API_KEY + CRON_SECRET set as webdev secrets
+- session-start.sh bootstrap script live in ttruthdesk-platform repo
