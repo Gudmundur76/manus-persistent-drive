@@ -926,17 +926,19 @@ Key facts:
 - DB tables: 57 (all migrations 0000-0049 applied)
 - CI: 3,081 tests green, 0 TS errors, 0 ESLint warnings
 
-## Phase 136 — 2026-06-18
-### DB Migration + Batch Re-Verification
-- Migrated production DB from old project (5R5rZPYgTj2s3EMJSc7MVm) to new project (protein-desk-k2qhayqr)
-- 63 tables migrated, 0 failures (dream_sessions skipped — incompatible schema, 2 rows)
-- Fixed citationGraphEnriched column name mismatch (DB had citation_graph_enriched, renamed to citationGraphEnriched)
-- Expanded verdictMethod ENUM to include batch_reverify and llm_ingest
-- Ran full batch re-verification for all 323 documents through Sprint 40 pipeline
-- Claims: 4,311 → 4,676 total | 548 supported | 772 ambiguous | 27 contradicted
-- New verdict categories active: Ambiguous, Contradicted (not present in old engine)
-- LLM rate limit hit after 323-doc burst — pipeline retrying automatically
-- Checkpoint: 35816161 (Phase 136)
-- Domain ttruthdesk.claims: needs transfer from old project to new (protein-desk-k2qhayqr.manus.space)
-- MANUS_API_KEY + CRON_SECRET set as webdev secrets
-- session-start.sh bootstrap script live in ttruthdesk-platform repo
+## Phase 137 — Sprint Planning (2026-06-18)
+### Sprints 41–43 Planned and Committed
+- Sprint 41: PDB Direct Lookup Pipeline Fix
+  - Goal: ≥400 claims from Insufficient Evidence → Supported/Contradicted
+  - Key tasks: pdbLookupAdapter.ts, fix claimExtractor PDB ID passthrough, deterministic resolution matching
+  - Phase on completion: 137
+- Sprint 42: UniProt + AlphaFold Protein Function Verification
+  - Goal: ≥200 protein function claims from Insufficient Evidence → Supported/Contradicted
+  - Key tasks: uniprotAdapter.ts, alphafoldAdapter.ts, catalytic residue extraction patterns
+  - Phase on completion: 138
+- Sprint 43: Source Paper Semantic Search Verification
+  - Goal: ≥600 claims from Insufficient Evidence → Supported (highest-confidence path)
+  - Key tasks: sourcePaperAdapter.ts, embedText() helper, paper_embeddings table (migration 0050), cosine similarity threshold 0.85
+  - Phase on completion: 139
+- todo.md updated with all three sprint plans
+- ttruthdesk-platform commit: ba65f76
