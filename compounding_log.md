@@ -95,3 +95,31 @@ Commit: 9c4a392 on Gudmundur76/ttruthdesk-platform
 - ligand (493 IE) — wire ligandAdapter using RCSB ligand search
 - organism (459 IE) — wire taxonomyAdapter using NCBI Taxonomy API
 - Remaining general_molecular (749 still IE) — improve protein name extraction from claimText
+
+---
+## Phase 138 — build1_foundation PRD-MASTER Phase 1 + PRD-L4 Phase 1
+**Date:** 2026-06-18
+**Commit:** e5c04fc (ttruthdesk-platform), db55695f (webdev checkpoint)
+
+### What was built
+1. **spec-kit artifacts** committed to `.specify/` (constitution.md, spec.md, plan.md, tasks.md) + `docs/build1_foundation.docx` + `docs/README.md`
+2. **PRD-MASTER Phase 1 — Unified Orchestration:**
+   - `server/autonomousLoop/eventSchemas.ts` — Zod typed event envelope with correlationId, all 12 event payload schemas
+   - `server/autonomousLoop/eventBus.ts` — typed envelope support added
+   - `drizzle/schema.ts` — 3 new tables: `layer_telemetry`, `frontier_directives`, `meta_agent_alerts`
+   - `drizzle/0047_serious_preak.sql` — migration applied to live DB
+3. **PRD-L4 Phase 1 — Meta-Agent Foundation:**
+   - `alertRouter.ts` — `buildDedupeKey()`, `persistAlert()` (writes to `meta_agent_alerts`), `routeFinding()` now returns `alertId`; dedup uses `meta_agent_alerts.dedupeKey` instead of `metaAgentChecks`
+   - `codeGuardian.ts` — `emitTelemetry()` helper, `correlationId` propagated through all runs, start/end/error telemetry rows written to `layer_telemetry`
+4. **Bug fix:** `selfPromptLayer.test.ts` — added missing mocks for `frontierEngine` + `inversePromptEngine` (pre-existing timeout)
+5. **+14 new tests** in `alertRouter.test.ts` (buildDedupeKey, persistAlert, routeFinding return type)
+
+### Metrics
+- Tests: 3,104 passed, 0 failed (260 test files)
+- TypeScript: 0 errors
+- Pre-existing flaky test fixed (selfPromptLayer IE timeout)
+
+### Next phases (build1_foundation)
+- **Phase 139 — PRD-MASTER Phase 2:** HMAC event signing, declarative routing table, priority queue integration
+- **Phase 140 — PRD-L1 Phase 1:** 15-stage verification pipeline scaffolding, stage registry
+- **Phase 141 — PRD-L4 Phase 2:** Drift detector upgrades (6 categories → PRD spec), stub lifecycle automation
