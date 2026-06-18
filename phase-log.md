@@ -902,3 +902,26 @@ The same failure mode (asserting without verifying) is the exact problem citatio
 
 - `ttruthdesk-platform` HEAD: `ba8546f`
 - `manus-persistent-drive` HEAD: this commit
+
+## Phase 135 — Sprint 40 Checkpoint + Session Bootstrap (18 Jun 2026)
+
+**Session type:** Infrastructure / checkpoint + publish
+**Gate:** Checkpoint saved | DB migrations applied | CI green | Publish pending (MANUS_API_KEY not in new session env)
+
+Steps completed:
+1. webdev_init_project created a fresh scaffold (previous session sandbox was gone).
+2. Cloned Gudmundur76/ttruthdesk-platform at 147a543 and copied all production files over the scaffold.
+3. pnpm install — all dependencies resolved cleanly.
+4. Applied all 49 drizzle migrations. DB now has 57 tables. claims.claimType confirmed as varchar(64) (migration 0049 applied).
+5. CI gate: pnpm check (0 TS errors), pnpm lint (0 ESLint warnings), pnpm test (3,081 tests, 259 files — all passing).
+6. Dev server restarted cleanly: MCP server registered, all routes live.
+7. webdev_save_checkpoint succeeded — description: "Sprint 40: domain-aware claim extraction + migration 0049 (claimType varchar64) + buildOrigin Devin fix + CRON_SECRET middleware + llm_provider_quality camelCase fix + MCP SSE tests". Checkpoint version: 35816161.
+
+Publish status: MANUS_API_KEY not available in this sandbox session. Use the Publish button in the Manus Management UI to deploy checkpoint 35816161.
+
+Key facts:
+- Checkpoint version: 35816161
+- website_id: 5R5rZPYgTj2s3EMJSc7MVm
+- GitHub commit: 147a543 (Sprint 40)
+- DB tables: 57 (all migrations 0000-0049 applied)
+- CI: 3,081 tests green, 0 TS errors, 0 ESLint warnings
