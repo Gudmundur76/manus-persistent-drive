@@ -47,3 +47,51 @@ Both draw from the same ttruthdesk.claims backend and 4,165-claim corpus.
 - Verify citation search end-to-end in production at citation.is
 - Update /developers page to lead with MCP + API capabilities
 - Consider api.citation.is subdomain routing
+
+---
+
+## Phase 137 — Sprint 41: PDB Protein-Name Lookup Pipeline (2026-06-18)
+
+### Sprint goal
+Move ≥400 claims from Insufficient Evidence (IE) to Supported/Contradicted/Ambiguous by building a deterministic protein-name → PDB search → verdict pipeline.
+
+### What was built
+
+**`server/pdbLookupAdapter.ts`** (new file)
+- `verifyResolutionByProteinSearch`: searches RCSB PDB by protein name (up to 5 candidates), fetches resolution for each, applies tolerance matching (±0.05 Å = Supported, ±0.20 Å = Partially Supported, else Ambiguous)
+- `verifyProteinNameBySearch`: searches PDB by protein name, returns Ambiguous with candidate IDs when found, IE when not found
+- 14 Vitest unit tests, all passing
+
+**`server/analysisPipeline.ts`** (patched)
+Two new routing branches added before the generic `verdictForClaim` fallback:
+1. `resolution` claims with no PDB ID → `verifyResolutionByProteinSearch`
+2. `general_molecular` / `protein_name` claims with no PDB ID → `structuralBiology` vertical adapter → `verifyProteinNameBySearch` fallback
+
+**`scripts/sprint41-reverify-ie-claims.mjs`** (new script)
+Targeted claim-level re-verify: fetches existing IE claims of target types, runs new routing logic, updates verdict in-place (no re-extraction, no corpus bloat).
+
+### Results
+
+| Metric | Before | After | Delta |
+|--------|--------|-------|-------|
+| Insufficient Evidence | 4,413 | 3,689 | -724 |
+| Ambiguous | 456 | 1,162 | +706 |
+| Supported | 513 | 524 | +11 |
+| Partially Supported | 133 | 140 | +7 |
+
+Sprint goal (>=400 IE reduction): ACHIEVED
+
+Claims processed: 1,903 / 2,627 target (38% improvement rate)
+
+### Test suite
+- 260 test files, 3,095 tests, 0 failures
+- TypeScript: 0 errors
+
+### GitHub
+Commit: 9c4a392 on Gudmundur76/ttruthdesk-platform
+
+### Next sprint candidates (Sprint 42)
+- experimental_method (601 IE) — wire methodologyVerifier adapter
+- ligand (493 IE) — wire ligandAdapter using RCSB ligand search
+- organism (459 IE) — wire taxonomyAdapter using NCBI Taxonomy API
+- Remaining general_molecular (749 still IE) — improve protein name extraction from claimText
