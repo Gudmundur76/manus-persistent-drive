@@ -123,3 +123,36 @@ Commit: 9c4a392 on Gudmundur76/ttruthdesk-platform
 - **Phase 139 — PRD-MASTER Phase 2:** HMAC event signing, declarative routing table, priority queue integration
 - **Phase 140 — PRD-L1 Phase 1:** 15-stage verification pipeline scaffolding, stage registry
 - **Phase 141 — PRD-L4 Phase 2:** Drift detector upgrades (6 categories → PRD spec), stub lifecycle automation
+
+## Phase 139 — build1_foundation Complete (2026-06-18)
+
+**PRD:** build1_foundation.docx (3-part: PRD-MASTER-001, PRD-L1 Truth Engine, PRD-L4 Meta-Agent)
+**Commit:** e17a3eb | **Tests:** 3,182 pass, 0 failures | **Checkpoint:** be35af5b
+
+### PRD-MASTER Phases 2-4
+- routingTable.ts: declarative event->layer routing (31 event types, priority 1-5)
+- hmacSigner.ts: HMAC-SHA256 event signing (NFR-MASTER-06)
+- layerError.ts: typed LayerError with propagation
+- loopOrchestrator.ts: rewritten with routing table + LayerError
+- dreamQueueConsumer.ts: separated dream queue processing
+- entryPointContracts.ts: typed entry-point contracts per layer
+- authorityEnforcer.ts: FR-MASTER-02 runtime authority checks + layerTelemetry persistence
+- eventBus.ts: LoopEventType extended 18->31
+- eventSchemas.ts: Zod typed event envelope + 12 payload schemas + correlationId
+- Schema: 3 new tables (layer_telemetry, frontier_directives, meta_agent_alerts)
+- Schema: eventQueue enum extended to 31 types (migrations 0047-0049)
+
+### PRD-L1 Phases 1-6
+- pipeline/stageRegistry.ts: StageRegistry with 15 stages, DraftGuard fatal abort
+- pipeline/stages.ts: stages 0-6 (DraftGuard, ClaimExtractor, PassageExtractor, MisrepresentationClassifier, AdapterRouter, CompositeScorer, ConfidenceTrend)
+- pipeline/stagesPhase56.ts: stages 7-14 (OutputAudit, PipelineAuditor, PredictionRecord, ReportGenerator)
+
+### PRD-L4 Phases 2-6
+- codeDriftService.ts: Promise.allSettled + configurable category exclusions + fault isolation
+- stubLedger.ts: .meta/stub-registry.json atomic persistence + auto-escalation
+- pipelineGuardian.ts: 15s timeout + unavailable state + durationMs
+- codeGuardian.ts: Promise.allSettled + 60s abort + meta_agent_checks persistence + grade-threshold alerting
+
+### Spec-Kit Artifacts
+- .specify/constitution.md, spec.md, plan.md, tasks.md committed to repo
+- docs/build1_foundation.docx committed as reference
