@@ -867,3 +867,38 @@ Files changed: `server/_core/index.ts` (keep-warm handler), `scripts/start-goose
 `curl -s -X POST "https://api.manus.ai/v2/website.publish" -H "x-manus-api-key: $MANUS_API_KEY" -H "Content-Type: application/json" -d '{"website_id":"5R5rZPYgTj2s3EMJSc7MVm","visibility":"public"}'`
 
 website_id=5R5rZPYgTj2s3EMJSc7MVm | Manus Project ID=CAGYiDGiLfcx6Ssbj3njdD | Live=6653bf9c (Sprint 40 NOT deployed yet)
+
+---
+
+## Phase 135 — 18 June 2026
+
+**Session focus:** Anti-hallucination protocol + session-start bootstrap
+
+### What was done
+
+- Identified root cause of new-session agent hallucinations: agents were reasoning from context summaries instead of verifying environment state with shell commands
+- Created `scripts/session-start.sh` — mandatory bootstrap script that verifies: `$MANUS_API_KEY`, project directory contents, Sprint 40 key files, dev server health, GitHub clone states (ttruthdesk-platform + manus-persistent-drive), deployed version vs internal HEAD, and CRON_SECRET
+- Updated `MANUS_PROJECT_INSTRUCTIONS.md` (Phase 135) with 6 non-negotiable anti-hallucination rules:
+  1. Never claim env state without shell verification
+  2. Never claim MANUS_API_KEY is unset without checking
+  3. Never claim project dir is empty without checking
+  4. Never ask user for MANUS_API_KEY — it is always in the environment
+  5. webdev_save_checkpoint does NOT require MANUS_API_KEY — it is an internal tool
+  6. Save checkpoint within first 10 minutes of every fresh session
+- Pushed both files to `Gudmundur76/ttruthdesk-platform` at commit `ba8546f` — all 259 tests passing, quality gate green
+
+### Checkpoint status
+
+- `webdev_save_checkpoint` still failing in this session (auth token expired — long-running session)
+- Sprint 40 code (commit `061d1bd` in Manus internal repo) still not checkpointed
+- Live site `ttruthdesk.claims` still on version `6653bf9c` (Phase 133)
+- **Next session MUST run `scripts/session-start.sh` first, then call `webdev_save_checkpoint` immediately**
+
+### Hallucination fix — connection to the product
+
+The same failure mode (asserting without verifying) is the exact problem citation.is is built to solve for AI-generated scientific claims. The fix in both cases is identical: mandatory grounding against primary sources before assertion.
+
+### GitHub
+
+- `ttruthdesk-platform` HEAD: `ba8546f`
+- `manus-persistent-drive` HEAD: this commit
