@@ -35,3 +35,38 @@
 ### Known Limitation
 - `.github/workflows/skillopt.yml` requires PAT with `workflow` scope to push
 - File is committed locally and ready; push once PAT is available
+
+---
+## Phase 146 — MANUS_INSTRUCTIONS Local Model Pipeline
+**Date:** 2026-06-19
+**Repos:** ttruthdesk-platform, cognitive-loop-framework, slm-infra-deploy
+**Commits:** 4991657 (ttruthdesk), 9dd594c (cognitive-loop), 107eeb3 (slm-infra)
+
+### What was built
+**cognitive-loop-framework:**
+- `ttruthdeskBridge.ts` (new): mysql2 bridge to ttruthdesk DB; fetchVerifiedClaims(), countNewVerifiedClaims(), closeBridge()
+- `claimsCorpusGenerator.ts`: generate() method → AlpacaPair JSONL via DB bridge
+- `corpusWatcher.ts`: DB-backed watcher with 5-min debounce, triggers at >=50 new claims
+- `incrementalTrainer.ts`: python→python3, claim-verifier default, /opt/slm-infra-deploy/ paths
+- `index.ts`: updated default paths, new exports
+
+**slm-infra-deploy:**
+- `finetunePipeline.py`: >=10 validation, README.md generation, models/latest symlink
+- `Modelfile`: FROM Qwen/Qwen2.5-Coder-1.5B-Instruct, ADAPTER directive, JSON SYSTEM prompt
+- `cortex.py`: POST /verify endpoint, _ollama_generate(), cmd_serve(), 'serve' subcommand
+
+**ttruthdesk-platform:**
+- `claimVerifier.ts`: Ollama /api/generate API, isHealthy() via /api/tags, ping() alias
+- `modelRouter.ts` (new): routing layer — feature flag, health, domain, confidence threshold
+- `inference.test.ts`: updated mocks to Ollama API shape
+
+**Root:**
+- `docker-compose.yml` (new): 3-service stack (ollama, cognitive-loop, ttruthdesk)
+
+### Gate results
+- ttruthdesk: 3544 tests passed, 0 failed | TypeScript: 0 errors | ESLint: 0 warnings
+- cognitive-loop: 121 tests passed, 0 failed | TypeScript: 0 errors | ESLint: 0 warnings
+- slm-infra: Python syntax OK on all 3 files
+
+### Note
+skillopt.yml workflow file still needs a GitHub PAT with `workflow` scope to push.
