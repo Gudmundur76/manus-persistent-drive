@@ -969,3 +969,36 @@ Key facts:
 - New source files: `server/selfPrompt/index.ts`, `server/selfPrompt/schema.ts`, `server/selfPrompt/types.ts`
 - New DB migrations: `0050`, `0051`, `0052`
 - CI: 0 TS errors, 0 ESLint warnings, 3325 tests green
+
+## Phase 137 — Build3: L3 Frontier Engine Hardening + L5 Dream State
+**Date:** 2026-06-19
+**Commit:** 318a0b80306fd5f03b743cada5df7c90670e06d4
+**Branch:** main
+**CI:** TypeScript 0 errors · ESLint 0 warnings · 3412 tests, 272 files — all green (+87 tests)
+
+### L3 — Frontier Engine (FR-L3-01 to FR-L3-35)
+- **DirectiveStore** (`server/frontier/directiveStore.ts`): in-memory store with add()/getActive()/consume()/activeCount(); subscribes to `frontier_directive` events on the event bus
+- **FrontierCircuitBreaker** (`server/frontier/circuitBreaker.ts`): 3-failure threshold, 5-minute cooldown, getState()/shouldSkip()/reset()
+- Circuit breaker integrated into `hypothesisGenerator.ts` (FR-L3-19)
+- **gapRanker.ts** updated: `directiveBoost * 0.4` weight in priority score, writes `rank`/`detection_count`/`last_detected_at` columns
+- **frontierEngine.ts** rewritten: class-based orchestrator, reads active directives at cycle start, applies `focus_gap`/`skip_mapping`/`prioritize_hypotheses`/`deep_dive_entity` directive types, emits `frontier.cycle.start/complete` events
+- **evidencePursuer.ts**: added `entityId` filter for `deep_dive_entity` directive
+- **frontier router**: added `health`, `addDirective`, `resetCircuitBreaker` procedures
+- Added `frontier_directive` to `LoopEventType`, `EVENT_ENTRY_LAYERS`, `ROUTING_TABLE`, `eventQueue.eventType` enum
+- **Schema migrations 0053+0054**: `directive_boost`/`rank`/`detection_count`/`last_detected_at` on `knowledge_gaps`; `cycle_event`/`metric_report` on `frontierLog.actionType`; `frontier_directive` on `eventQueue.eventType`
+
+### L5 — Dream State (FR-L5-01 to FR-L5-38)
+- **dreamTypes.ts**: `DreamEvent`, `DreamPriority`, `DreamSessionState`, `ProposedGraphMutation` types
+- **dreamEventPublisher.ts**: `executeWakeProtocol()` aggregates C1-C5 results, classifies into `DreamEvent`s with `dreamPriority`/`cycleNumber`/`evidenceStrength`/`dreamOrigin:true`, writes to `dream_event_queue`
+- **confidenceRecalibrator.ts**: all 4 rules (R1-R4), `sessionId` param, `oldConfidence`/`newConfidence`/`ruleTriggered` in `confidence_history`, `byRule` breakdown
+- **dreamEngine.ts**: per-cycle budget (`remaining_budget_ms / remaining_cycles`), LLM circuit breaker (3-failure/5-min cooldown), wake protocol call after all cycles, `sessionId` passed to recalibrator
+- **Schema migration 0053**: `dream_event_queue` table; `dream_sessions` new columns; `confidence_history` new columns
+
+### New Test Files
+- `directiveStore.test.ts`: 25 tests
+- `circuitBreaker.test.ts`: 17 tests
+- `dreamEventPublisher.test.ts`: 11 tests
+- `+8` gapRanker directive boost tests
+- `+10` frontierEngine directive-aware tests
+- `+8` dreamEngine per-cycle budget + circuit breaker tests
+- `+8` confidenceRecalibrator FR-L5-26 compliance tests
