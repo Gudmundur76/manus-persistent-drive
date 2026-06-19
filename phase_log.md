@@ -70,3 +70,20 @@
 
 ### Note
 skillopt.yml workflow file still needs a GitHub PAT with `workflow` scope to push.
+
+---
+## Phase 147 — Phase 137+138+Build3 (AlphaFold, SourcePaper, Frontier Health, DreamLayer)
+**Date:** 2026-06-19
+**Commit:** 4d6be7f (ttruthdesk-platform)
+
+### Built
+- `server/alphafoldAdapter.ts` — AlphaFold DB pLDDT confidence scoring (18 tests)
+- `server/sourcePaperAdapter.ts` — PMC semantic similarity via embeddings (22 tests)
+- `drizzle/schema.ts` + migration 0059 — paper_embeddings table
+- `server/apiV2Router.ts` — GET /api/v2/health/frontier (MetricReporter)
+- `server/autonomousLoop/layers/dreamLayer.ts` — L5 Dream State adapter
+
+### Gates
+- TypeScript: 0 errors
+- ESLint: 0 warnings
+- Tests: 3,579 passed (279 files)
