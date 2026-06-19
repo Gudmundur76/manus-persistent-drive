@@ -1019,3 +1019,51 @@ Key facts:
 
 ### Build3 PRD Status
 All 66 L3 requirements (FR-L3-01 to FR-L3-35) and all 38 L5 requirements (FR-L5-01 to FR-L5-38) are now fully implemented.
+
+## Phase 139 — Build 4: Audit Gap Closures
+**Date:** 2026-06-19
+**Commit:** 6714d67 (ttruthdesk-platform)
+
+### Audit Scorecard (before → after)
+| Layer | Before | After | Grade |
+|---|---|---|---|
+| L0 Friction | 13/13 | 13/13 | A+ |
+| L1 Truth | 16/17 | 17/17 | A+ |
+| L2 Self-Prompt | 6/11 | 11/11 | A+ |
+| L3 Frontier | 11/12 | 12/12 | A+ |
+| L4 Meta-Agent | 14/14 | 14/14 | A+ |
+| L5 Dream | 11/12 | 12/12 | A+ |
+| Infra | 12/12 | 12/12 | A+ |
+
+### Changes
+
+#### L2 Self-Prompt — 5 new action types
+- **actionExecutor.ts**: added wiki_edit, alert_dispatch, graph_suggest, ingest_request, update_claim cases
+- **promptEngine.ts** + **types.ts**: SelfPromptAction union extended with all 5 new types
+- **getDelegatedTo map**: wiki_edit->wikiEngine, alert_dispatch->alertDispatcher, graph_suggest->graphEngine, ingest_request->domainIngestScheduler, update_claim->claimVerifier
+- contradictionProbability derived from verdict === Contradicted ? (1 - confidenceScore) : 0
+- verdictMethod uses "override" enum value (valid in schema)
+
+#### L5 Dream — Priority Queue Ordering
+- **eventBus.ts** _promoteDreamEvents(): changed ORDER BY from createdAt ASC to FIELD(dreamPriority, alert, recalibrate, hypothesize, consolidate) DESC, evidenceStrength DESC
+- Highest-urgency dream events (alert, recalibrate) now promoted first
+
+#### DB — Migration 0055 (5 new tables)
+- event_log: central audit trail for all loop events
+- convergence_states: convergence decision snapshots
+- preflight_scans: L0 Friction Engine scan records
+- preflight_assumptions: per-scan assumption detail records
+- preflight_constraints: per-scan constraint detail records
+- All tables have appropriate indexes; applied via scripts/apply-migration-0055.mjs
+
+#### L1 Truth / L3 Frontier — Already Implemented (audit was pre-Build 3)
+- generateHtmlReport() in reportGenerator.ts was fully implemented in Build 3
+- onDirectiveReceived() in frontierLayer.ts was fully wired in Build 3
+
+### CI
+- TypeScript: 0 errors
+- ESLint: 0 warnings
+- Tests: 3451 passed (273 files) (+31 vs Phase 138)
+  - build4Schema.test.ts: 10 new tests (5 new tables)
+  - actionExecutor.test.ts: +18 tests (5 new action types + getDelegatedTo)
+  - eventBus.test.ts: +3 tests (FR-L5-36 priority ordering)
