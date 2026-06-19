@@ -1114,3 +1114,41 @@ All 66 L3 requirements (FR-L3-01 to FR-L3-35) and all 38 L5 requirements (FR-L5-
 - Tests updated: `codeDriftService.test.ts` mocks now return Dirent-like objects; `codeGuardian.test.ts` expectation updated to 10 (correct with cap).
 
 **Result:** 3470 tests pass. TypeScript: 0 errors. Pushed: `d36f91a`.
+
+## Phase 142 — Adapter Calibration Pipeline (PRD_ADAPTER_CALIBRATION)
+Date: 2026-06-19
+Commit: 29104df (ttruthdesk-platform)
+
+### Delivered
+- server/verticalAdapters/calibration/testDocuments.ts
+  - 5 canonical test documents: D1 (dense specific), D2 (dense vague), D3 (sparse specific), D4 (sparse vague), D5 (mixed)
+  - Covers structural biology, clinical trial, economics, legal, environmental claim shapes
+- server/verticalAdapters/calibration/adapterCalibration.ts
+  - calibrateAdapter(): single adapter × single document
+  - calibrateAdapterFull(): single adapter × all 5 documents
+  - assignFailureGroup(): G1/G2/G3/G4 classification logic
+- server/verticalAdapters/calibration/calibrationReport.ts
+  - buildCalibrationReport(): aggregate summaries into CalibrationReport
+  - exportReportToCsv(): CSV export with header row
+  - compareCalibrationResults(): A/B comparison sorted by delta DESC
+  - summariseDocumentResults(): per-document precision/recall/f1
+- server/verticalAdapters/calibration/batchCalibration.ts
+  - runBatchCalibration(): batch runner over all registered adapters
+  - Configurable concurrency (default 4), optional adapterIds filter
+- server/verticalAdapters/calibration/promptTemplates.ts
+  - G1: generateG1Prompt() — generates extraction prompt for under-extractors
+  - G2: rewriteG2Prompt() — appends constraint block, removes old Return: instruction
+  - G3: enhanceG3Prompt() — appends verification criteria block
+- server/verticalAdapters/calibration/promptRegistry.ts
+  - savePromptVersion(): DB-backed versioning with auto-increment
+  - getActivePromptVersion(): get current active prompt
+  - getPromptVersionHistory(): full version history
+  - rollbackPromptVersion(): reactivate a previous version
+- drizzle/schema.ts: adapter_calibration_runs + adapter_prompt_versions tables
+- drizzle/0057_pink_hellion.sql: migration (tables already existed in DB from prior session)
+- calibration.test.ts: 22 tests covering all exported functions
+
+### CI Gate
+- TypeScript: 0 errors
+- ESLint: 0 warnings (pre-push gate passed)
+- Tests: 3492 passed / 275 files
