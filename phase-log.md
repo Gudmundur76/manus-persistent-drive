@@ -1002,3 +1002,20 @@ Key facts:
 - `+10` frontierEngine directive-aware tests
 - `+8` dreamEngine per-cycle budget + circuit breaker tests
 - `+8` confidenceRecalibrator FR-L5-26 compliance tests
+
+## Phase 138 — Build3 PRD Gap Completions
+**Date:** 2026-06-19
+**Commit:** d67a748 (ttruthdesk-platform)
+
+### Changes
+- **FR-L3-29**: Autonomous deep dive trigger — `frontierEngine.ts` queries `knowledge_gaps` after Stage 1 for any entity with 3+ open gaps; triggers `pursueTopGaps(10, entityId)` without requiring an explicit directive. `AUTO_DEEP_DIVE_GAP_THRESHOLD = 3`.
+- **FR-L3-31/32**: `FrontierEngineRunResult.isDeepDive: boolean` added; `FrontierMetrics.directivesApplied?: number` and `FrontierMetrics.isDeepDive?: boolean` added to `uncertaintyTracker.ts`.
+- **FR-L5-35**: `_promoteDreamEvents()` added to `eventBus.ts` — called at the start of every `_drainPass()`. Queries `dream_event_queue` for pending `autoTrigger=true` events, promotes each to `event_queue` as `dream_queue_processed`, marks as processed. Non-fatal.
+
+### CI
+- TypeScript: 0 errors
+- ESLint: 0 warnings
+- Tests: **3420 passed (272 files)** (+8 vs Phase 137)
+
+### Build3 PRD Status
+All 66 L3 requirements (FR-L3-01 to FR-L3-35) and all 38 L5 requirements (FR-L5-01 to FR-L5-38) are now fully implemented.
