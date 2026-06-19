@@ -87,3 +87,26 @@ skillopt.yml workflow file still needs a GitHub PAT with `workflow` scope to pus
 - TypeScript: 0 errors
 - ESLint: 0 warnings
 - Tests: 3,579 passed (279 files)
+
+---
+## Phase 148 — PRD Full Compliance Audit + Gap Closure
+**Date:** 2026-06-19
+**Commit:** d348297 (ttruthdesk-platform)
+
+### Audit Findings
+Full cross-check of all 4 PRDs against codebase. Found 4 remaining gaps:
+
+| Gap | PRD Reference | Fix |
+|---|---|---|
+| `FrontierDirective.directiveType` alias missing | PRD_BACKEND_V2 §2.3 | Added `directiveType: DirectiveType` field to interface; populated in `frontierLayer.ts`, `routers.ts`, and both test `makeDirective` helpers |
+| `calibrate:adapters:ci` script missing | PRD_ADAPTER_CALIBRATION FR-CAL-10 | Added to `package.json` |
+| CI calibration step missing from `ci.yml` | PRD_ADAPTER_CALIBRATION FR-CAL-10 | Added `calibrate-adapters` job to `ci.yml` (continue-on-error: true) |
+| `ci.yml` + `skillopt.yml` require PAT with `workflows` scope to push | GitHub App permission | Files committed locally, ready to push with PAT |
+
+### Gate Results
+- TypeScript: 0 errors
+- ESLint: 0 warnings
+- Tests: 3,579 passed (279 files), 0 failures
+
+### Status
+All 4 PRDs are now 100% implemented in code. Workflow files (ci.yml, skillopt.yml) require a GitHub PAT with `workflow` scope to push.
