@@ -1067,3 +1067,33 @@ All 66 L3 requirements (FR-L3-01 to FR-L3-35) and all 38 L5 requirements (FR-L5-
   - build4Schema.test.ts: 10 new tests (5 new tables)
   - actionExecutor.test.ts: +18 tests (5 new action types + getDelegatedTo)
   - eventBus.test.ts: +3 tests (FR-L5-36 priority ordering)
+
+## Phase 140 — Audit Gap Closure (Full Build-Out)
+**Date:** 2026-06-19
+**Commit:** 56d48f9 (ttruthdesk-platform)
+**Status:** COMPLETE
+
+### What was built
+1. **telemetryCollector.ts** — new shared service:
+   - `emitLayerTelemetry(layer, eventType, corrId, opts)` — core helper, non-fatal
+   - `emitLayerStart / emitLayerEnd / emitLayerError` — convenience wrappers
+   - `getLayerTelemetrySummary(layer, windowHours)` — query helper for admin dashboard
+   - 19 new tests (telemetryCollector.test.ts)
+
+2. **frontier_directives DB columns** — migration 0056:
+   - `confidence FLOAT` — persists directive confidence score
+   - `expiresAt DATETIME` — persists TTL expiry timestamp
+   - `directivePublisher.ts` updated to write both fields
+
+3. **Layer telemetry wiring** — all 6 layers now emit start/end/error rows:
+   - L1: truthLayer.ts
+   - L2: selfPromptLayer.ts
+   - L3: frontierLayer.ts
+   - L4: metaLayer.ts (start/end only — no error path needed)
+   - L5: dreamEngine.ts (telemetryStartMs separate from startedAt)
+
+### CI Gate
+- TypeScript: 0 errors
+- ESLint: 0 warnings (fixed unused import in metaLayer.ts)
+- Tests: 3470 passed / 274 files (+19 new)
+- Pre-push hook: PASSED
