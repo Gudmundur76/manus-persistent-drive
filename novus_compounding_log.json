@@ -1,0 +1,18 @@
+{
+  "project": "novus.is",
+  "description": "HIV protease drug discovery compounding run log",
+  "runs": [
+    {
+      "day": 3,
+      "cycle": 5,
+      "timestamp": "2026-06-22T09:04:39.136981+00:00",
+      "total_generated": 0,
+      "total_added": 0,
+      "corpus_total": 0,
+      "corpus_mean_pic50": 0,
+      "convergence_count": 0
+    }
+  ],
+  "last_updated": "2026-06-22T09:04:39.137023+00:00",
+  "total_runs": 1
+}
