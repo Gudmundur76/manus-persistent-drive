@@ -210,3 +210,27 @@ Root cause resolved: all papers were being extracted as `structural_biology` reg
 | System prompt | `protein-truth-desk/MANUS_PROJECT_INSTRUCTIONS.md` — paste into Settings → Project Instructions |
 | n8n | Removed from stack — Pipedream covers all automation |
 
+
+---
+## Session 2026-06-23 — Molecular Bridge + CI Fix
+
+### Repo State After This Session
+| Repo | Latest Commit | CI |
+|---|---|---|
+| `ttruthdesk-platform` | `b0d3232` fix(lint): verdict union type | ✓ green — 283 files, 3606 tests |
+| `asi-evolve-discovery-engine` | `42441f4` fix(startup): auto-train on cold start | autodeploy triggered |
+| `manus-persistent-drive` | this commit | — |
+
+### What Was Built
+1. **Molecular Discovery Bridge** — asi-evolve loop emits best candidates to `citation.manus.space` via `POST /api/public/verify-claim`. Permanent URL written back to `CognitionStore.citation_registry`.
+2. **molecularDiscovery vertical adapter** — new `VerticalAdapter` (domainKey: `molecular_discovery`) in ttruthdesk with QUANTUM_DUAL / QUANTUM_SIM / CLASSICAL trust tiers.
+3. **claimId persist fix** — `persistVerifiedClaim()` in `verifyClaimRoute.ts` ensures every new verified claim gets a real `claimId` and permanent URL. ESLint `no-explicit-any` fixed.
+4. **asi-evolve cold-start fix** — `auto_bootstrap.py` trains `AffinityPredictor` on cold start; `_get_scheduler()` returns 503 during bootstrap instead of 500.
+
+### Deployment Gap (Action Required)
+`citation.manus.space` is still running stale code (pre-`297d356`).
+The Manus webdev project (`protein-truth-desk`, website ID `5R5rZPYgTj2s3EMJSc7MVm`) needs a checkpoint + publish to pick up the four new commits.
+**Next action:** Add autodeploy step to `.github/workflows/ci.yml` so every green push to `main` publishes automatically.
+
+### Sprint Lesson
+`sprints/sprint_lesson_2026_06_22_molecular_bridge.md`
