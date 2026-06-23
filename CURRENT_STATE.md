@@ -234,3 +234,30 @@ The Manus webdev project (`protein-truth-desk`, website ID `5R5rZPYgTj2s3EMJSc7M
 
 ### Sprint Lesson
 `sprints/sprint_lesson_2026_06_22_molecular_bridge.md`
+
+---
+
+## Session 2026-06-23 — Autodeploy + Self-Direct Reactivation
+
+### What was fixed
+1. **Auto-deploy** — `ttruthdesk-platform` → `citation.manus.space` now fires automatically on every push to `main`.
+   - Added `.github/workflows/deploy.yml` (mirrors `asi-evolve-autodeploy` pattern — direct `curl` to `website.publish`, no Cloudflare needed)
+   - Set `MANUS_API_KEY` secret on `Gudmundur76/ttruthdesk-platform`
+   - First run: `version_id: 6653bf9c`, status: `published` in 23s ✅
+   - Commit: `5cab8f8`
+
+2. **Self-direct** — pm2 process `self-direct-meta` is running.
+   - `pnpm install` completed in `/home/ubuntu/self-direct`
+   - pm2 v7.0.1 installed at `/home/ubuntu/.local/bin/pm2`
+   - Started via `ecosystem.config.cjs` — polling `citation.manus.space` every 900s
+   - State restored: `WATCHING`, 0 restarts, 81MB RSS
+   - pm2 dump saved to `/home/ubuntu/.pm2/dump.pm2`
+
+### Operational commands
+```bash
+export PATH="$PATH:/home/ubuntu/.local/bin"
+pm2 status                          # check self-direct health
+pm2 logs self-direct-meta --lines 50 # view recent watcher output
+pnpm --prefix /home/ubuntu/self-direct meta:status  # state machine status
+pnpm --prefix /home/ubuntu/self-direct meta:review  # specs awaiting review
+```
