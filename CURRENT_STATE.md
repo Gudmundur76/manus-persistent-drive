@@ -1,6 +1,6 @@
 # Current State
 
-*Last updated: Phase 141 / Sprint 28 complete — 2026-06-19*
+*Last updated: Phase 149 — 2026-06-24*
 
 ## 0. Product Definition
 
@@ -29,7 +29,7 @@ The backend (`ttruthdesk-platform`) and frontend (`citation-desk`) are healthy, 
 Phase C19 complete: in-place hero citation search shipped to citation.is. The homepage now streams live verified answers directly from the hero panel. Manus checkpoint `8b259ceb`. GitHub mirror at `d10a794`. CI fully green.
 
 **Overall Product Status:** GREEN.
-- Backend: **3,253 tests passing (Phase 141)**. TSC clean. 61 adapters. Phase 141 (selfPrompt Phase 7 enhancements) merged to main (`56c74d6`). CI ✅ green.
+- Backend: **3,616/3,618 tests passing (Phase 149)**. TSC clean. 61 adapters + structural_biology vertical agent. Phase 149 (structural biology agent + ingest fixes) committed locally (`2a7c6a6`) — awaiting PAT push.
 - Frontend: **35/35 tests passing (Sprint 39 / Phase C20)**. TSC clean. Published at citation.is (`f988892`).
 - Live corpus: 4,165 claims, 856 verified, 291 source documents.
 
@@ -180,8 +180,8 @@ Root cause resolved: all papers were being extracted as `structural_biology` reg
 | Repo | Purpose | Last Push |
 |---|---|---|
 | `Gudmundur76/citation-desk` | Frontend codebase | Sprint 39 — f988892 |
-| `Gudmundur76/ttruthdesk-platform` | Backend codebase | Phase 141 selfPrompt Phase 7 — 56c74d6 |
-| `Gudmundur76/manus-persistent-drive` | Session state, phase log, memory | Phase 141 complete — 2026-06-19 |
+| `Gudmundur76/ttruthdesk-platform` | Backend codebase | Phase 149 structural_biology agent — 2a7c6a6 (local, awaiting push) |
+| `Gudmundur76/manus-persistent-drive` | Session state, phase log, memory | Phase 149 complete — 2026-06-24 |
 | `Gudmundur76/memorydesk` | Cross-project AI memory layer | Not updated this session |
 
 ---

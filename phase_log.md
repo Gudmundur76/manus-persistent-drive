@@ -110,3 +110,41 @@ Full cross-check of all 4 PRDs against codebase. Found 4 remaining gaps:
 
 ### Status
 All 4 PRDs are now 100% implemented in code. Workflow files (ci.yml, skillopt.yml) require a GitHub PAT with `workflow` scope to push.
+
+---
+
+## Phase 149 — Structural Biology Vertical Agent + Ingest Endpoint Fixes
+**Date:** 2026-06-24
+**Commit:** `2a7c6a6` (ttruthdesk-platform, local — awaiting PAT push)
+
+### Built
+- `agents/structural_biology/agent.py` — first vertical agent (430 lines)
+  - Registers, dequeues, fetches PubMed abstracts, extracts 7 claim types,
+    submits via `/api/coord/ingest`, marks task complete
+  - Claim types: protein_name, pdb_id, experimental_method, resolution,
+    organism, ligand, general_molecular
+- `agents/README.md` — agent directory documentation
+- `server/agentIngestionEndpoint.ts` — 3 bug fixes:
+  1. Drizzle ORM batch insert column mismatch (normalise all claim fields)
+  2. `no-explicit-any` → `{ cause?: unknown }` typed interface
+  3. Logger type compliance: `errData(err)` + `{ cause: causeMsg }` Record
+
+### PubMed Validation (3 fixes in agent.py)
+1. PMID validation — parse `<PMID>` from XML, discard on mismatch
+2. Title similarity guard — word-overlap Jaccard < 0.25 → discard abstract
+3. DOI scoping fix — extract DOI before early-return path
+
+### MySQL Setup (sandbox)
+- Installed mysql-server, applied all 63 Drizzle migrations
+- Created system user ID=1, applied `citationGraphEnriched` column fix
+- 49 claims, 118 documents, 139 queue items completed in live DB
+
+### Gates
+- TypeScript: 0 errors
+- ESLint: 0 errors (1 non-blocking complexity warning on `agentIngestionHandler`)
+- Tests: 3,616/3,618 passing (2 pre-existing env-var failures unrelated to changes)
+
+### Pending
+- Push `2a7c6a6` to origin (requires GitHub PAT)
+- Formalise `citationGraphEnriched` as Drizzle migration `0064`
+- Extract PubMed validation into `agents/lib/pubmed.py` shared utility
