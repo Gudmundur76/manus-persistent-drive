@@ -1,0 +1,26 @@
+name: MCP Bridge Keepalive
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes
+  workflow_dispatch:        # allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping MCP bridge health endpoint
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            --max-time 10 \
+            https://8811-ixd8xble9dhpddv0zchog-440e6543.us2.manus.computer/health \
+            || echo "000")
+          echo "Bridge status: $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "✓ Bridge is alive"
+          else
+            echo "⚠ Bridge unreachable (status=$STATUS) — sandbox may be hibernating"
+          fi
+        # Never fail the workflow — bridge being down is expected when sandbox hibernates
+        continue-on-error: true
