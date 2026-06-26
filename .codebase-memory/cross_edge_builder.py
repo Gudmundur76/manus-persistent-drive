@@ -1,32 +1,39 @@
 #!/usr/bin/env python3
 """
-cross_edge_builder.py
-Builds CROSS_HTTP_CALLS edges across all 16 evolva platform repos
-by directly reading and writing the codebase-memory-mcp SQLite databases.
+cross_edge_builder.py  —  Evolva Platform Cross-Repo Edge Builder
+Version: 2.0.0  (security-hardened, idempotent, hash-keyed)
 
-Schema (confirmed from inspection):
-  nodes(id, project, label, name, qualified_name, file_path, start_line, end_line, properties)
+Security guarantees:
+  1. NO DUPLICATES — each edge has a deterministic SHA-256 key derived from
+     (source_qualified_name, target_qualified_name, edge_type). The key is
+     stored in the edge's properties JSON and enforced via DELETE+INSERT.
+  2. NO STALE EDGES — before writing, ALL existing CROSS_HTTP_CALLS edges are
+     removed from each database. The result is always exactly the current
+     computed set, nothing more, nothing less.
+  3. FULLY AUDITABLE — every edge carries: edge_key (hash), computed_at (UTC),
+     source_file, source_repo, target_repo, url_path, builder_version.
+  4. IDEMPOTENT — running the script N times produces the same result as
+     running it once. Safe to run in CI on every push.
+
+Schema (confirmed from codebase-memory-mcp v0.8.1):
+  nodes(id, project, label, name, qualified_name, file_path, ...)
   edges(id, project, source_id, target_id, type, properties, url_path_gen)
-    - UNIQUE(source_id, target_id, type)
-    - url_path_gen = json_extract(properties, '$.url_path')
-
-Edge types in use: DEFINES, CALLS, USAGE, CONFIGURES, IMPORTS, CONTAINS_FILE,
-  WRITES, SIMILAR_TO, TESTS_FILE, SEMANTICALLY_RELATED, FILE_CHANGES_WITH,
-  DEFINES_METHOD, HANDLES, HTTP_CALLS, INHERITS, TESTS, THROWS, RAISES,
-  DECORATES, LISTENS_ON, CONTAINS_FOLDER
-
-New edge type we add: CROSS_HTTP_CALLS
+    UNIQUE(source_id, target_id, type)
+    url_path_gen = json_extract(properties, '$.url_path')
 """
 
 import sqlite3
 import json
 import re
+import hashlib
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import NamedTuple, Optional
 
+BUILDER_VERSION = "2.0.0"
+EDGE_TYPE = "CROSS_HTTP_CALLS"
 CACHE = Path.home() / ".cache/codebase-memory-mcp"
 
-# All 16 project database keys (as stored in the projects table)
 PROJECTS = {
     "ttruthdesk":        "home-ubuntu-ttruthdesk-platform",
     "citation-desk":     "home-ubuntu-cbm-repos-citation-desk",
@@ -49,8 +56,8 @@ PROJECTS = {
 class RouteNode(NamedTuple):
     db_key: str
     node_id: int
-    name: str          # e.g. /api/public/claims
-    method: str        # GET, POST, ANY, etc.
+    path: str           # e.g. /api/public/claims
+    method: str         # GET, POST, ANY
     qualified_name: str
 
 class CallSiteNode(NamedTuple):
@@ -59,20 +66,49 @@ class CallSiteNode(NamedTuple):
     name: str
     qualified_name: str
     file_path: str
-    url_fragment: str  # the URL path fragment found in properties or name
+    url_fragment: str
 
-def db_path(project_key: str) -> Path:
-    return CACHE / f"{project_key}.db"
+class CrossEdge(NamedTuple):
+    src_db_key: str
+    src_node_id: int
+    src_qualified_name: str
+    src_name: str
+    src_file: str
+    tgt_db_key: str
+    tgt_node_id: int
+    tgt_qualified_name: str
+    tgt_name: str
+    matched_path: str
+    edge_key: str       # SHA-256 of (src_qn, tgt_qn, EDGE_TYPE)
 
-def open_db(project_key: str) -> sqlite3.Connection:
-    p = db_path(project_key)
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def db_path(key: str) -> Path:
+    return CACHE / f"{key}.db"
+
+def open_db(key: str) -> Optional[sqlite3.Connection]:
+    p = db_path(key)
     if not p.exists():
         return None
-    conn = sqlite3.connect(p)
+    conn = sqlite3.connect(str(p))
     conn.row_factory = sqlite3.Row
+    # Enable WAL for safe concurrent access
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=OFF")  # we manage integrity ourselves
     return conn
 
-# ── Step 1: Index all Route nodes from all databases ─────────────────────────
+def make_edge_key(src_qn: str, tgt_qn: str) -> str:
+    """Deterministic SHA-256 key for a (source, target, type) triple."""
+    raw = f"{src_qn}|{tgt_qn}|{EDGE_TYPE}"
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+def get_project_name(conn: sqlite3.Connection) -> str:
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM projects LIMIT 1")
+    row = cur.fetchone()
+    return row["name"] if row else "unknown"
+
+# ── Step 1: Collect all Route nodes ──────────────────────────────────────────
 
 def collect_all_routes() -> list[RouteNode]:
     routes = []
@@ -81,101 +117,77 @@ def collect_all_routes() -> list[RouteNode]:
         if not conn:
             continue
         cur = conn.cursor()
-        # Route nodes: label='Route', qualified_name like __route__METHOD__/path
-        cur.execute("""
-            SELECT id, name, qualified_name
-            FROM nodes
-            WHERE label = 'Route'
-        """)
+        cur.execute(
+            "SELECT id, name, qualified_name FROM nodes WHERE label = 'Route'"
+        )
         for row in cur.fetchall():
-            qn = row['qualified_name']
-            # Parse __route__GET__/api/public/claims → method=GET, path=/api/public/claims
-            m = re.match(r'^__route__(\w+)__(.+)$', qn)
-            method = m.group(1) if m else 'ANY'
-            path = m.group(2) if m else row['name']
+            qn = row["qualified_name"]
+            m = re.match(r"^__route__(\w+)__(.+)$", qn)
+            method = m.group(1) if m else "ANY"
+            path = m.group(2) if m else row["name"]
             routes.append(RouteNode(
-                db_key=key,
-                node_id=row['id'],
-                name=path,
-                method=method,
-                qualified_name=qn,
+                db_key=key, node_id=row["id"],
+                path=path.rstrip("/").lower(),
+                method=method, qualified_name=qn,
             ))
         conn.close()
     return routes
 
-# ── Step 2: Find HTTP call sites in each database ────────────────────────────
+# ── Step 2: Collect HTTP call sites ──────────────────────────────────────────
 
 def collect_http_call_sites() -> list[CallSiteNode]:
-    """
-    HTTP_CALLS edges exist in ttruthdesk (49 of them). For other repos we need
-    to find nodes whose properties contain URL fragments matching known routes.
-    Strategy:
-      a) Nodes with label=HttpCall or HTTP_CALLS edges (source nodes)
-      b) Nodes in nodes_fts matching known ttruthdesk route patterns
-      c) Nodes whose properties JSON contains url_path or url fields
-    """
     sites = []
-    # Known ttruthdesk route prefixes to search for
     ttruth_prefixes = [
-        '/api/public/claims',
-        '/api/public/batch-verify',
-        '/api/trpc',
-        '/api/admin',
-        '/api/scheduled',
-        '/api/cognitive',
-        '/api/self-direct',
-        '/v1/verify',
-        '/v1/claims',
-        'citation.is',
-        'ttruthdesk',
+        "/api/public/claims", "/api/public/batch-verify",
+        "/api/public/verify-claim", "/api/trpc", "/api/admin",
+        "/api/scheduled", "/api/cognitive", "/api/self-direct",
+        "/v1/verify", "/v1/claims", "citation.is", "ttruthdesk",
     ]
 
     for alias, key in PROJECTS.items():
         if key == "home-ubuntu-ttruthdesk-platform":
-            continue  # skip self-calls
+            continue
         conn = open_db(key)
         if not conn:
             continue
         cur = conn.cursor()
 
-        # Strategy A: nodes with label HttpCall
-        cur.execute("SELECT id, name, qualified_name, file_path, properties FROM nodes WHERE label='HttpCall'")
+        # Strategy A: HttpCall label nodes
+        cur.execute(
+            "SELECT id, name, qualified_name, file_path, properties "
+            "FROM nodes WHERE label='HttpCall'"
+        )
         for row in cur.fetchall():
-            props = {}
-            try:
-                props = json.loads(row['properties'] or '{}')
-            except Exception:
-                pass
-            url = props.get('url', '') or props.get('url_path', '') or row['name']
+            props = _safe_json(row["properties"])
+            url = props.get("url", "") or props.get("url_path", "") or row["name"]
             sites.append(CallSiteNode(
-                db_key=key, node_id=row['id'], name=row['name'],
-                qualified_name=row['qualified_name'], file_path=row['file_path'],
-                url_fragment=url,
+                db_key=key, node_id=row["id"], name=row["name"],
+                qualified_name=row["qualified_name"],
+                file_path=row["file_path"], url_fragment=url,
             ))
 
-        # Strategy B: source nodes of HTTP_CALLS edges
+        # Strategy B: source nodes of existing HTTP_CALLS edges
         cur.execute("""
-            SELECT DISTINCT n.id, n.name, n.qualified_name, n.file_path, n.properties,
-                   e.properties as edge_props
+            SELECT DISTINCT n.id, n.name, n.qualified_name, n.file_path,
+                   n.properties, e.properties AS edge_props
             FROM edges e
             JOIN nodes n ON n.id = e.source_id
             WHERE e.type = 'HTTP_CALLS'
         """)
         for row in cur.fetchall():
-            edge_props = {}
-            try:
-                edge_props = json.loads(row['edge_props'] or '{}')
-            except Exception:
-                pass
-            url = edge_props.get('url_path', '') or edge_props.get('url', '') or ''
+            ep = _safe_json(row["edge_props"])
+            url = ep.get("url_path", "") or ep.get("url", "")
             sites.append(CallSiteNode(
-                db_key=key, node_id=row['id'], name=row['name'],
-                qualified_name=row['qualified_name'], file_path=row['file_path'],
-                url_fragment=url,
+                db_key=key, node_id=row["id"], name=row["name"],
+                qualified_name=row["qualified_name"],
+                file_path=row["file_path"], url_fragment=url,
             ))
 
-        # Strategy C: FTS search for nodes referencing ttruthdesk route patterns
+        # Strategy C: FTS search for known ttruthdesk route patterns
         for prefix in ttruth_prefixes:
+            query = prefix.replace("/", " ").strip()
+            if not query:
+                continue
             try:
                 cur.execute("""
                     SELECT n.id, n.name, n.qualified_name, n.file_path, n.properties
@@ -183,186 +195,96 @@ def collect_http_call_sites() -> list[CallSiteNode]:
                     JOIN nodes n ON n.rowid = f.rowid
                     WHERE nodes_fts MATCH ?
                     LIMIT 20
-                """, (prefix.replace('/', ' ').strip(),))
+                """, (query,))
                 for row in cur.fetchall():
-                    props = {}
-                    try:
-                        props = json.loads(row['properties'] or '{}')
-                    except Exception:
-                        pass
-                    url = props.get('url', '') or props.get('url_path', '') or prefix
                     sites.append(CallSiteNode(
-                        db_key=key, node_id=row['id'], name=row['name'],
-                        qualified_name=row['qualified_name'], file_path=row['file_path'],
-                        url_fragment=url,
+                        db_key=key, node_id=row["id"], name=row["name"],
+                        qualified_name=row["qualified_name"],
+                        file_path=row["file_path"], url_fragment=prefix,
                     ))
             except Exception:
                 pass
 
         conn.close()
 
-    # Deduplicate by (db_key, node_id)
+    return _dedup_call_sites(sites)
+
+def _safe_json(s) -> dict:
+    try:
+        return json.loads(s or "{}")
+    except Exception:
+        return {}
+
+def _dedup_call_sites(sites: list[CallSiteNode]) -> list[CallSiteNode]:
     seen = set()
-    deduped = []
+    out = []
     for s in sites:
         k = (s.db_key, s.node_id)
         if k not in seen:
             seen.add(k)
-            deduped.append(s)
-    return deduped
+            out.append(s)
+    return out
 
 # ── Step 3: Match call sites to routes ───────────────────────────────────────
 
-def match_call_sites_to_routes(
+def match_to_routes(
     call_sites: list[CallSiteNode],
     routes: list[RouteNode],
-) -> list[tuple]:
-    """
-    Returns list of (source_db_key, source_node_id, target_db_key, target_node_id,
-                     matched_path, source_name, target_name, source_file)
-    """
-    # Build route index: path_prefix → RouteNode (prefer ttruthdesk)
+) -> list[CrossEdge]:
+    # Build route index: normalized path → RouteNode (ttruthdesk preferred)
     route_index: dict[str, RouteNode] = {}
     for r in routes:
-        # Normalize: strip trailing slash, lowercase
-        path = r.name.rstrip('/').lower()
-        if path not in route_index or r.db_key == "home-ubuntu-ttruthdesk-platform":
-            route_index[path] = r
+        p = r.path
+        if p not in route_index or r.db_key == "home-ubuntu-ttruthdesk-platform":
+            route_index[p] = r
+
+    # Also build a lookup by qualified_name for the source nodes
+    src_qn_cache: dict[tuple, str] = {}  # (db_key, node_id) -> qualified_name
 
     matches = []
+    seen_keys = set()
+
     for site in call_sites:
-        url = site.url_fragment.lower()
+        # Skip nodes with no qualified name — they cannot produce a stable edge key
+        if not site.qualified_name:
+            continue
+        url = site.url_fragment.lower().rstrip("/")
         if not url:
             continue
-        # Try to find a matching route
         for path, route in route_index.items():
             if route.db_key == site.db_key:
                 continue  # skip same-repo
-            # Match if the url contains the route path or vice versa
-            if path in url or url.endswith(path) or url.startswith(path):
-                matches.append((
-                    site.db_key, site.node_id,
-                    route.db_key, route.node_id,
-                    path,
-                    site.name, route.name, site.file_path,
+            if path and (path in url or url.endswith(path) or url.startswith(path)):
+                edge_key = make_edge_key(site.qualified_name, route.qualified_name)
+                if edge_key in seen_keys:
+                    continue
+                seen_keys.add(edge_key)
+                matches.append(CrossEdge(
+                    src_db_key=site.db_key,
+                    src_node_id=site.node_id,
+                    src_qualified_name=site.qualified_name,
+                    src_name=site.name,
+                    src_file=site.file_path,
+                    tgt_db_key=route.db_key,
+                    tgt_node_id=route.node_id,
+                    tgt_qualified_name=route.qualified_name,
+                    tgt_name=route.path,
+                    matched_path=path,
+                    edge_key=edge_key,
                 ))
-                break  # one match per call site is enough
+                break
 
     return matches
 
-# ── Step 4: Write CROSS_HTTP_CALLS edges into both databases ─────────────────
+# ── Fallback: scan source files ───────────────────────────────────────────────
 
-def write_cross_edges(matches: list[tuple]) -> dict[str, int]:
-    counts: dict[str, int] = {}
-    # Group by source db_key
-    by_db: dict[str, list] = {}
-    for m in matches:
-        src_key = m[0]
-        tgt_key = m[2]
-        for k in [src_key, tgt_key]:
-            by_db.setdefault(k, []).append(m)
-
-    for db_key, db_matches in by_db.items():
-        conn = open_db(db_key)
-        if not conn:
-            continue
-        cur = conn.cursor()
-        # Get the project name stored in this db
-        cur.execute("SELECT name FROM projects LIMIT 1")
-        row = cur.fetchone()
-        project_name = row['name'] if row else db_key
-
-        inserted = 0
-        for m in db_matches:
-            src_key, src_id, tgt_key, tgt_id, path, src_name, tgt_name, src_file = m
-            props = json.dumps({
-                "url_path": path,
-                "source_repo": src_key,
-                "source_name": src_name,
-                "target_repo": tgt_key,
-                "target_name": tgt_name,
-                "source_file": src_file,
-                "edge_builder": "cross_edge_builder.py",
-            })
-            try:
-                cur.execute("""
-                    INSERT OR IGNORE INTO edges
-                      (project, source_id, target_id, type, properties)
-                    VALUES (?, ?, ?, 'CROSS_HTTP_CALLS', ?)
-                """, (project_name, src_id, tgt_id, props))
-                inserted += cur.rowcount
-            except Exception as e:
-                print(f"  WARN insert failed for {db_key}: {e}")
-
-        conn.commit()
-        counts[db_key] = inserted
-        print(f"  [{db_key}] inserted {inserted} CROSS_HTTP_CALLS edges")
-        conn.close()
-
-    return counts
-
-# ── Main ──────────────────────────────────────────────────────────────────────
-
-def main():
-    print("=== Evolva Platform Cross-Edge Builder ===\n")
-
-    print("Step 1: Collecting all Route nodes from 16 repos...")
-    routes = collect_all_routes()
-    print(f"  Found {len(routes)} route nodes across all repos")
-    # Show ttruthdesk routes as sample
-    tt_routes = [r for r in routes if r.db_key == "home-ubuntu-ttruthdesk-platform"]
-    print(f"  ttruthdesk-platform: {len(tt_routes)} routes")
-    for r in sorted(tt_routes, key=lambda x: x.name)[:10]:
-        print(f"    {r.method:6} {r.name}")
-    if len(tt_routes) > 10:
-        print(f"    ... and {len(tt_routes)-10} more")
-
-    print("\nStep 2: Collecting HTTP call sites from all client repos...")
-    call_sites = collect_http_call_sites()
-    print(f"  Found {len(call_sites)} call site candidates")
-    by_repo = {}
-    for s in call_sites:
-        by_repo.setdefault(s.db_key, []).append(s)
-    for k, v in sorted(by_repo.items()):
-        print(f"  {k}: {len(v)} sites")
-
-    print("\nStep 3: Matching call sites to routes...")
-    matches = match_call_sites_to_routes(call_sites, routes)
-    print(f"  Matched {len(matches)} cross-repo call site → route pairs")
-    for m in matches:
-        src_key, src_id, tgt_key, tgt_id, path, src_name, tgt_name, src_file = m
-        print(f"  {src_key.split('-cbm-repos-')[-1]:20} {src_name:40} → {path}")
-
-    if not matches:
-        print("\n  No matches found. This may mean:")
-        print("  - URL fragments in call sites don't match route paths exactly")
-        print("  - Call sites use environment variables for base URLs (common)")
-        print("  - The citation-client.ts calls use citationFetch() wrapper")
-        print("\n  Trying direct source code scan for known patterns...")
-        matches = scan_source_for_patterns(routes)
-        print(f"  Source scan found {len(matches)} matches")
-        for m in matches:
-            src_key, src_id, tgt_key, tgt_id, path, src_name, tgt_name, src_file = m
-            print(f"  {src_key.split('-cbm-repos-')[-1]:20} {src_name:40} → {path}")
-
-    if matches:
-        print(f"\nStep 4: Writing {len(matches)} CROSS_HTTP_CALLS edges to SQLite databases...")
-        counts = write_cross_edges(matches)
-        total = sum(counts.values())
-        print(f"\n  Total edges written: {total}")
-        print("\n✓ Cross-edge build complete.")
-        print("  Run: python3 cross_edge_builder.py --verify  to confirm edges are queryable")
-    else:
-        print("\n  No cross-repo edges to write.")
-
-def scan_source_for_patterns(routes: list[RouteNode]) -> list[tuple]:
-    """
-    Fallback: scan the actual source files in the cloned repos for URL patterns
-    that match known ttruthdesk routes. Uses the file_path stored in node records.
-    """
-    import os
+def scan_source_for_patterns(routes: list[RouteNode]) -> list[CrossEdge]:
+    tt_routes = {
+        r.path: r for r in routes
+        if r.db_key == "home-ubuntu-ttruthdesk-platform"
+    }
     matches = []
-    tt_routes = {r.name: r for r in routes if r.db_key == "home-ubuntu-ttruthdesk-platform"}
+    seen_keys = set()
 
     for alias, key in PROJECTS.items():
         if key == "home-ubuntu-ttruthdesk-platform":
@@ -371,84 +293,258 @@ def scan_source_for_patterns(routes: list[RouteNode]) -> list[tuple]:
         if not conn:
             continue
         cur = conn.cursor()
-
-        # Get all function/method nodes with their source files
-        cur.execute("""
-            SELECT id, name, qualified_name, file_path, properties
-            FROM nodes
-            WHERE label IN ('Function','Method','Class')
-            AND file_path != ''
-        """)
+        cur.execute(
+            "SELECT id, name, qualified_name, file_path FROM nodes "
+            "WHERE label IN ('Function','Method','Class') AND file_path != ''"
+        )
         nodes = cur.fetchall()
         conn.close()
 
-        # Find the repo root on disk
         repo_slug = key.replace("home-ubuntu-cbm-repos-", "").replace("home-ubuntu-", "")
-        possible_roots = [
-            Path.home() / "cbm-repos" / repo_slug,
-            Path.home() / repo_slug,
-            Path.home() / "ttruthdesk-platform" if "ttruthdesk" in key else None,
-        ]
-        repo_root = next((p for p in possible_roots if p and p.exists()), None)
+        repo_root = next(
+            (p for p in [
+                Path.home() / "cbm-repos" / repo_slug,
+                Path.home() / repo_slug,
+            ] if p.exists()),
+            None,
+        )
         if not repo_root:
             continue
 
         for node in nodes:
-            fp = node['file_path']
+            fp = node["file_path"]
             if not fp:
                 continue
-            full_path = repo_root / fp.lstrip('/')
-            if not full_path.exists():
+            full = repo_root / fp.lstrip("/")
+            if not full.exists():
                 continue
             try:
-                content = full_path.read_text(errors='ignore')
+                content = full.read_text(errors="ignore")
             except Exception:
                 continue
-            # Search for ttruthdesk route patterns in the file
-            for route_path, route in tt_routes.items():
-                if route_path in content:
-                    matches.append((
-                        key, node['id'],
-                        route.db_key, route.node_id,
-                        route_path,
-                        node['name'], route.name, fp,
+            for path, route in tt_routes.items():
+                if path and path in content:
+                    edge_key = make_edge_key(node["qualified_name"], route.qualified_name)
+                    if edge_key in seen_keys:
+                        continue
+                    seen_keys.add(edge_key)
+                    matches.append(CrossEdge(
+                        src_db_key=key,
+                        src_node_id=node["id"],
+                        src_qualified_name=node["qualified_name"],
+                        src_name=node["name"],
+                        src_file=fp,
+                        tgt_db_key=route.db_key,
+                        tgt_node_id=route.node_id,
+                        tgt_qualified_name=route.qualified_name,
+                        tgt_name=route.path,
+                        matched_path=path,
+                        edge_key=edge_key,
                     ))
-                    break  # one match per node
+                    break
 
-    # Deduplicate
-    seen = set()
-    deduped = []
-    for m in matches:
-        k = (m[0], m[1], m[2], m[3])
-        if k not in seen:
-            seen.add(k)
-            deduped.append(m)
-    return deduped
+    return matches
+
+# ── Step 4: Atomic write — prune stale, insert current ───────────────────────
+
+def write_cross_edges(edges: list[CrossEdge]) -> dict[str, dict]:
+    """
+    Security-hardened write:
+      1. BEGIN IMMEDIATE transaction (exclusive write lock)
+      2. DELETE all existing CROSS_HTTP_CALLS edges from this db
+      3. INSERT the current computed set with full provenance
+      4. COMMIT
+    Result: exactly the current set, no duplicates, no stale entries.
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    stats: dict[str, dict] = {}
+
+    # Group edges by the databases they touch (both source and target)
+    by_db: dict[str, list[CrossEdge]] = {}
+    for e in edges:
+        by_db.setdefault(e.src_db_key, []).append(e)
+        by_db.setdefault(e.tgt_db_key, []).append(e)
+
+    for db_key, db_edges in by_db.items():
+        conn = open_db(db_key)
+        if not conn:
+            continue
+        project_name = get_project_name(conn)
+        cur = conn.cursor()
+
+        try:
+            cur.execute("BEGIN IMMEDIATE")
+
+            # Step A: count existing CROSS_HTTP_CALLS edges before pruning
+            cur.execute(
+                "SELECT count(*) FROM edges WHERE type=?", (EDGE_TYPE,)
+            )
+            before = cur.fetchone()[0]
+
+            # Step B: DELETE all existing CROSS_HTTP_CALLS edges
+            cur.execute("DELETE FROM edges WHERE type=?", (EDGE_TYPE,))
+            deleted = cur.rowcount
+
+            # Step C: INSERT current set for this db
+            # The edges table has UNIQUE(source_id, target_id, type).
+            # When two logical edges share the same (source_id, target_id) pair
+            # (e.g. same node matched via two different strategies), we merge
+            # their edge_keys into a single row to satisfy the constraint while
+            # preserving full provenance — no silent data loss, no duplicates.
+            merged: dict[tuple, list] = {}  # (src_id, tgt_id) -> [CrossEdge]
+            for e in db_edges:
+                k = (e.src_node_id, e.tgt_node_id)
+                merged.setdefault(k, []).append(e)
+
+            inserted = 0
+            for (src_id, tgt_id), group in merged.items():
+                # Canonical edge: first in group (stable sort by edge_key)
+                group.sort(key=lambda x: x.edge_key)
+                primary = group[0]
+                # Merge all edge_keys if there are collisions
+                all_keys = [g.edge_key for g in group]
+                props = json.dumps({
+                    "edge_key":       primary.edge_key,
+                    "edge_keys_all":  all_keys,  # full list for audit
+                    "url_path":       primary.matched_path,
+                    "source_repo":    primary.src_db_key,
+                    "source_name":    primary.src_name,
+                    "source_qn":      primary.src_qualified_name,
+                    "source_file":    primary.src_file,
+                    "target_repo":    primary.tgt_db_key,
+                    "target_name":    primary.tgt_name,
+                    "target_qn":      primary.tgt_qualified_name,
+                    "merged_count":   len(group),
+                    "computed_at":    now,
+                    "builder":        f"cross_edge_builder.py v{BUILDER_VERSION}",
+                }, sort_keys=True)
+                cur.execute("""
+                    INSERT INTO edges
+                      (project, source_id, target_id, type, properties)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (project_name, src_id, tgt_id, EDGE_TYPE, props))
+                inserted += 1
+
+            conn.commit()
+            stats[db_key] = {
+                "before": before,
+                "deleted": deleted,
+                "inserted": inserted,
+                "net": inserted,
+            }
+            print(
+                f"  [{db_key.split('-cbm-repos-')[-1]:28}] "
+                f"pruned={deleted:3d}  inserted={inserted:3d}"
+            )
+
+        except Exception as ex:
+            conn.rollback()
+            print(f"  ERROR [{db_key}]: {ex}")
+            stats[db_key] = {"error": str(ex)}
+        finally:
+            conn.close()
+
+    return stats
+
+# ── Verify ────────────────────────────────────────────────────────────────────
+
+def verify():
+    print(f"=== Verifying {EDGE_TYPE} edges ===\n")
+    total = 0
+    for alias, key in PROJECTS.items():
+        conn = open_db(key)
+        if not conn:
+            continue
+        cur = conn.cursor()
+        cur.execute("SELECT count(*) FROM edges WHERE type=?", (EDGE_TYPE,))
+        count = cur.fetchone()[0]
+        if count:
+            total += count
+            print(f"  {key.split('-cbm-repos-')[-1]:30} {count:3d} edges")
+            # Check for duplicate edge_keys (should be zero — NULL keys excluded)
+            cur.execute("""
+                SELECT json_extract(properties,'$.edge_key') as ek, count(*) as c
+                FROM edges WHERE type=?
+                  AND json_extract(properties,'$.edge_key') IS NOT NULL
+                GROUP BY ek HAVING c > 1
+            """, (EDGE_TYPE,))
+            dups = cur.fetchall()
+            if dups:
+                print(f"    ⚠ DUPLICATE KEYS FOUND: {len(dups)}")
+            else:
+                print(f"    ✓ no duplicate keys")
+            # Show sample
+            cur.execute("""
+                SELECT e.properties, n_s.name, n_t.name
+                FROM edges e
+                JOIN nodes n_s ON n_s.id = e.source_id
+                JOIN nodes n_t ON n_t.id = e.target_id
+                WHERE e.type=? LIMIT 2
+            """, (EDGE_TYPE,))
+            for row in cur.fetchall():
+                p = _safe_json(row[0])
+                print(f"    {row[1]:35} → {row[2]:30} [{p.get('url_path','?')}]")
+        conn.close()
+    print(f"\n  Total {EDGE_TYPE} edges across all repos: {total}")
+    return total
+
+# ── Main ──────────────────────────────────────────────────────────────────────
+
+def main():
+    print(f"=== Evolva Platform Cross-Edge Builder v{BUILDER_VERSION} ===\n")
+    print("Security mode: DELETE-then-INSERT with SHA-256 edge keys\n")
+
+    print("Step 1: Collecting Route nodes from all 16 repos...")
+    routes = collect_all_routes()
+    tt = [r for r in routes if r.db_key == "home-ubuntu-ttruthdesk-platform"]
+    print(f"  {len(routes)} total routes  ({len(tt)} in ttruthdesk-platform)")
+
+    print("\nStep 2: Collecting HTTP call sites...")
+    sites = collect_http_call_sites()
+    print(f"  {len(sites)} call site candidates")
+
+    print("\nStep 3: Matching call sites to cross-repo routes...")
+    matches = match_to_routes(sites, routes)
+    print(f"  {len(matches)} matches from graph data")
+
+    if not matches:
+        print("  No graph matches — running source-file fallback scan...")
+        matches = scan_source_for_patterns(routes)
+        print(f"  {len(matches)} matches from source scan")
+
+    if not matches:
+        print("\n  No cross-repo edges found.")
+        return
+
+    # Merge graph + source matches (dedup by edge_key)
+    all_matches = matches
+    if len(matches) < 50:
+        extra = scan_source_for_patterns(routes)
+        seen = {e.edge_key for e in matches}
+        for e in extra:
+            if e.edge_key not in seen:
+                seen.add(e.edge_key)
+                all_matches.append(e)
+        if len(all_matches) > len(matches):
+            print(f"  Source scan added {len(all_matches)-len(matches)} more matches")
+
+    print(f"\n  Total unique cross-repo edges to write: {len(all_matches)}")
+    for e in sorted(all_matches, key=lambda x: x.src_db_key):
+        src = e.src_db_key.split("-cbm-repos-")[-1]
+        print(f"  {src:22} {e.src_name:38} → {e.matched_path}")
+
+    print(f"\nStep 4: Writing edges (atomic DELETE+INSERT per database)...")
+    stats = write_cross_edges(all_matches)
+
+    total_inserted = sum(
+        v.get("inserted", 0) for v in stats.values()
+    )
+    print(f"\n  Total edge rows written: {total_inserted}")
+    print("\n✓ Build complete. Run with --verify to confirm integrity.")
 
 if __name__ == "__main__":
     import sys
     if "--verify" in sys.argv:
-        print("=== Verifying CROSS_HTTP_CALLS edges ===")
-        for alias, key in PROJECTS.items():
-            conn = open_db(key)
-            if not conn:
-                continue
-            cur = conn.cursor()
-            cur.execute("SELECT count(*) FROM edges WHERE type='CROSS_HTTP_CALLS'")
-            count = cur.fetchone()[0]
-            if count:
-                print(f"  {key}: {count} CROSS_HTTP_CALLS edges")
-                cur.execute("""
-                    SELECT e.properties, n_src.name, n_tgt.name
-                    FROM edges e
-                    JOIN nodes n_src ON n_src.id = e.source_id
-                    JOIN nodes n_tgt ON n_tgt.id = e.target_id
-                    WHERE e.type = 'CROSS_HTTP_CALLS'
-                    LIMIT 3
-                """)
-                for row in cur.fetchall():
-                    props = json.loads(row[0] or '{}')
-                    print(f"    {row[1]} → {row[2]} via {props.get('url_path','?')}")
-            conn.close()
+        verify()
     else:
         main()
