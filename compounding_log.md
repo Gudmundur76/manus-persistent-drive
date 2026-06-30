@@ -238,3 +238,120 @@ Real-time MRAgent detections now persisted to `contradictionAlerts` DB table. Se
 
 4,272 passing | 3 skipped | 1 pre-existing failure (live Kimi API key expired)
 TSC: 0 errors | ESLint: 0 warnings | Pre-push quality gate: green
+
+---
+
+## Phase 143 — evolva-mragent Memory Server (2026-06-30)
+
+**Repo:** `Gudmundur76/evolva-mragent` (new — greenfield build)
+**Client contract:** `server/mrAgentClient.ts` @ ttruthdesk-platform commit `563e7ac`
+**Commit:** `8ec77dc` (initial build, 9 files, 1,250 insertions)
+
+### What was built
+
+`evolva-mragent` is the standalone Python/FastAPI HTTP memory server that fulfils the server-side contract for all three MRAgent hooks wired into `analysisPipeline.ts` in Phases 141–142.
+
+**`memory_store.py`** — Thread-safe in-process episodic memory store
+- `ingest(episode_id, text, origin, tags, citation)` — stores episode with `all-MiniLM-L6-v2` embedding (384-dim, ~80 MB). Falls back to Jaccard keyword overlap when `sentence-transformers` is unavailable. Idempotent upsert by `episode_id`.
+- `query(text, top_k)` — cosine similarity search over stored embeddings, sorted descending. Returns `[{episode_id, text, origin, score, citation}]`.
+- `reconstruct(claim, top_k)` — synthesises a short natural-language answer from top-k episodes with score ≥ 0.30. Returns `(answer_text, episodes_used_count)`.
+- `stats()` — returns `{episode_count, key_node_count, link_count}`. `key_node_count` = unique verdict labels seen. `link_count` = cross-episode tag-overlap links.
+- Module-level singleton `get_store()` — shared across all requests.
+
+**`app.py`** — FastAPI application, four endpoints matching `mrAgentClient.ts` TypeScript interfaces exactly:
+
+| Method | Path | TypeScript interface |
+|--------|------|----------------------|
+| `POST` | `/ingest` | `IngestResult { success, episode_id, has_embedding, error? }` |
+| `POST` | `/query` | `QueryResult { episodes: MemoryEpisode[], total_in_memory, error? }` |
+| `POST` | `/reconstruct` | `ReconstructResult { answer, episodes_used, error? }` |
+| `GET` | `/stats` | `MemoryStats { episode_count, key_node_count, link_count, error? }` |
+| `GET` | `/health` | `{ status: "ok", episode_count }` |
+
+Default port: **8002** (matches `ENV.mrAgentUrl = http://localhost:8002` in ttruthdesk).
+
+**`scripts/start-agent-server.sh`** — start script referenced in ttruthdesk `server/_core/env.ts` comment. Auto-installs deps, binds on `MR_AGENT_HOST:MR_AGENT_PORT`.
+
+**`tests/test_server.py`** — 54 pytest tests across 9 test classes:
+- `TestMemoryStore` — unit tests for all store methods
+- `TestIngestEndpoint` — 6 tests including upsert and 422 validation
+- `TestQueryEndpoint` — 8 tests including score ordering and top_k limits
+- `TestReconstructEndpoint` — 6 tests
+- `TestStatsEndpoint` — 5 tests including key_node deduplication
+- `TestHealthEndpoint` — 1 test
+- `TestEpisodeTextFormat` — 6 tests for `VERDICT: X\nCLAIM: Y` parsing contract
+- `TestContradictionPolarity` — 3 tests for Supported/Contradicted/Ambiguous storage
+- `TestErrorResilience` — 5 tests for non-blocking behaviour on empty store / malformed input
+
+**Test result: 54 passed, 0 failed, 0 errors.**
+
+### Episode text format (load-bearing contract)
+
+```
+VERDICT: <verdict>
+CLAIM: <claimText>
+```
+
+This format is parsed by:
+- `mrAgentContradictionCheck.ts` — `/^VERDICT:\s*(.+?)(?:\n|$)/`
+- `claimSimilarityEngine.ts` — `parseEpisodeToClaim()`
+- `memory_store.py` — `_extract_verdict()` / `_extract_claim()`
+
+**DO NOT change this format.**
+
+### Activation
+
+Set in ttruthdesk Manus secrets panel:
+```
+MR_AGENT_ENABLED=true
+MR_AGENT_URL=http://localhost:8002
+```
+
+This activates all three non-blocking hooks in `analysisPipeline.ts`:
+1. `fetchPriorContext()` — pre-flight context injection into `extractClaims()` system prompt
+2. `querySimilarVerdicts()` — real-time contradiction detection via `mrAgentContradictionCheck.ts`
+3. `ingestVerifiedClaim()` — autopilot episodic write via `trainingExporter.ts` (confidence ≥ 0.85)
+
+### File manifest
+
+```
+evolva-mragent/
+├── app.py                          # FastAPI server — 4 endpoints
+├── memory_store.py                 # Thread-safe episodic store + cosine similarity
+├── requirements.txt                # fastapi, uvicorn, pydantic, numpy, sentence-transformers, pytest, httpx
+├── pytest.ini                      # testpaths = tests
+├── README.md                       # Full documentation
+├── .gitignore
+├── scripts/
+│   └── start-agent-server.sh       # chmod +x, auto-installs deps
+└── tests/
+    ├── conftest.py
+    └── test_server.py              # 54 tests, 9 classes
+```
+
+### GitHub push status
+
+GitHub CLI not authenticated in this Manus sandbox session (`GH_TOKEN` empty). Local commit `8ec77dc` is ready. Push command:
+
+```bash
+git remote add origin https://ghp_YOUR_PAT@github.com/Gudmundur76/evolva-mragent.git
+gh repo create Gudmundur76/evolva-mragent --private \
+  --description "Episodic memory server for the ttruthdesk verification pipeline — Phase 143"
+git push -u origin main
+```
+
+Archive delivered: `evolva-mragent-phase143.zip` (44K, all source files).
+
+### Next phase candidates
+
+- **Phase 144** — Activate `MR_AGENT_ENABLED=true` in ttruthdesk production + smoke-test end-to-end (ingest → query → reconstruct cycle on 10 live claims)
+- **Phase 145** — Add persistence layer to `memory_store.py` (SQLite or JSONL append-log) so episodes survive server restarts
+- **Phase 146** — Wire `codebase-memory-mcp` graph snapshot to include `evolva-mragent` nodes
+
+### Locked decisions carried forward
+
+- Episode text format `VERDICT: X\nCLAIM: Y` — immutable
+- Port 8002 — matches ttruthdesk `ENV.mrAgentUrl`
+- All four endpoint paths (`/ingest`, `/query`, `/reconstruct`, `/stats`) — immutable (37 ttruthdesk tests depend on them)
+- `mrAgentClient.ts` response shapes — immutable
+- Non-blocking hook design in `analysisPipeline.ts` — immutable

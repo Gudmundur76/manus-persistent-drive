@@ -1,6 +1,6 @@
 # Current State
 
-*Last updated: Phase 141–142 — 2026-06-30*
+*Last updated: Phase 143 — 2026-06-30*
 
 ## 0. Product Definition
 
@@ -345,3 +345,57 @@ codebase-memory index ~/repos/ttruthdesk-platform
 The science layer is real (ChEMBL RF model, RDKit mutations, CRISPRscan). The pipeline runs end-to-end. The gap is operational: no real partner, no wet-lab validation, deployed URL down. One binding assay (~$500) + one real partner registration converts this from a computational demo to a licensable asset.
 
 Full detail: `sessions/session-2026-06-30-sprint3-drug-discovery.md`
+
+
+---
+
+## Phase 143 — evolva-mragent Memory Server Built (2026-06-30)
+
+**New repo:** `Gudmundur76/evolva-mragent` — standalone Python/FastAPI episodic memory server
+**Local commit:** `8ec77dc` (ready to push — GH_TOKEN not available in this Manus session)
+**Test result:** 54/54 passed, 0 failed
+
+### What was built
+
+The server-side implementation for all three MRAgent hooks wired into `analysisPipeline.ts` during Phases 141–142. The client contract (`server/mrAgentClient.ts` @ `563e7ac`) was the sole specification — all endpoint paths, response shapes, and TypeScript interfaces are matched exactly.
+
+**Endpoints:**
+
+| Method | Path | Caller in ttruthdesk |
+|--------|------|----------------------|
+| `POST /ingest` | Store episode with embedding | `trainingExporter.ts` → `ingestVerifiedClaim()` |
+| `POST /query` | Cosine similarity search | `mrAgentContradictionCheck.ts` → `querySimilarVerdicts()` |
+| `POST /reconstruct` | Synthesise answer from top-k | `mrAgentClient.ts` → `fetchPriorContext()` |
+| `GET /stats` | Corpus metrics | `mrAgentClient.ts` → `getMemoryStats()` |
+
+**Embedding model:** `all-MiniLM-L6-v2` (384-dim, ~80 MB, CPU). Jaccard keyword fallback when unavailable.
+
+**Episode text format (immutable):**
+```
+VERDICT: <verdict>
+CLAIM: <claimText>
+```
+
+### Activation
+
+```
+MR_AGENT_ENABLED=true
+MR_AGENT_URL=http://localhost:8002
+```
+
+Set in ttruthdesk Manus secrets panel. All three hooks are already wired and non-blocking — this is the only step needed.
+
+### Push command (run locally with PAT)
+
+```bash
+cd evolva-mragent
+git remote add origin https://ghp_YOUR_PAT@github.com/Gudmundur76/evolva-mragent.git
+gh repo create Gudmundur76/evolva-mragent --private
+git push -u origin main
+```
+
+### Next phase candidates
+
+- **Phase 144** — Activate `MR_AGENT_ENABLED=true` in ttruthdesk production + smoke-test 10 live claims
+- **Phase 145** — Add SQLite persistence to `memory_store.py` (episodes survive restarts)
+- **Phase 146** — Wire `codebase-memory-mcp` to include `evolva-mragent` nodes
