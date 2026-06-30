@@ -421,3 +421,63 @@ Set these in the ttruthdesk Manus secrets panel. The three hooks in `analysisPip
 - **Phase 145** — Add SQLite persistence to `memory_store.py` (episodes survive restarts)
 - **Phase 146** — Install `sentence-transformers` on production host + re-run smoke test with real embeddings
 - **Phase 147** — Wire `codebase-memory-mcp` graph snapshot to include `evolva-mragent` nodes
+
+---
+
+## Phase 145 — Real Embeddings Activated: Smoke Test PASSED (2026-06-30)
+
+**Task:** Install `sentence-transformers==3.0.1`, restart evolva-mragent, re-run smoke test with 384-dim cosine similarity
+**Server:** `evolva-mragent` @ `http://localhost:8002` (commit `24945ec`)
+**Embedding model:** `all-MiniLM-L6-v2` (384-dim, CPU, ~80 MB, cached at `~/.cache/huggingface/hub/`)
+**Result:** **PASSED — 10/10 claims, all assertions green, 0 errors**
+
+### Score comparison: Jaccard fallback vs real embeddings
+
+| Metric | Phase 144 (Jaccard) | Phase 145 (all-MiniLM-L6-v2) | Delta |
+|--------|--------------------|-----------------------------|-------|
+| Self-match score range | 0.73–0.86 | **0.94–0.98** | +0.12–0.21 |
+| Cross-query: ivermectin COVID | 0.25 | **0.87** | +0.62 |
+| Cross-query: HIV protease | 0.24 | **0.81** | +0.57 |
+| `link_count` (semantic links) | 17 | **61** | +44 |
+| Reconstruct `episodes_used` | 1 (all) | **1–2** (multi-episode synthesis active) |
+| Reconstruct answer length | 140–196 chars | **140–387 chars** (richer context) |
+
+### Cross-query polarity verification (real embeddings)
+
+**Query: "ivermectin COVID-19 treatment benefit"**
+- `smoke-09` (Contradicted) ranked #1 at score **0.8673** ✓ — contradiction polarity correctly surfaced
+- `smoke-07` (Supported, COVID vaccine) ranked #2 at 0.5579 — semantically adjacent, correct
+- `smoke-03` (Contradicted, homeopathy) ranked #3 at 0.2394 — weak but plausible (both contradicted)
+
+**Query: "HIV protease crystal structure resolution"**
+- `smoke-01` (Supported, HIV protease 1.09 Å) ranked #1 at score **0.8062** ✓ — exact domain match
+- `smoke-06` (Partially Supported, insulin receptor 1.9 Å) ranked #2 at 0.3171 — correct (both structural biology)
+
+**Reconstruct: "BRCA1 gene mutation cancer risk genome editing"**
+- `episodes_used=2` — synthesised from `smoke-04` (BRCA1) + `smoke-10` (CRISPR) ✓
+- Answer: *"Previously verified: BRCA1 mutations significantly increase lifetime risk... → Supported. Previously verified: CRISPR-Cas9 enables precise genome editing..."*
+
+### Production requirements
+
+```
+# On the ttruthdesk production host:
+pip install "sentence-transformers==3.0.1"
+
+# Env vars (Manus secrets panel):
+MR_AGENT_ENABLED=true
+MR_AGENT_URL=http://localhost:8002
+```
+
+Model weights (~80 MB) are cached automatically on first startup at `~/.cache/huggingface/hub/`.
+
+### GitHub commits
+
+| Repo | Commit | Content |
+|------|--------|---------|
+| `Gudmundur76/evolva-mragent` | `24945ec` | Updated smoke test + Phase 145 results |
+
+### Next phase candidates
+
+- **Phase 146** — SQLite persistence in `memory_store.py` (episodes survive restarts)
+- **Phase 147** — Wire `codebase-memory-mcp` graph snapshot to include `evolva-mragent` nodes
+- **Phase 148** — Add `requirements.txt` pin for `sentence-transformers==3.0.1` and update `start-agent-server.sh` to auto-install if missing
