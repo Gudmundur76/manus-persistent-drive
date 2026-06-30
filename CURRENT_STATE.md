@@ -308,3 +308,40 @@ codebase-memory index ~/repos/ttruthdesk-platform
 
 ### Phase log
 `context/phase-log/phase-141-142.md`
+
+---
+
+## Session 2026-06-30 — Drug Discovery Sprint 3 + Chemistry Fix + Memory Infrastructure
+
+### Repos Touched
+
+| Repo | Commits | Status |
+|---|---|---|
+| `Gudmundur76/asi-evolve-discovery-engine` | `b8b5ecd`, `0ebb055` | GREEN |
+| `Gudmundur76/generic-signal-api` | `d207bbc`, `aaf5362` | GREEN (deployed URL down — Manus billing) |
+| `Gudmundur76/dna-evolve` | No new commits | GREEN (local only) |
+
+### What Was Built
+
+1. **RDKit SMILES mutation engine** — 5 strategies, Tanimoto dedup, plateau detector
+2. **Chemistry validity filter** — 20 SMARTS patterns rejecting O-F, N-F, peroxides, azides, acyl halides, hypervalent atoms. Critical fix: seed SMILES had O-F bond (hypofluorite) — all prior candidates were chemically impossible.
+3. **DnaEvolveResult interface mapping** — `layer`, `notusEnriched`, `verification` flow end-to-end
+4. **End-to-end loop verified** — `candidatesDelivered: 2`, `approvalsRequired: 1`, `errors: []`
+5. **Three unused components wired** — `resistAgent` (37 mutation panel), `patentArbitrage` (8 jurisdictions), `EvidenceBuilder` (PDF generation)
+6. **PubMed citation fallback** — FTO no longer always BLOCKED
+7. **CLAUDE.md written** for `asi-evolve-discovery-engine`, `generic-signal-api`, `dna-evolve`
+8. **Session report** written to `sessions/session-2026-06-30-sprint3-drug-discovery.md`
+
+### Critical Blockers Before Production
+
+- `generic-signal-api` deployed URL is DOWN — deploy to Railway
+- `minCompositeScore` lowered to 0.50 for sandbox — restore to 0.70
+- `compositeBelow80` gate disabled — re-enable
+- `LOOP_SERVICE_KEY` not set in production
+- Drizzle schema drift in 4 tables
+
+### Honest Value Assessment
+
+The science layer is real (ChEMBL RF model, RDKit mutations, CRISPRscan). The pipeline runs end-to-end. The gap is operational: no real partner, no wet-lab validation, deployed URL down. One binding assay (~$500) + one real partner registration converts this from a computational demo to a licensable asset.
+
+Full detail: `sessions/session-2026-06-30-sprint3-drug-discovery.md`
