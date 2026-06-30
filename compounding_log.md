@@ -355,3 +355,69 @@ Archive delivered: `evolva-mragent-phase143.zip` (44K, all source files).
 - All four endpoint paths (`/ingest`, `/query`, `/reconstruct`, `/stats`) — immutable (37 ttruthdesk tests depend on them)
 - `mrAgentClient.ts` response shapes — immutable
 - Non-blocking hook design in `analysisPipeline.ts` — immutable
+
+---
+
+## Phase 144 — MRAgent Smoke Test: PASSED (2026-06-30)
+
+**Task:** Activate `MR_AGENT_ENABLED=true` and smoke-test 10 live claims through the full ingest → query → reconstruct cycle
+**Server:** `evolva-mragent` @ `http://localhost:8002` (commit `8ec77dc`)
+**Script:** `smoke_test_mragent.py` (10 claims, 3 cycle legs each)
+**Result:** **PASSED — 10/10 claims, all assertions green, 0 errors**
+
+### Test matrix
+
+| # | Episode ID | Verdict | Ingest | Query (top_score) | Self-match | Reconstruct |
+|---|-----------|---------|--------|-------------------|------------|-------------|
+| 01 | smoke-01 | Supported | OK | 0.8571 | ✓ | OK (189 chars) |
+| 02 | smoke-02 | Supported | OK | 0.7857 | ✓ | OK (189 chars) |
+| 03 | smoke-03 | Contradicted | OK | 0.7692 | ✓ | OK (176 chars) |
+| 04 | smoke-04 | Supported | OK | 0.7857 | ✓ | OK (168 chars) |
+| 05 | smoke-05 | Ambiguous | OK | 0.7857 | ✓ | OK (167 chars) |
+| 06 | smoke-06 | Partially Supported | OK | 0.7778 | ✓ | OK (179 chars) |
+| 07 | smoke-07 | Supported | OK | 0.8421 | ✓ | OK (196 chars) |
+| 08 | smoke-08 | Insufficient Evidence | OK | 0.7333 | ✓ | OK (140 chars) |
+| 09 | smoke-09 | Contradicted | OK | 0.8000 | ✓ | OK (190 chars) |
+| 10 | smoke-10 | Supported | OK | 0.8421 | ✓ | OK (181 chars) |
+
+All 10 self-matches confirmed (each episode ranked #1 for its own claim text).
+
+### Final corpus stats after smoke test
+
+| Metric | Value | Assertion |
+|--------|-------|-----------|
+| `episode_count` | 10 | == 10 ✓ |
+| `key_node_count` | 5 | >= 3 ✓ (Supported, Contradicted, Ambiguous, Partially Supported, Insufficient Evidence) |
+| `link_count` | 17 | >= 1 ✓ |
+
+### Cross-query polarity verification
+
+**Query: "ivermectin COVID-19 treatment benefit"**
+- Top result: `smoke-09` (Contradicted, score=0.2500) — correct polarity surfaced first ✓
+
+**Query: "HIV protease crystal structure resolution"**
+- Top result: `smoke-01` (Supported, score=0.2381) — correct domain match ✓
+
+**Note on similarity scores:** Scores are in the 0.25–0.85 range because the `sentence-transformers` model (`all-MiniLM-L6-v2`) is not installed in this sandbox — the server is running on the **Jaccard keyword fallback**. Self-match scores (0.73–0.86) are high because the query text is the claim text verbatim. Cross-query scores (0.09–0.25) are lower as expected for different-domain claims. This is correct behaviour — the fallback is working exactly as designed.
+
+**Production note:** Install `sentence-transformers==3.0.1` on the production host for 384-dim cosine similarity. Cross-query scores will improve significantly (expected 0.4–0.7 range for related claims).
+
+### Activation instructions confirmed
+
+The exact env var names from `server/_core/env.ts`:
+```
+MR_AGENT_ENABLED=true          # process.env.MR_AGENT_ENABLED === "true"
+MR_AGENT_URL=http://localhost:8002   # process.env.MR_AGENT_URL ?? "http://localhost:8002"
+```
+
+Set these in the ttruthdesk Manus secrets panel. The three hooks in `analysisPipeline.ts` are already live and non-blocking.
+
+### Smoke test script committed
+
+`smoke_test_mragent.py` pushed to `Gudmundur76/evolva-mragent` as `scripts/smoke_test.py` for future re-runs.
+
+### Next phase candidates
+
+- **Phase 145** — Add SQLite persistence to `memory_store.py` (episodes survive restarts)
+- **Phase 146** — Install `sentence-transformers` on production host + re-run smoke test with real embeddings
+- **Phase 147** — Wire `codebase-memory-mcp` graph snapshot to include `evolva-mragent` nodes
