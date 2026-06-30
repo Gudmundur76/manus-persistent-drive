@@ -1,6 +1,6 @@
 # Current State
 
-*Last updated: Phase 149 — 2026-06-24*
+*Last updated: Phase 141–142 — 2026-06-30*
 
 ## 0. Product Definition
 
@@ -68,8 +68,8 @@ Root cause resolved: all papers were being extracted as `structural_biology` reg
 - **Role:** Core engine, API provider, autonomous ingestion loop, citation search, and live query router.
 - **Repo:** `Gudmundur76/ttruthdesk-platform`
 - **Production URL:** https://ttruthdesk.claims (internal engine — to be retired in favour of api.citation.is)
-- **Current State:** GREEN — 3,022 tests passing (Sprint 38). TSC clean. CI ✅
-- **Last Known Commit:** `2c4a914` (CI hardening — pre-push lint gate + ci:local script)
+- **Current State:** GREEN — 4,272 tests passing (Phase 142). TSC clean. ESLint 0 warnings. CI ✅
+- **Last Known Commit:** `563e7ac` (refactor: claimSimilarityEngine complexity fix — Phase 142)
 
 **CI Hardening (latest — 2026-06-17):**
 - `pre-push` Husky hook: TSC + full ESLint on every push (< 15s)
@@ -180,8 +180,8 @@ Root cause resolved: all papers were being extracted as `structural_biology` reg
 | Repo | Purpose | Last Push |
 |---|---|---|
 | `Gudmundur76/citation-desk` | Frontend codebase | Sprint 39 — f988892 |
-| `Gudmundur76/ttruthdesk-platform` | Backend codebase | Phase 149 structural_biology agent — 2a7c6a6 (local, awaiting push) |
-| `Gudmundur76/manus-persistent-drive` | Session state, phase log, memory | Phase 149 complete — 2026-06-24 |
+| `Gudmundur76/ttruthdesk-platform` | Backend codebase | Phase 142 memory subsystem connections — 563e7ac |
+| `Gudmundur76/manus-persistent-drive` | Session state, phase log, memory | Phase 141–142 complete — 2026-06-30 |
 | `Gudmundur76/memorydesk` | Cross-project AI memory layer | Not updated this session |
 
 ---
@@ -261,3 +261,50 @@ pm2 logs self-direct-meta --lines 50 # view recent watcher output
 pnpm --prefix /home/ubuntu/self-direct meta:status  # state machine status
 pnpm --prefix /home/ubuntu/self-direct meta:review  # specs awaiting review
 ```
+
+---
+
+## Session 2026-06-30 — Memory Feedback Loop + Subsystem Connections (Phase 141–142)
+
+### Repo State After This Session
+
+| Repo | Latest Commit | CI | Tests |
+|---|---|---|---|
+| `ttruthdesk-platform` | `563e7ac` refactor(claimSimilarityEngine) | ✓ green | 4,272 passing |
+| `manus-persistent-drive` | this commit | — | — |
+
+### What Was Built
+
+**Phase 141 — Memory Feedback Loop (3 MRAgent integrations)**
+1. `mrAgentClient.ts` — HTTP client for evolva-mragent: `fetchPriorContext`, `querySimilarVerdicts`, `ingestVerifiedClaim`, `getMemoryStats`
+2. `mrAgentContradictionCheck.ts` — real-time per-claim contradiction check via MRAgent `/query`
+3. `trainingExporter.ts` — autopilot training export (≥0.85 confidence) to MRAgent + CLF JSONL
+4. All three wired into `analysisPipeline.ts` (pre-flight context injection + non-blocking post-verdict hooks)
+5. 37 tests in `memoryFeedbackLoop.test.ts`
+
+**Phase 142 — Memory Subsystem Connections (Gap A/B/C)**
+1. **Gap A** — `mrAgentContradictionPersist.ts`: real-time detections → `contradictionAlerts` DB (same schema as weekly scan)
+2. **Gap B** — `trainingExporter.ts` Channel 3: `emitVerdictEvent()` via `trainingBridge` — high-confidence verdicts flow through CLF LoRA pipeline
+3. **Gap C** — `claimSimilarityEngine.ts`: `findSimilarClaims()` now merges MRAgent episodic results with TF-IDF DB results
+4. 23 tests in `memorySubsystemConnections.test.ts`
+
+### Infrastructure
+- **GitHub PAT** stored at `~/Documents/Access.txt` (format: `GitHub PAT: ghp_xxxx...`)
+- **codebase-memory-mcp** graph: 39,480 nodes, 60,419 edges — restore from `.codebase-memory/graph.db.gz`
+- **ENV vars** set in Manus secrets: `MR_AGENT_ENABLED=true`, `MR_AGENT_URL=http://localhost:8002`, `TRAINING_EXPORT_MIN_CONFIDENCE=0.85`, `CLF_CORPUS_PATH=/path/to/corpus.jsonl`
+
+### Session Restore Commands
+```bash
+# Restore GitHub auth
+GH_PAT=$(grep "GitHub PAT" ~/Documents/Access.txt | awk '{print $NF}')
+git -C ~/repos/ttruthdesk-platform remote set-url origin "https://${GH_PAT}@github.com/Gudmundur76/ttruthdesk-platform.git"
+
+# Restore codebase-memory graph
+export PATH="$HOME/.local/bin:$PATH"
+mkdir -p ~/.cache/codebase-memory-mcp
+gunzip -c ~/repos/ttruthdesk-platform/.codebase-memory/graph.db.gz > ~/.cache/codebase-memory-mcp/graph.db
+codebase-memory index ~/repos/ttruthdesk-platform
+```
+
+### Phase log
+`context/phase-log/phase-141-142.md`

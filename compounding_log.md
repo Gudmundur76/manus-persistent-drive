@@ -196,3 +196,45 @@ Commit: 9c4a392 on Gudmundur76/ttruthdesk-platform
 
 ### Commit
 - `ba661ae` — fix(ci): resolve Quality Gate failures — Phase 140
+
+---
+
+## Phase 141–142 — Memory Feedback Loop + Subsystem Connections (2026-06-30)
+
+### Phase 141 — MRAgent Memory Feedback Loop
+
+Three new modules wired into `analysisPipeline.ts`:
+
+- **`mrAgentClient.ts`** — HTTP client for evolva-mragent Strands server. `fetchPriorContext` (pre-flight, injects episodic context into claim extraction), `querySimilarVerdicts` (similarity search), `ingestVerifiedClaim` (episodic write), `getMemoryStats`. 5 s timeout, ECONNREFUSED silently swallowed.
+- **`mrAgentContradictionCheck.ts`** — real-time per-claim contradiction detection via MRAgent `/query`. Polarity check: POSITIVE (Supported/Partially Supported) vs NEGATIVE (Contradicted). Flags when similarity >= 0.80 and opposite polarity.
+- **`trainingExporter.ts`** — autopilot training export for verdicts with confidence >= 0.85. Channel 1: MRAgent `/ingest`. Channel 2: CLF corpus JSONL append.
+
+All three hooks are non-blocking. A downed MRAgent server produces at most one log.warn per claim.
+
+37 tests in `memoryFeedbackLoop.test.ts`. Commit: `19e5569`.
+
+### Phase 142 — Memory Subsystem Connections (Gap A/B/C)
+
+Seven memory silos existed independently. Three gaps closed:
+
+**Gap A** — `mrAgentContradictionPersist.ts`
+Real-time MRAgent detections now persisted to `contradictionAlerts` DB table. Severity auto-derived from similarity score. Upserts existing open alerts; skips resolved/dismissed. Wired into `analysisPipeline.ts` post-verdict (non-blocking).
+
+**Gap B** — `trainingExporter.ts` Channel 3
+`exportHighConfidenceVerdict` now calls `emitVerdictEvent()` via `trainingBridge`. High-confidence verdicts flow through the established CLF LoRA training pipeline — same path as `processQueryResults`. No duplicate write path.
+
+**Gap C** — `claimSimilarityEngine.ts` MRAgent episodic pass
+`findSimilarClaims()` accepts `includeMrAgentEpisodic?: boolean`. When enabled, merges MRAgent `/query` results with TF-IDF DB results. Runs even when DB corpus is empty. Deduplicates by claimId. Two helpers extracted (`parseEpisodeToClaim`, `mergeEpisodicResults`) to keep complexity <= 20.
+
+23 tests in `memorySubsystemConnections.test.ts`. Commits: `394bd11`, `563e7ac`.
+
+### Infrastructure additions
+
+- GitHub PAT stored at `~/Documents/Access.txt` — available for all future sessions
+- codebase-memory-mcp graph: 39,480 nodes, 60,419 edges — CI auto-updates snapshot on every push
+- ENV vars added: `MR_AGENT_ENABLED`, `MR_AGENT_URL`, `TRAINING_EXPORT_MIN_CONFIDENCE`, `CLF_CORPUS_PATH`
+
+### Test suite after Phase 142
+
+4,272 passing | 3 skipped | 1 pre-existing failure (live Kimi API key expired)
+TSC: 0 errors | ESLint: 0 warnings | Pre-push quality gate: green
