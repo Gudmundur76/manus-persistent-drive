@@ -1,0 +1,26 @@
+{
+  "source": "asi-evolve",
+  "publishedAt": "2026-06-30T14:15:44.912588+00:00",
+  "target": "HIV-1 Protease",
+  "chemblId": "CHEMBL2094253",
+  "cycle": 0,
+  "day": 0,
+  "bestCandidate": {
+    "smiles": "CC(C)(C)c1ccc(cc1)C(=O)N[C@@H](Cc2ccccc2)C(=O)N",
+    "pic50": 6.8,
+    "rank": 1,
+    "tracks": [
+      "test"
+    ],
+    "meanTanimoto": 0.0,
+    "citationConfidence": 0.0,
+    "pubmedIds": [],
+    "scaffoldFamily": ""
+  },
+  "cycleStats": {
+    "candidatesGenerated": 0,
+    "candidatesVerified": 0,
+    "convergenceCandidates": 0,
+    "bestPic50ThisCycle": 6.8
+  }
+}
