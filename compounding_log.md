@@ -481,3 +481,74 @@ Model weights (~80 MB) are cached automatically on first startup at `~/.cache/hu
 - **Phase 146** — SQLite persistence in `memory_store.py` (episodes survive restarts)
 - **Phase 147** — Wire `codebase-memory-mcp` graph snapshot to include `evolva-mragent` nodes
 - **Phase 148** — Add `requirements.txt` pin for `sentence-transformers==3.0.1` and update `start-agent-server.sh` to auto-install if missing
+
+---
+
+## Phase 146 — Production Activation Audit (2026-06-30)
+
+**Task:** Execute the three production activation steps for evolva-mragent
+**Result:** Steps 1 & 2 confirmed complete locally; Step 3 (production env vars) blocked by billing
+
+### Step 1: sentence-transformers==3.0.1 ✓ CONFIRMED
+
+```
+sentence-transformers: 3.0.1
+Model: all-MiniLM-L6-v2 (384-dim, CPU)
+has_embedding: true (confirmed via /ingest probe)
+```
+
+### Step 2: evolva-mragent server running ✓ CONFIRMED
+
+```
+GET /health → {"status":"ok","episode_count":11}
+GET /stats  → {"episode_count":11,"key_node_count":5,"link_count":61}
+POST /ingest → {"success":true,"has_embedding":true}
+```
+
+Server is running at `http://localhost:8002` with real 384-dim cosine similarity active.
+
+### Step 3: Set MR_AGENT_ENABLED=true in production ⚠ BLOCKED — BILLING
+
+**Finding:** `citation.is` (the ttruthdesk production deployment) is currently returning:
+
+> **"Site unavailable due to unpaid billing"**
+> Contact owner to update billing in Manus to bring it back
+
+The Manus project `B3hinGKAW5hz4RPqxMD4DP` (citation.is) is suspended due to billing.
+The env vars `MR_AGENT_ENABLED=true` and `MR_AGENT_URL` cannot be set until the project is reactivated.
+
+**env.ts contract confirmed:**
+```typescript
+// server/_core/env.ts lines 137-141
+// MRAgent memory server (evolva-mragent Strands HTTP server)
+// Set MR_AGENT_ENABLED=true and MR_AGENT_URL=http://<host>:8002
+mrAgentEnabled: process.env.MR_AGENT_ENABLED === "true",
+mrAgentUrl: process.env.MR_AGENT_URL ?? "http://localhost:8002",
+```
+
+**Env vars are set via:** Manus project Settings → Environment Variables UI (not API-accessible).
+
+### Action required from owner
+
+1. Restore billing for Manus project `B3hinGKAW5hz4RPqxMD4DP` (citation.is)
+2. In project Settings → Environment Variables, add:
+   - `MR_AGENT_ENABLED` = `true`
+   - `MR_AGENT_URL` = `http://localhost:8002` (or the production host IP if evolva-mragent runs on a separate host)
+3. Redeploy (click Publish or checkpoint)
+
+### Local state summary
+
+All three components are fully built and verified:
+
+| Component | Status |
+|-----------|--------|
+| `sentence-transformers==3.0.1` | ✓ Installed |
+| `evolva-mragent` server | ✓ Running on port 8002, real embeddings active |
+| `ttruthdesk` hooks (`analysisPipeline.ts`) | ✓ Wired and non-blocking (Phases 141–142) |
+| Production env vars | ⚠ Pending billing restoration |
+
+### Next phase candidates
+
+- **Phase 147** — SQLite persistence in `memory_store.py` (episodes survive restarts)
+- **Phase 148** — Add `MR_AGENT_ENABLED` and `MR_AGENT_URL` to `DEPLOYMENT.md` optional integrations table
+- **Phase 149** — Wire `codebase-memory-mcp` graph snapshot to include `evolva-mragent` nodes
