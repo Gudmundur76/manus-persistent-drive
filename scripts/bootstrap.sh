@@ -1,187 +1,188 @@
 #!/usr/bin/env bash
 # =============================================================================
-# bootstrap.sh — Meta-Development Command Centre Session Initialization
-# UPDATED: Sprint 0 — 2026-06-14
+# bootstrap.sh — Fully self-contained session initialiser (v2 — 2026-06-30)
 #
-# NEW USAGE (track-aware):
-#   bash scripts/bootstrap.sh <track_name> [session_id]
-#   Tracks: ttruthdesk-platform | cognitive-loop-framework
+# PURPOSE: Run this at the START of every Manus session. One command does all:
+#   0. Reads GitHub PAT from ~/Documents/Access.txt
+#   1. Clones / updates manus-persistent-drive
+#   2. Clones / updates ttruthdesk-platform (with push auth)
+#   3. Installs codebase-memory-mcp binary if missing
+#   4. Restores the knowledge graph from committed snapshot
+#   5. Prints CURRENT_STATE.md summary + last compounding log entries
+#   6. Prints session-end sync reminder
 #
-# LEGACY USAGE (still supported):
-# ─────────────────────────────────────────────────────────────────────────────
-# bootstrap.sh — Session-start persistent memory loader
+# ONE-COMMAND USAGE (fresh sandbox — paste this):
+#   bash <(curl -fsSL https://raw.githubusercontent.com/Gudmundur76/manus-persistent-drive/main/scripts/bootstrap.sh)
 #
-# PURPOSE: Run this at the START of every Manus agent session to:
-#   1. Pull the latest state from GitHub
-#   2. Load the current session context into the agent's working memory
-#   3. Register this session in the task registry
-#   4. Print a summary of where the project stands
+# LOCAL USAGE (drive already cloned):
+#   bash ~/repos/manus-persistent-drive/scripts/bootstrap.sh
 #
-# USAGE:
-#   cd /home/ubuntu
-#   git clone https://github.com/Gudmundur76/manus-persistent-drive.git
-#   bash manus-persistent-drive/scripts/bootstrap.sh [SESSION_ID] [TASK_TYPE]
-#
-# ARGUMENTS:
-#   SESSION_ID  — unique identifier for this session (default: timestamp)
-#   TASK_TYPE   — one of: main | pipeline | audit | research | parallel
-#
-# ─────────────────────────────────────────────────────────────────────────────
+# TRACK-AWARE LEGACY MODE (still supported):
+#   bash ~/repos/manus-persistent-drive/scripts/bootstrap.sh <track_name>
+# =============================================================================
 set -euo pipefail
 
-# ── NEW: Track-aware Command Centre boot ─────────────────────────────────────
-TRACK="${1:-}"
-if [ -n "$TRACK" ] && [ "$TRACK" != "main" ] && [ "$TRACK" != "pipeline" ] && [ "$TRACK" != "audit" ] && [ "$TRACK" != "research" ] && [ "$TRACK" != "parallel" ]; then
-  # Track-aware mode
-  DRIVE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/." && pwd)"
-  cd "$DRIVE_DIR"
-  git pull origin main --quiet 2>&1 || true
-  echo ""
-  echo "╔══════════════════════════════════════════════════════╗"
-  echo "║   META-DEVELOPMENT COMMAND CENTRE — SESSION BOOT    ║"
-  echo "╚══════════════════════════════════════════════════════╝"
-  echo "  Track: $TRACK"
-  echo ""
-  echo "════ CURRENT_STATE.md ══════════════════════════════════"
-  cat CURRENT_STATE.md
-  echo ""
-  echo "════ ACTIVE SPRINT PROMPT ══════════════════════════════"
-  FIRST_SPRINT=$(ls tracks/$TRACK/sprints/ 2>/dev/null | head -1)
-  if [ -n "$FIRST_SPRINT" ] && [ -f "tracks/$TRACK/sprints/$FIRST_SPRINT/loop_prompt.md" ]; then
-    cat "tracks/$TRACK/sprints/$FIRST_SPRINT/loop_prompt.md"
-  else
-    echo "No active sprint prompt found for track: $TRACK"
-  fi
-  echo ""
-  echo "════ RECENT MEMORY (last 40 lines) ════════════════════"
-  [ -f memory/compounding_log.md ] && tail -n 40 memory/compounding_log.md || echo "No compounding log yet."
-  echo ""
-  echo "✅ Bootstrap complete. Track: $TRACK — DO NOT read the other track."
-  exit 0
-fi
-# ── END: Track-aware boot ────────────────────────────────────────────────────
-
-DRIVE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SESSION_ID="${1:-session_$(date +%Y%m%d_%H%M%S)}"
-TASK_TYPE="${2:-main}"
+DRIVE_REPO="https://github.com/Gudmundur76/manus-persistent-drive.git"
+PLATFORM_REPO="https://github.com/Gudmundur76/ttruthdesk-platform.git"
+DRIVE_DIR="$HOME/repos/manus-persistent-drive"
+PLATFORM_DIR="$HOME/repos/ttruthdesk-platform"
+PAT_FILE="$HOME/Documents/Access.txt"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║         MANUS PERSISTENT DRIVE — SESSION BOOTSTRAP          ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
-echo ""
-echo "  Session ID : $SESSION_ID"
-echo "  Task Type  : $TASK_TYPE"
-echo "  Timestamp  : $TIMESTAMP"
-echo "  Drive Dir  : $DRIVE_DIR"
+# ── Legacy track-aware mode (pass-through) ───────────────────────────────────
+TRACK="${1:-}"
+LEGACY_TASK_TYPES="main pipeline audit research parallel"
+if [ -n "$TRACK" ] && ! echo "$LEGACY_TASK_TYPES" | grep -qw "$TRACK"; then
+  # Track-aware mode — delegate to drive if already cloned
+  if [ -d "$DRIVE_DIR/.git" ]; then
+    cd "$DRIVE_DIR"
+    git pull origin main --quiet 2>&1 || true
+    echo "╔══════════════════════════════════════════════════════╗"
+    echo "║   META-DEVELOPMENT COMMAND CENTRE — SESSION BOOT    ║"
+    echo "╚══════════════════════════════════════════════════════╝"
+    echo "  Track: $TRACK"
+    echo ""
+    echo "════ CURRENT_STATE.md ══════════════════════════════════"
+    cat CURRENT_STATE.md
+    echo ""
+    echo "════ RECENT MEMORY (last 40 lines) ════════════════════"
+    [ -f memory/compounding_log.md ] && tail -n 40 memory/compounding_log.md || true
+    echo "✅ Bootstrap complete (track mode). Track: $TRACK"
+    exit 0
+  fi
+fi
+
+echo "╔══════════════════════════════════════════════════════════════════╗"
+echo "║         MANUS PERSISTENT DRIVE — SESSION BOOTSTRAP v2           ║"
+echo "╚══════════════════════════════════════════════════════════════════╝"
+echo "  Started : $TIMESTAMP"
 echo ""
 
-# ── Step 1: Pull latest state from GitHub ────────────────────────────────────
-echo "▶ Step 1: Pulling latest state from GitHub..."
-cd "$DRIVE_DIR"
-git pull origin main --quiet 2>&1 || echo "  ⚠ Could not pull (offline?). Using cached state."
-echo "  ✓ Drive is at: $(git log --oneline -1)"
-echo ""
+# ── Step 0: Read GitHub PAT ───────────────────────────────────────────────────
+echo "▶ Step 0: GitHub PAT..."
+GH_PAT=""
+if [ -f "$PAT_FILE" ]; then
+  GH_PAT=$(grep -i "GitHub PAT" "$PAT_FILE" 2>/dev/null | awk '{print $NF}' | tr -d '[:space:]' || true)
+fi
+if [ -n "$GH_PAT" ]; then
+  echo "  ✓ PAT loaded from $PAT_FILE"
+else
+  echo "  ⚠ No PAT found in $PAT_FILE — will use gh CLI auth"
+fi
 
-# ── Step 2: Register this session ────────────────────────────────────────────
-echo "▶ Step 2: Registering session..."
-SESSION_FILE="$DRIVE_DIR/sessions/current/${SESSION_ID}.json"
-cat > "$SESSION_FILE" << SESSIONEOF
-{
-  "sessionId": "$SESSION_ID",
-  "taskType": "$TASK_TYPE",
-  "startedAt": "$TIMESTAMP",
-  "status": "active",
-  "host": "$(hostname)",
-  "pid": $$,
-  "projectRepo": "https://github.com/Gudmundur76/protein-truth-desk",
-  "driveRepo": "https://github.com/Gudmundur76/manus-persistent-drive",
-  "checkpointRef": "91c44bbb",
-  "notes": ""
+auth_url() {
+  local url="$1"
+  if [ -n "$GH_PAT" ]; then
+    echo "${url/https:\/\//https:\/\/${GH_PAT}@}"
+  else
+    echo "$url"
+  fi
 }
-SESSIONEOF
-echo "  ✓ Session registered: $SESSION_FILE"
+
+# ── Step 1: Clone or update persistent drive ─────────────────────────────────
 echo ""
-
-# ── Step 3: Load project state ────────────────────────────────────────────────
-echo "▶ Step 3: Loading project state..."
-
-PHASE_LOG="$DRIVE_DIR/context/phase-log/phase_log.md"
-if [ -f "$PHASE_LOG" ]; then
-  echo "  Phase log found. Last 10 lines:"
-  tail -10 "$PHASE_LOG" | sed 's/^/    /'
+echo "▶ Step 1: Persistent drive..."
+mkdir -p "$HOME/repos"
+if [ -d "$DRIVE_DIR/.git" ]; then
+  cd "$DRIVE_DIR"
+  git remote set-url origin "$(auth_url $DRIVE_REPO)" 2>/dev/null || true
+  git pull origin main --quiet 2>&1 || echo "  ⚠ Pull failed (offline?). Using cached state."
+  echo "  ✓ Drive at: $(git log --oneline -1 2>/dev/null || echo 'unknown')"
 else
-  echo "  ⚠ No phase log found. Starting fresh."
+  git clone "$(auth_url $DRIVE_REPO)" "$DRIVE_DIR" --quiet
+  echo "  ✓ Cloned to $DRIVE_DIR"
 fi
-echo ""
 
-TODO_FILE="$DRIVE_DIR/data/protein-truth-desk/todo/todo.md"
-if [ -f "$TODO_FILE" ]; then
-  COMPLETED=$(grep -c '^\- \[x\]' "$TODO_FILE" 2>/dev/null || echo 0)
-  PENDING=$(grep -c '^\- \[ \]' "$TODO_FILE" 2>/dev/null || echo 0)
-  echo "  Todo status: $COMPLETED completed, $PENDING pending"
+# ── Step 2: Clone or update ttruthdesk-platform ──────────────────────────────
+echo ""
+echo "▶ Step 2: ttruthdesk-platform..."
+if [ -d "$PLATFORM_DIR/.git" ]; then
+  cd "$PLATFORM_DIR"
+  git remote set-url origin "$(auth_url $PLATFORM_REPO)" 2>/dev/null || true
+  git pull origin main --quiet 2>&1 || echo "  ⚠ Pull failed. Using cached state."
+  echo "  ✓ Platform at: $(git log --oneline -1 2>/dev/null || echo 'unknown')"
 else
-  echo "  ⚠ No todo.md found in drive."
+  git clone "$(auth_url $PLATFORM_REPO)" "$PLATFORM_DIR" --quiet
+  echo "  ✓ Cloned to $PLATFORM_DIR"
 fi
-echo ""
+# Always ensure push auth is set
+if [ -n "$GH_PAT" ]; then
+  cd "$PLATFORM_DIR"
+  git remote set-url origin "$(auth_url $PLATFORM_REPO)"
+  echo "  ✓ Push auth configured"
+fi
 
-# ── Step 4: Load KG summary ───────────────────────────────────────────────────
-echo "▶ Step 4: Knowledge graph summary..."
-KG_SUMMARY="$DRIVE_DIR/context/kg/kg_summary.json"
-if [ -f "$KG_SUMMARY" ]; then
-  echo "  KG summary:"
-  cat "$KG_SUMMARY" | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-print(f'    Entities: {d.get(\"entity_count\",0)}')
-print(f'    Claims:   {d.get(\"claim_count\",0)}')
-print(f'    Docs:     {d.get(\"document_count\",0)}')
-print(f'    Updated:  {d.get(\"updated_at\",\"unknown\")}')
-" 2>/dev/null || echo "  ⚠ Could not parse KG summary."
+# ── Step 3: Install codebase-memory-mcp ──────────────────────────────────────
+echo ""
+echo "▶ Step 3: codebase-memory-mcp..."
+export PATH="$HOME/.local/bin:$PATH"
+if command -v codebase-memory &>/dev/null; then
+  echo "  ✓ Already installed"
 else
-  echo "  ⚠ No KG summary found. Run sync.sh after first pipeline run."
+  echo "  Installing..."
+  curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh \
+    -o /tmp/cbm-install.sh 2>/dev/null \
+    && bash /tmp/cbm-install.sh --skip-config 2>/dev/null \
+    && echo "  ✓ Installed" \
+    || echo "  ⚠ Auto-install failed — run manually if needed"
 fi
-echo ""
 
-# ── Step 5: Print task registry ───────────────────────────────────────────────
-echo "▶ Step 5: Active parallel tasks..."
-REGISTRY="$DRIVE_DIR/context/task-registry/registry.json"
-if [ -f "$REGISTRY" ]; then
-  python3 -c "
-import json,sys
-with open('$REGISTRY') as f:
-  tasks = json.load(f)
-active = [t for t in tasks if t.get('status') in ('active','pending')]
-if active:
-  for t in active:
-    print(f'    [{t[\"status\"]}] {t[\"sessionId\"]} — {t[\"taskType\"]} (started {t[\"startedAt\"]})')
-else:
-  print('    No active parallel tasks.')
-" 2>/dev/null || echo "  ⚠ Could not parse registry."
+# ── Step 4: Restore knowledge graph ──────────────────────────────────────────
+echo ""
+echo "▶ Step 4: Knowledge graph..."
+GRAPH_GZ="$PLATFORM_DIR/.codebase-memory/graph.db.gz"
+GRAPH_CACHE="$HOME/.cache/codebase-memory-mcp/graph.db"
+if [ -f "$GRAPH_GZ" ]; then
+  mkdir -p "$(dirname $GRAPH_CACHE)"
+  gunzip -c "$GRAPH_GZ" > "$GRAPH_CACHE"
+  echo "  ✓ Graph restored from snapshot"
+  if command -v codebase-memory &>/dev/null; then
+    codebase-memory index "$PLATFORM_DIR" --quiet 2>/dev/null \
+      && echo "  ✓ Index refreshed" \
+      || echo "  ⚠ Index refresh failed (non-fatal)"
+  fi
 else
-  echo "  No registry found. This is the first session."
+  echo "  ⚠ No snapshot at $GRAPH_GZ"
 fi
-echo ""
 
-# ── Step 6: Clone or update protein-truth-desk ────────────────────────────────
-echo "▶ Step 6: Ensuring protein-truth-desk repo is available..."
-PROJECT_DIR="/home/ubuntu/protein-truth-desk-full"
-if [ -d "$PROJECT_DIR/.git" ]; then
-  echo "  Repo exists at $PROJECT_DIR. Pulling..."
-  cd "$PROJECT_DIR" && git pull origin main --quiet 2>&1 || echo "  ⚠ Pull failed."
-  echo "  ✓ At: $(git log --oneline -1)"
+# ── Step 5: Print CURRENT_STATE.md summary ───────────────────────────────────
+echo ""
+echo "▶ Step 5: Current state..."
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if [ -f "$DRIVE_DIR/CURRENT_STATE.md" ]; then
+  head -65 "$DRIVE_DIR/CURRENT_STATE.md" | sed 's/^/  /'
 else
-  echo "  Cloning protein-truth-desk..."
-  cd /home/ubuntu && gh repo clone Gudmundur76/protein-truth-desk protein-truth-desk-full
-  echo "  ✓ Cloned to $PROJECT_DIR"
+  echo "  ⚠ CURRENT_STATE.md not found"
 fi
-echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║                    BOOTSTRAP COMPLETE                        ║"
-echo "║                                                              ║"
-echo "║  Next steps:                                                 ║"
-echo "║  1. Read context/phase-log/phase_log.md for history         ║"
-echo "║  2. Read data/protein-truth-desk/todo/todo.md for tasks     ║"
-echo "║  3. Run: bash scripts/sync.sh $SESSION_ID at session end    ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
+# ── Step 6: Print last compounding log entries ────────────────────────────────
+echo ""
+echo "▶ Step 6: Recent compounding log (last 60 lines)..."
+echo ""
+CLOG="$DRIVE_DIR/compounding_log.md"
+[ -f "$CLOG" ] && tail -60 "$CLOG" | sed 's/^/  /' || echo "  ⚠ No compounding log"
+
+# ── Step 7: Latest phase log ─────────────────────────────────────────────────
+echo ""
+echo "▶ Step 7: Latest phase log..."
+LATEST_PHASE=$(ls -t "$DRIVE_DIR/context/phase-log/"*.md 2>/dev/null | grep -v phase_log | head -1 || true)
+if [ -n "$LATEST_PHASE" ]; then
+  echo "  File: $(basename $LATEST_PHASE)"
+  head -25 "$LATEST_PHASE" | sed 's/^/  /'
+fi
+
+# ── Done ──────────────────────────────────────────────────────────────────────
+echo ""
+echo "╔══════════════════════════════════════════════════════════════════╗"
+echo "║                    BOOTSTRAP COMPLETE ✓                         ║"
+echo "║                                                                  ║"
+echo "║  Repos ready:                                                    ║"
+echo "║    ~/repos/ttruthdesk-platform   (main codebase)                ║"
+echo "║    ~/repos/manus-persistent-drive  (memory)                     ║"
+echo "║                                                                  ║"
+echo "║  AT SESSION END — run the sync:                                  ║"
+echo "║    bash ~/repos/manus-persistent-drive/scripts/sync.sh          ║"
+echo "║         \"<one-line summary of what was done>\"                    ║"
+echo "╚══════════════════════════════════════════════════════════════════╝"
