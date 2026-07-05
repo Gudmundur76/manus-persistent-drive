@@ -28,10 +28,20 @@ The backend (`ttruthdesk-platform`) and frontend (`citation-desk`) are healthy, 
 
 Phase C19 complete: in-place hero citation search shipped to citation.is. The homepage now streams live verified answers directly from the hero panel. Manus checkpoint `8b259ceb`. GitHub mirror at `d10a794`. CI fully green.
 
-**Overall Product Status:** GREEN.
+**Overall Product Status:** GREEN — Sprint 42 complete.
 - Backend: **3,616/3,618 tests passing (Phase 149)**. TSC clean. 61 adapters + structural_biology vertical agent. Phase 149 (structural biology agent + ingest fixes) committed locally (`2a7c6a6`) — awaiting PAT push.
 - Frontend: **35/35 tests passing (Sprint 39 / Phase C20)**. TSC clean. Published at citation.is (`f988892`).
 - Live corpus: 4,165 claims, 856 verified, 291 source documents.
+
+
+**Sprint 42 (2026-07-05):**
+- `GET /api/v1/claim/:id` — public endpoint for fetching a single verified claim by ID
+- Returns: verdict, confidence, entities (protein/PDB/organism), source passage, citations, timestamps
+- Auth: Bearer token (same pattern as /v1/search and /v1/verify)
+- openapi.json: new `/v1/claim/{id}` path + `ClaimResponse` schema (5 public API endpoints total)
+- 6 unit tests: all HTTP status paths + happy path
+- 4280/4280 tests passing, TSC clean, ESLint clean, CI ✅
+- Branch: main — commit `b1401dc`
 
 **Sprint 40 — Domain-Aware Claim Extraction (CRITICAL FIX):**
 Root cause resolved: all papers were being extracted as `structural_biology` regardless of domain, producing 0 claims for neuroscience, economics, energy, etc. Fix: `domainClaimExtractor.ts` (per-domain prompts for all 12 domains), `domainInference.ts` (pattern-based domain classifier), `claimExtractor.ts` (domain-routed), `analysisPipeline.ts` (passes domain, zero-claim guard on notifications), `discoveryLoopJob.ts` (infers domain from paper text). Schema migration: `claimType` ENUM → `varchar(64)`. Backfill endpoint: `POST /api/admin/backfill-domain-claims`.
