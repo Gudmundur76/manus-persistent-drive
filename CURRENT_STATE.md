@@ -409,3 +409,10 @@ git push -u origin main
 - **Phase 144** — Activate `MR_AGENT_ENABLED=true` in ttruthdesk production + smoke-test 10 live claims
 - **Phase 145** — Add SQLite persistence to `memory_store.py` (episodes survive restarts)
 - **Phase 146** — Wire `codebase-memory-mcp` to include `evolva-mragent` nodes
+
+---
+## Sync: 2026-07-17
+
+- **Memex MCP endpoint** fixed: `https://memex.gummi.lt/mcp/` now returns valid SSE MCP responses (protocolVersion 2024-11-05, 4 tools: remember/recall/list_memories/forget)
+- **citation-desk VPS migration**: Container `jedz65zd40rk79jlywf9nf7v` running healthy on VPS, all 10 DB tables created, awaiting Namecheap DNS update (A record → 187.124.213.194)
+- **Memex fixes applied**: server.py corruption resolved (docker-compose YAML was appended), MCP lifespan initialized in FastAPI, DNS rebinding protection disabled for reverse-proxy compatibility
